@@ -19,7 +19,7 @@ describe("FeedUtils", () => {
 
   it("says who has voted, never for whom", () => {
     expect(FeedUtils.voted(noor)).toBe("Noor has voted");
-    expect(FeedUtils.voted(you)).toBe("You locked in your vote");
+    expect(FeedUtils.voted(you)).toBe("You voted");
   });
 });
 

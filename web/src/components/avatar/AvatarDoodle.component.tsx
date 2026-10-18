@@ -13,18 +13,17 @@ type AvatarDoodleProps = {
    * "preview" shows it faintly on hover or focus of the surrounding `group` (the suspect button).
    */
   hat?: "worn" | "preview";
-  /**
-   * False draws the lines alone, cropped to them, without the navy circle behind (the maker's doodle in the footer,
-   * sized like an emoji).
-   */
+  /** False draws the lines alone, without the navy circle behind: on a navy surface (the player cards) it adds nothing. */
   backdrop?: boolean;
+  /** With no backdrop: the box hugs the lines, without the empty margin (the maker's doodle in the footer, emoji-sized). */
+  crop?: boolean;
   /** Holds the hat's drop back, for the reveal. */
   hatDelayMs?: number;
   className?: string;
 };
 
-/** The fedora from the logo, cropped out of the same file. */
-const HAT_SRC = "/logo.svg#svgView(viewBox(380,250,1500,880))";
+/** The fedora from the logo, without the logo's navy square (`just icons` makes it). */
+const HAT_SRC = "/hat.svg";
 
 /** A player's hand-drawn face on a navy circle, so every avatar colour reads; strokes past the edge are cut off. */
 export function AvatarDoodle({
@@ -33,6 +32,7 @@ export function AvatarDoodle({
   color,
   hat,
   backdrop = true,
+  crop = false,
   hatDelayMs = 0,
   className = "",
 }: AvatarDoodleProps) {
@@ -53,8 +53,8 @@ export function AvatarDoodle({
   const a11y = label ? { role: "img", "aria-label": label } : { "aria-hidden": true };
   const face = (
     <svg
-      viewBox={backdrop ? "0 0 100 100" : viewBox}
-      className={`${backdrop ? "[clip-path:circle(50%)]" : "overflow-visible"} ${hat ? "size-full" : className}`}
+      viewBox={crop && !backdrop ? viewBox : "0 0 100 100"}
+      className={`${backdrop ? "[clip-path:circle(50%)]" : crop ? "overflow-visible" : ""} ${hat ? "size-full" : className}`}
       {...a11y}
     >
       {backdrop && <circle cx="50" cy="50" r="50" className="fill-night-soft" />}
@@ -72,7 +72,7 @@ export function AvatarDoodle({
         src={HAT_SRC}
         alt=""
         style={hat === "worn" ? { animationDelay: `${hatDelayMs}ms` } : undefined}
-        className={`pointer-events-none absolute -top-[25%] left-1/2 w-[92%] max-w-none -translate-x-1/2 -rotate-6 ${
+        className={`pointer-events-none absolute -top-[14%] left-1/2 w-[92%] max-w-none -translate-x-1/2 -rotate-6 ${
           hat === "worn"
             ? "animate-hat-drop motion-reduce:animate-none"
             : "opacity-0 transition-opacity group-hover:opacity-60 group-focus-visible:opacity-60"

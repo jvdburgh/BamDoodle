@@ -601,11 +601,19 @@ impl Room {
         if !round.turn_order.contains(&voter_id) || !round.turn_order.contains(&suspect_id) || voter_id == suspect_id {
             return Err(RejectReason::InvalidVote);
         }
-        if has_voted(round, voter_id) {
-            return Err(RejectReason::AlreadyVoted);
-        }
-        round.votes.push(Vote { voter_id, suspect_id });
-        let mut outbox = vec![(Audience::Everyone, ServerMessage::VoteCast { voter_id })];
+        // A tap is a vote, and another tap changes it until the vote ends. Only a first vote is news for the room;
+        // a change is confirmed to the voter alone, so switching faces can't flood everyone.
+        let audience = match round.votes.iter_mut().find(|vote| vote.voter_id == voter_id) {
+            Some(vote) => {
+                vote.suspect_id = suspect_id;
+                Audience::Player(voter_id)
+            }
+            None => {
+                round.votes.push(Vote { voter_id, suspect_id });
+                Audience::Everyone
+            }
+        };
+        let mut outbox = vec![(audience, ServerMessage::VoteCast { voter_id })];
         outbox.extend(self.reveal_if_everyone_voted(now));
         Ok(outbox)
     }

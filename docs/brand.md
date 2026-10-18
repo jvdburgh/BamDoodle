@@ -5,7 +5,8 @@
 - **BamDoodle**: bamboozle + doodle. Written with a capital D.
 - Tagline: **Draw • Guess • Deceive** (the dots in berry pink).
 - The top left of every screen is the logo with the name and tagline beside it (`BrandLogo named`), and the whole
-  block is one link to the start page. Only the room on a narrow phone shows the logo alone; the word needs the space.
+  block is one link to the start page. In the room, below the laptop layout, the logo stands alone: the word, the
+  players and the room code need the space.
 - Second line, for the game itself (round start, reveal, loading): **Who's sketchy?** The logo is a sketchy
   character, the game is about finding the sketchy one, and everything is sketched. Use it as a playful question,
   not as the main tagline.
@@ -86,7 +87,8 @@ Modern, a bit mysterious, colourful. It should feel like a hand-made little game
 - Small, quick motion makes it feel alive: block buttons tilt and lift on hover and squish when pressed, player cards
   bounce in, "voted" and "suspected by" badges pop, hovering the start page's logo turns its hat's colours one round and back (the logo is inlined from
   `/logo.svg` for that too). Reduced motion turns it off.
-- No unlockables, no dark patterns. The only promotion is one line, in the maintainer's voice, under the start page
-  and the setup ("Made by Joris van der Burgh in the Netherlands / Hosted in the European Union") and after the last
-  round: "Enjoying BamDoodle? Help out on GitHub, and please donate to our friends in Ukraine" (United24, Ukraine's
-  official fundraising platform). Plain links, no banner.
+- No unlockables, no dark patterns. The only promotion is in the maintainer's voice: one line under the start page and
+  the setup ("Made by Joris van der Burgh in the Netherlands / Hosted in the European Union", and "Enjoying
+  BamDoodle? Help out on GitHub, and please donate to our friends in Ukraine"), and on "The End" screen after the
+  last round one small card: "Did you enjoy the game?", that it's free with no ads or accounts, a "Donate through
+  United24" link (Ukraine's official fundraising platform) and "help out on GitHub". No banner, nothing during a game.

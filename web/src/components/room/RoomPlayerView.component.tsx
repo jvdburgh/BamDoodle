@@ -63,8 +63,6 @@ export function RoomPlayerView({
   const sender = useStrokeSender(send);
   const [chosenColour, setChosenColour] = useState(CanvasTools.colours[0]?.value ?? "#000000");
   const [brushSize, setBrushSize] = useState(CanvasTools.brushes[1]?.size ?? 0.014);
-  /** Your pick in the final vote, per round; until you change it, it's your last suspicion. */
-  const [pick, setPick] = useState<{ round: number; id: number | null } | null>(null);
   /** Strokes you began this turn: a timed turn takes no more than the server allows. */
   const [turnStrokes, setTurnStrokes] = useState({ turn: 0, count: 0 });
   /** The final round's results are shown first; the podium once you ask for it. */
@@ -93,8 +91,8 @@ export function RoomPlayerView({
   const spotlit = players.find((player) => player.id === spotlight.shown);
   const drawingPhase = phase === "lobby" || phase === "drawing";
   const suspicion = you ? RoomStateUtils.suspicionOf(state, you.id) : null;
-  const pickedId = pick && pick.round === round?.number ? pick.id : suspicion;
-  const yourVoteId = round?.yourVote ?? state.pendingVote;
+  /** The face you tapped last wins over the vote the server confirmed before it. */
+  const yourVoteId = state.pendingVote ?? round?.yourVote ?? null;
   const resultKey = result ? `${result.number}/${result.word}` : null;
   const showPodium = view.gameOver && podiumFor === resultKey;
 
@@ -122,7 +120,7 @@ export function RoomPlayerView({
       : "Shared drawing. The drawing is done.";
 
   const action: RoomPlayerAction | undefined =
-    !you || !playing || yourVoteId !== null
+    !you || !playing
       ? undefined
       : phase === "drawing"
         ? {
@@ -137,10 +135,12 @@ export function RoomPlayerView({
         : phase === "voting" && round
           ? {
               kind: "vote",
-              chosenId: pickedId,
+              chosenId: yourVoteId ?? suspicion,
               onChoose: (id) => {
-                setPick({ round: round.number, id });
+                if (id === null || id === yourVoteId) return;
+                send({ type: "castVote", suspectId: id });
                 spotlight.pin(id);
+                SoundPlayer.play("vote");
               },
             }
           : undefined;
@@ -150,7 +150,9 @@ export function RoomPlayerView({
     ? "@5xl/room:max-w-[calc((100svh-16.5rem)*4/3)]"
     : phase === "voting"
       ? "@5xl/room:max-w-[calc((100svh-20rem)*4/3)]"
-      : "@5xl/room:max-w-[calc((100svh-33rem)*4/3)]";
+      : phase === "guessing"
+        ? "@5xl/room:max-w-[calc((100svh-31rem)*4/3)]"
+        : "@5xl/room:max-w-[calc((100svh-24rem)*4/3)]";
 
   const countdown = phase === "voting" ? state.timers.voting : state.timers.turn;
   const progress = (
@@ -184,7 +186,7 @@ export function RoomPlayerView({
             href={home}
             sly={youAreBamboozler && !result}
             className="size-10"
-            nameClassName="sr-only text-sm @xl/room:not-sr-only"
+            nameClassName="sr-only text-sm @5xl/room:not-sr-only"
           />
           {view.category !== null ? (
             <RoomWordCard
@@ -225,6 +227,8 @@ export function RoomPlayerView({
               youId={you?.id}
               colours={identities}
               onNewGame={isHost ? startRound : undefined}
+              hostName={view.host?.name}
+              startPage={home}
             />
           </div>
         ) : (
@@ -328,6 +332,7 @@ export function RoomPlayerView({
                   suspectedBy={phase === "drawing" ? RoomViewUtils.suspectedBy(round) : {}}
                   votedIds={phase === "voting" ? (round?.voted ?? []) : []}
                   youWearTheHat={youAreBamboozler && !result}
+                  outcome={RoomViewUtils.outcome(reveal, result, room.players)}
                 />
               </div>
               <div className="hidden @5xl/room:block">{progress}</div>
@@ -338,13 +343,8 @@ export function RoomPlayerView({
               <div className="order-2 @5xl/room:col-start-2 @5xl/room:row-start-2">
                 <VotePrompt
                   players={players.filter((player) => round.turnOrder.includes(player.id))}
-                  picked={players.find((player) => player.id === pickedId)}
                   voted={players.find((player) => player.id === yourVoteId)}
-                  onLock={(suspectId) => {
-                    send({ type: "castVote", suspectId });
-                    spotlight.pin(null);
-                    SoundPlayer.play("vote");
-                  }}
+                  suspected={players.find((player) => player.id === suspicion)}
                   votedIds={round.voted}
                   msLeft={ClockUtils.left(state.timers.voting, now)}
                   colours={identities}
@@ -411,12 +411,9 @@ export function RoomPlayerView({
                     bamboozlerId={result.bamboozlerId}
                     word={result.word}
                     guess={result.guess === null ? null : { text: result.guess, right: result.guessCorrect }}
-                    scores={RoomViewUtils.roundScores(result)}
-                    totals={RoomViewUtils.totals(room.players)}
                     roundNumber={result.number}
                     rounds={result.rounds}
                     youId={you?.id}
-                    colours={identities}
                     onNext={
                       result.gameOver
                         ? () => setPodiumFor(resultKey)
@@ -448,7 +445,7 @@ export function RoomPlayerView({
           {active
             ? turnTitle(active)
             : phase === "voting" && playing
-              ? "Time’s up! Pick who you think didn’t know the word on their card, then lock in your vote."
+              ? "Time’s up! Tap the face of who you think didn’t know the word. You can change it until the vote ends."
               : ""}
         </p>
       </div>

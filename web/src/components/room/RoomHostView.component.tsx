@@ -128,6 +128,7 @@ export function RoomHostView({ state, revealCode = false, colours = "free", home
                 colours={identities}
                 suspectedBy={phase === "drawing" ? RoomViewUtils.suspectedBy(round) : {}}
                 votedIds={phase === "voting" ? (round?.voted ?? []) : []}
+                outcome={RoomViewUtils.outcome(reveal, result, room.players)}
                 layout="row"
               />
             </div>
@@ -221,11 +222,8 @@ export function RoomHostView({ state, revealCode = false, colours = "free", home
                     bamboozlerId={result.bamboozlerId}
                     word={result.word}
                     guess={result.guess === null ? null : { text: result.guess, right: result.guessCorrect }}
-                    scores={RoomViewUtils.roundScores(result)}
-                    totals={RoomViewUtils.totals(room.players)}
                     roundNumber={result.number}
                     rounds={result.rounds}
-                    colours={identities}
                     big
                   />
                 </div>

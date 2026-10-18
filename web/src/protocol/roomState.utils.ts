@@ -34,7 +34,7 @@ export type RoomState = {
 };
 
 /** What the server answers a vote it didn't count; the pending vote is void then. */
-const voteRejections: ReadonlySet<RejectReason> = new Set(["alreadyVoted", "invalidVote", "wrongPhase"]);
+const voteRejections: ReadonlySet<RejectReason> = new Set(["invalidVote", "wrongPhase"]);
 
 const noTimers: RoomTimers = { turn: null, voting: null, guess: null };
 

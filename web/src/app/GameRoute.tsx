@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { AvatarStroke } from "@/components/avatar/_types/avatar.types";
 import { AvatarUtils } from "@/components/avatar/_utils/avatar.utils";
 import { LobbySetup } from "@/components/lobby/LobbySetup.component";
@@ -11,12 +11,25 @@ import { RoomViewUtils } from "@/components/room/_utils/roomView.utils";
 import type { ClientMessage } from "@/protocol/generated/ClientMessage";
 import type { RoomSettings } from "@/protocol/generated/RoomSettings";
 import type { WordCategory } from "@/protocol/generated/WordCategory";
+import type { RoomDefaults } from "@/protocol/generated/RoomDefaults";
 import { RoomDefaultsUtils } from "@/protocol/roomDefaults.utils";
 import { useRoomConnection } from "@/protocol/room.hook";
 import { RoomConnection } from "@/protocol/roomConnection";
 
 const NAME_KEY = "bamdoodle:name";
 const UNREACHABLE = "Couldn’t reach the game. Check your connection and try again.";
+
+/** A new release reloads now, not after the whole setup. */
+async function loadDefaults(): Promise<RoomDefaults | null | "reloading"> {
+  if (await RoomConnection.reloadIfOutdated()) return "reloading";
+  return RoomDefaultsUtils.fetch();
+}
+
+/** From the end of a game (`/?start=create`, `/?start=join`): open straight on setting up a room, or on joining one. */
+function startFromLink(): "create" | "join" | null {
+  const start = new URLSearchParams(window.location.search).get("start");
+  return start === "create" || start === "join" ? start : null;
+}
 
 function savedName(): string {
   try {
@@ -52,30 +65,44 @@ type LobbyNavigation = {
 export function GameRoute({ joinCode }: { joinCode?: string }) {
   const [attempt, setAttempt] = useState<{ number: number; entry: LobbyEntry } | null>(null);
   const [plan, setPlan] = useState<RoomPlan | null>(null);
-  const [loading, setLoading] = useState(false);
+  /** Used once: after that the start page is the usual choice again. */
+  const [startWith, setStartWith] = useState(startFromLink);
+  const [loading, setLoading] = useState(startWith === "create");
   const [problem, setProblem] = useState<string>();
   /** Back from creating, or it couldn't start: Create a room gets the focus again. */
   const [backFromCreate, setBackFromCreate] = useState(false);
+
+  const showSetup = useCallback((defaults: RoomDefaults | null) => {
+    setLoading(false);
+    if (defaults) setPlan({ step: "setup", ...defaults });
+    else {
+      setProblem(UNREACHABLE);
+      setBackFromCreate(true);
+    }
+  }, []);
+  const create = () => {
+    setStartWith(null);
+    setAttempt(null);
+    setProblem(undefined);
+    setLoading(true);
+    void loadDefaults().then((defaults) => defaults !== "reloading" && showSetup(defaults));
+  };
+
+  // The link did its job: a reload is the plain start page again.
+  useEffect(() => {
+    if (!startWith) return;
+    window.history.replaceState(null, "", window.location.pathname);
+    if (startWith === "create") {
+      void loadDefaults().then((defaults) => defaults !== "reloading" && showSetup(defaults));
+    }
+  }, [startWith, showSetup]);
 
   const navigation: LobbyNavigation = {
     onEnter: (entry) => {
       saveName(entry.name);
       setAttempt((last) => ({ number: (last?.number ?? 0) + 1, entry }));
     },
-    onCreate: async () => {
-      setAttempt(null);
-      setProblem(undefined);
-      setLoading(true);
-      // A new release reloads now, not after the whole setup.
-      if (await RoomConnection.reloadIfOutdated()) return;
-      const defaults = await RoomDefaultsUtils.fetch();
-      setLoading(false);
-      if (defaults) setPlan({ step: "setup", ...defaults });
-      else {
-        setProblem(UNREACHABLE);
-        setBackFromCreate(true);
-      }
-    },
+    onCreate: create,
     onBackToSetup: () => {
       setAttempt(null);
       setPlan((current) => current && { ...current, step: "setup" });
@@ -106,7 +133,7 @@ export function GameRoute({ joinCode }: { joinCode?: string }) {
       key={plan ? "name" : "start"}
       defaultName={savedName()}
       defaultCode={joinCode}
-      step={plan ? "create" : undefined}
+      step={plan ? "create" : startWith === "join" ? "join" : undefined}
       problem={problem}
       busy={loading}
       focusCreate={backFromCreate}

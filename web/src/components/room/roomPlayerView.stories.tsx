@@ -15,14 +15,16 @@ type Props = {
   colours: Attribution;
   width: string;
   rejection?: RejectReason;
+  /** A vote you sent that the server hasn't confirmed yet. */
+  pendingVote?: number;
   send: (message: ClientMessage) => void;
   onSettings?: () => void;
 };
 
 /** Renders the view from a server-state fixture made at render time, so the countdowns start when the story does. */
-function PlayerFromState({ phase, you, hostId, colours, width, rejection, send, onSettings }: Props) {
+function PlayerFromState({ phase, you, hostId, colours, width, rejection, pendingVote, send, onSettings }: Props) {
   const [state] = useState(() => {
-    const fixture = roomStateFixture({ phase, you, hostId });
+    const fixture = { ...roomStateFixture({ phase, you, hostId }), pendingVote: pendingVote ?? null };
     return rejection ? { ...fixture, rejection: { reason: rejection, at: Date.now() } } : fixture;
   });
   return (
@@ -34,7 +36,7 @@ function PlayerFromState({ phase, you, hostId, colours, width, rejection, send, 
 
 /** Fedoras anyone can see right now: worn ones, not the faint preview that waits for a hover. */
 const wornHats = (root: HTMLElement) =>
-  [...root.querySelectorAll<HTMLImageElement>('img[src*="svgView"]')].filter(
+  [...root.querySelectorAll<HTMLImageElement>('img[src$="/hat.svg"]')].filter(
     (hat) => Number(getComputedStyle(hat).opacity) > 0.5,
   );
 const settle = () => new Promise((resolve) => setTimeout(resolve, 900));
@@ -148,10 +150,29 @@ export const FinalVote: Story = {
     },
   },
   play: async ({ args, canvas, userEvent }) => {
-    await expect(canvas.getByRole("button", { name: "Lock in my vote for Kiki" })).toBeVisible();
-    await userEvent.click(canvas.getByRole("button", { name: "Pick Mo" }));
-    await userEvent.click(canvas.getByRole("button", { name: "Lock in my vote for Mo" }));
+    await expect(canvas.getByText(/your suspicion of/)).toHaveTextContent("your suspicion of Kiki counts");
+    await expect(canvas.getByRole("button", { name: "Vote for Kiki" })).toHaveAttribute("aria-pressed", "true");
+    await expect(canvas.queryByRole("button", { name: /Lock in/ })).toBeNull();
+    await userEvent.click(canvas.getByRole("button", { name: "Vote for Mo" }));
     await expect(args.send).toHaveBeenCalledWith({ type: "castVote", suspectId: 3 });
+  },
+};
+
+/** Kiki was confirmed, then you tapped Mo: Mo shows as your vote, and a tap back on Kiki isn't swallowed. */
+export const ChangeYourVote: Story = {
+  args: {
+    phase: {
+      phase: "voting",
+      round: roundFixture({ activePlayerId: null, voted: [2], yourVote: 4 }),
+      votingRemainingMs: 30_000,
+    },
+    pendingVote: 3,
+  },
+  play: async ({ args, canvas, userEvent }) => {
+    await expect(canvas.getByRole("button", { name: "Vote for Mo" })).toHaveAttribute("aria-pressed", "true");
+    await expect(canvas.getByRole("button", { name: "Vote for Kiki" })).toHaveAttribute("aria-pressed", "false");
+    await userEvent.click(canvas.getByRole("button", { name: "Vote for Kiki" }));
+    await expect(args.send).toHaveBeenLastCalledWith({ type: "castVote", suspectId: 4 });
   },
 };
 

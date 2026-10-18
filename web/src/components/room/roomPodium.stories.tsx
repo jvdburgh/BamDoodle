@@ -12,6 +12,7 @@ const meta = {
     totals: { 1: 4, 2: 7, 3: 5, 4: 2, 5: 5, 6: 1 },
     youId: 2,
     onNewGame: fn(),
+    startPage: "/",
   },
 } satisfies Meta<typeof RoomPodium>;
 
@@ -24,8 +25,21 @@ export const YouWin: Story = {
     const podium = canvas.getByRole("list", { name: "Podium" });
     await expect(podium.children).toHaveLength(3);
     await expect(canvas.getByText("7 pts")).toBeInTheDocument();
-    await userEvent.click(canvas.getByRole("button", { name: "New game" }));
+    await expect(canvas.getByText("The End")).toBeInTheDocument();
+    await userEvent.click(canvas.getByRole("button", { name: "Play again in this room" }));
     await expect(args.onNewGame).toHaveBeenCalled();
+    await expect(canvas.getByRole("link", { name: "Create a new room" })).toHaveAttribute("href", "/?start=create");
+    await expect(canvas.getByRole("link", { name: "Join another room" })).toHaveAttribute("href", "/?start=join");
+    await expect(canvas.getByRole("complementary", { name: "Did you enjoy the game?" })).toBeInTheDocument();
+  },
+};
+
+/** Everyone but the host: another room, or wait for the host's new game. */
+export const NotTheHost: Story = {
+  args: { onNewGame: undefined, hostName: "Pip" },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText("Pip can start a new game in this room.")).toBeInTheDocument();
+    await expect(canvas.queryByRole("button")).toBeNull();
   },
 };
 

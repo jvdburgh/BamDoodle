@@ -59,8 +59,8 @@ can change the number of rounds between rounds; when that's already been reached
 4. **Suspecting, while the drawing goes on.** Any time, a player can point at who they suspect, and change their mind.
    That's public and part of the fun: everyone sees "Noor thinks Jip is sketchy".
 5. **Who's sketchy?** After the last turn, everyone makes their final choice: "Who do you think didn't know the word?"
-   Your current suspicion is pre-selected; submitting locks it. Voting ends when everyone has voted or after 30
-   seconds, and anyone who didn't submit votes for whoever they suspected last (or not at all).
+   A tap on a face is your vote, and another tap changes it until the vote ends. Voting ends when everyone has voted
+   or after 30 seconds, and anyone who didn't vote votes for whoever they suspected last (or not at all).
 6. **Reveal.** The bamboozler and every vote are shown. The bamboozler gets one chance to guess the word, even when
    everyone caught them.
 7. **Results.** Who was right, who was wrong, the points of this round and the scores so far. The host starts the
@@ -100,14 +100,18 @@ playtests can compare both. Real rooms use any colour until the setting is on th
 **Suspecting and voting on screen:** on every player card (avatar, name, mini-map of their strokes) the face itself
 is the way to suspect: hover or focus shows the logo's fedora faintly over it with "Mark as suspicious" (also for a
 moment after a tap), a tap drops the hat onto their head, another tap takes it off; marking or changing it is public table talk ("Noor thinks Jip is sketchy") and cards show
-how many suspect that player. After the last turn the same cards turn into the choice ("Pick"), next to a "Time's up!
-Who's sketchy? Who do you think didn't know the word?" prompt with a 30 s countdown, your suspicion pre-selected and
-a "Lock in my vote" button; it shows who has voted, never for whom. On a laptop everything fits one screen (cards
+how many suspect that player. After the last turn the same faces are the vote: a tap votes for them (the hat drops on),
+a tap on another face changes it, next to a "Time's up! Who's sketchy?" prompt with a 30 s countdown that says whose
+suspicion counts if you don't vote; it shows who has voted, never for whom. On a laptop everything fits one screen (cards
 in one column on the left, the canvas sized to fit with pens and colours right under it, round and turn progress
 bottom-left); on a phone the cards
-or your tools follow the canvas depending on whose turn it is. Then the reveal with the bamboozler's guess under it
-(the guess's 20 seconds start at the reveal), the round's points with the running totals, and after the last round
-the podium: on a phone when you tap "See the final scores", on the host screen ten seconds after the results.
+or your tools follow the canvas depending on whose turn it is. Then the reveal on the cards themselves: the hat drops
+onto the bamboozler, each card says who that player voted for (right or wrong), and once the round is scored each card
+pops its points and total. Under the canvas only the headline: who the bamboozler was and their guess (the guess's 20
+seconds start at the reveal), then the word and the host's "Next round". After the last round
+"The End": the podium with everyone's final score (on a phone when you tap "See the final scores", on the host
+screen ten seconds after the results), then what's next (the host plays again in the same room, everyone can create
+or join another room) and our one ask: if you enjoyed it, support our friends in Ukraine.
 
 ## Points (starting point, tune in playtests)
 

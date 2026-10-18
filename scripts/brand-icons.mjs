@@ -1,4 +1,4 @@
-// Cleans brand/logo.svg and generates the web app icons from it.
+// Cleans brand/logo.svg and generates the web app icons and the fedora (hat.svg) from it.
 // Run from the repo root: `node scripts/brand-icons.mjs` (or `--check` to only verify the icons are up to date).
 
 import { readFileSync, writeFileSync } from "node:fs";
@@ -35,12 +35,17 @@ if (difference > 0.002) {
 
 const viewBox = logo.match(/viewBox="([^"]+)"/)?.[1] ?? "0 0 2250 2250";
 const inner = logo.replace(/^<svg[^>]*>/, "").replace(/<\/svg>$/, "");
+// The fedora alone, for the hat on players' faces: the logo's crown and brim without its navy square.
+const background = /<path fill="#080357" d="M0 0h2250v2250H0z"\/>/;
+if (!background.test(logo)) throw new Error("The logo's navy background square moved; update the hat crop");
+const hat = logo.replace(background, "").replace(/viewBox="[^"]+"/, 'viewBox="380 250 1500 880"');
 const maskable = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}"><rect width="2250" height="2250" fill="${night}"/><g transform="translate(225 225) scale(.8)">${inner}</g></svg>`;
 
 const outputs = {
   [logoPath]: logo,
   [`${publicDir}/logo.svg`]: logo,
   [`${publicDir}/icon.svg`]: logo,
+  [`${publicDir}/hat.svg`]: hat,
   [`${publicDir}/favicon.ico`]: ico([render(logo, 16), render(logo, 32)], [16, 32]),
   [`${publicDir}/apple-touch-icon.png`]: render(logo, 180),
   [`${publicDir}/icon-192.png`]: render(logo, 192),

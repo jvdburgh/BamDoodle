@@ -75,10 +75,10 @@ describe("RoundUtils: suspicions and votes", () => {
     expect(RoundUtils.suspect(voting(), pip, mo).suspicions).toEqual({});
   });
 
-  it("locks a vote once and only during the vote", () => {
+  it("takes a vote, and a change of mind, only during the vote", () => {
     const round = RoundUtils.castVote(voting(), pip, mo, players, 32_000);
     expect(round.votes).toEqual({ [pip]: mo });
-    expect(RoundUtils.castVote(round, pip, juno, players, 33_000)).toBe(round);
+    expect(RoundUtils.castVote(round, pip, juno, players, 33_000).votes).toEqual({ [pip]: juno });
     const notYet = drawing();
     expect(RoundUtils.castVote(notYet, pip, mo, players, 2_000)).toBe(notYet);
   });

@@ -366,13 +366,13 @@ describe("RoomConnection: your vote", () => {
     expect(yourVote(connection)).toBe(3);
   });
 
-  it("is the first one, like on the server", () => {
+  it("is the latest one, like on the server, even when you change it before the first one is confirmed", () => {
     const { connection, socket } = voting();
     connection.send({ type: "castVote", suspectId: 2 });
     connection.send({ type: "castVote", suspectId: 3 });
     socket().receive({ type: "voteCast", voterId: 1 });
-    socket().receive({ type: "rejected", reason: "alreadyVoted" });
-    expect(yourVote(connection)).toBe(2);
+    socket().receive({ type: "voteCast", voterId: 1 });
+    expect(yourVote(connection)).toBe(3);
   });
 
   it("is forgotten when the server didn't count it", () => {

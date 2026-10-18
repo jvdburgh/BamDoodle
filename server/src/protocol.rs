@@ -277,7 +277,6 @@ pub enum RejectReason {
     NotEnoughPlayers,
     InvalidSettings,
     WrongPhase,
-    AlreadyVoted,
     InvalidVote,
     NotBamboozler,
     /// Your seat was taken over by a newer connection with the same session token. Don't reconnect.

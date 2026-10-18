@@ -114,9 +114,9 @@ function suspect(round: Round, voterId: number, suspectId: number | null): Round
   return { ...round, suspicions };
 }
 
-/** Locks a final vote. Once everyone has voted, the reveal and the guess start straight away. */
+/** A final vote, or a change of it. Once everyone has voted, the reveal and the guess start straight away. */
 function castVote(round: Round, voterId: number, suspectId: number, playerIds: number[], now: number): Round {
-  if (round.phase !== "voting" || voterId === suspectId || voterId in round.votes) return round;
+  if (round.phase !== "voting" || voterId === suspectId) return round;
   const votes = { ...round.votes, [voterId]: suspectId };
   const everyone = playerIds.every((id) => id in votes);
   return everyone ? { ...round, votes, phase: "guess", phaseStartedAt: now } : { ...round, votes };

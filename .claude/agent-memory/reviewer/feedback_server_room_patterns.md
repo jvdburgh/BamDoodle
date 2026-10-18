@@ -5,7 +5,8 @@ metadata:
   type: feedback
 ---
 
-LEAD WITH (seen twice by 2026-10-18): client input that fans out to Everyone without its own bound.
+LEAD WITH (seen 3x by 2026-10-18): client input that fans out to Everyone without its own bound. Also when a
+once-only message becomes repeatable (castVote made changeable: every change rebroadcast voteCast).
 - New client message broadcast (e.g. `suspect` -> `suspicionChanged`) with only the generic 60 msg/s limit;
   .claude/rules/protocol.md wants a per-message limit.
 - A `Vec` added to a client-sent struct (e.g. `settings.categories`) validated for membership only: duplicates and

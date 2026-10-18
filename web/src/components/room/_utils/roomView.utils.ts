@@ -1,9 +1,16 @@
 import { AvatarUtils } from "@/components/avatar/_utils/avatar.utils";
 import { CanvasTools, type CanvasColour } from "@/components/canvas/_utils/canvasTools.utils";
-import type { Attribution, RoomPlayer, RoomViewState, RoundScore } from "@/components/room/_types/room.types";
+import type {
+  Attribution,
+  RoomOutcome,
+  RoomPlayer,
+  RoomViewState,
+  RoundScore,
+} from "@/components/room/_types/room.types";
 import type { PlayerSummary } from "@/protocol/generated/PlayerSummary";
 import type { RejectReason } from "@/protocol/generated/RejectReason";
 import type { RoomSnapshot } from "@/protocol/generated/RoomSnapshot";
+import type { Reveal } from "@/protocol/generated/Reveal";
 import type { RoundResult } from "@/protocol/generated/RoundResult";
 import type { RoundView } from "@/protocol/generated/RoundView";
 import type { Vote } from "@/protocol/generated/Vote";
@@ -95,6 +102,19 @@ function totals(players: PlayerSummary[]): Record<number, number> {
   return Object.fromEntries(players.map((player) => [player.id, player.score]));
 }
 
+/** For the cards after the vote: the reveal, then (once scored) the round's points and the totals. */
+function outcome(reveal: Reveal | null, result: RoundResult | null, players: PlayerSummary[]): RoomOutcome | undefined {
+  if (result) {
+    return {
+      bamboozlerId: result.bamboozlerId,
+      votes: votes(result.votes),
+      scores: roundScores(result),
+      totals: totals(players),
+    };
+  }
+  return reveal ? { bamboozlerId: reveal.bamboozlerId, votes: votes(reveal.votes) } : undefined;
+}
+
 export type Standing = { playerId: number; total: number; place: number };
 
 /** Highest first; tied players share a place (1, 2, 2, 4). */
@@ -138,7 +158,6 @@ const problems: Record<RejectReason, string> = {
   notEnoughPlayers: "Not enough players yet: wait for more to join.",
   invalidSettings: "Those settings won’t work. Pick at least one category.",
   wrongPhase: "Too late for that now.",
-  alreadyVoted: "You already voted.",
   invalidVote: "You can’t pick that player.",
   notBamboozler: "Only the bamboozler guesses.",
   replaced: "This room is open on another device now.",
@@ -161,6 +180,7 @@ export const RoomViewUtils = {
   votes,
   roundScores,
   totals,
+  outcome,
   standings,
   families,
   identities,

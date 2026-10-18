@@ -166,8 +166,8 @@ export class RoomConnection {
   send(message: ClientMessage): boolean {
     if (this.#state.status !== "joined" || this.#socket?.readyState !== OPEN) return false;
     this.#socket.send(JSON.stringify(message));
-    // The server counts the first vote only, so the first one is the one to remember.
-    if (message.type === "castVote" && this.#state.pendingVote === null) {
+    // Another tap changes your vote, on the server too: the latest one is the one to remember.
+    if (message.type === "castVote") {
       this.#update(RoomStateUtils.withPendingVote(this.#state, message.suspectId));
     }
     return true;

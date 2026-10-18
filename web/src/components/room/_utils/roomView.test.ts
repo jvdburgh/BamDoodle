@@ -122,6 +122,18 @@ describe("RoomViewUtils results", () => {
     });
   });
 
+  it("tells the cards the bamboozler and the votes, and the points once the round is scored", () => {
+    const reveal = { bamboozlerId: 3, votes: [{ voterId: 1, suspectId: 3 }], guessRemainingMs: 20_000 };
+    expect(RoomViewUtils.outcome(reveal, null, room.players)).toEqual({ bamboozlerId: 3, votes: { 1: 3 } });
+    expect(RoomViewUtils.outcome(null, { ...result, votes: reveal.votes }, room.players)).toEqual({
+      bamboozlerId: 3,
+      votes: { 1: 3 },
+      scores: RoomViewUtils.roundScores(result),
+      totals: { 1: 0, 2: 3, 3: 1 },
+    });
+    expect(RoomViewUtils.outcome(null, null, room.players)).toBeUndefined();
+  });
+
   it("ranks highest first and lets ties share a place", () => {
     expect(RoomViewUtils.standings({ 1: 2, 2: 5, 3: 2, 4: 1 }, [1, 2, 3, 4])).toEqual([
       { playerId: 2, total: 5, place: 1 },

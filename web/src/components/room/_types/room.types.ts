@@ -26,6 +26,18 @@ export type RoomPhase = PhaseView["phase"];
 /** One player's round on the results: points, and whether they got it right (an award says they did). */
 export type RoundScore = { points: number; right: boolean };
 
+/**
+ * What the player cards show after the vote: the bamboozler (in the hat) and who each player voted for; once the
+ * round is scored, the points and the totals too.
+ */
+export type RoomOutcome = {
+  bamboozlerId: number;
+  /** Final votes: voter → suspect. */
+  votes: Record<number, number>;
+  scores?: Record<number, RoundScore>;
+  totals?: Record<number, number>;
+};
+
 /** A public fact for the table talk; each screen words it for its viewer. */
 export type FeedLine = {
   id: number;

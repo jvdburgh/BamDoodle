@@ -1,7 +1,7 @@
 import type { FeedLine } from "@/components/room/_types/room.types";
 import type { RoundView } from "@/protocol/generated/RoundView";
 
-/** The public, playful lines shown on every screen when someone changes who they suspect or locks a vote. */
+/** The public, playful lines shown on every screen when someone changes who they suspect or votes. */
 
 type Name = { name: string; you: boolean };
 
@@ -13,7 +13,7 @@ function suspicion(voter: Name, suspect: string | null, before: string | null): 
 }
 
 function voted(voter: Name): string {
-  return voter.you ? "You locked in your vote" : `${voter.name} has voted`;
+  return voter.you ? "You voted" : `${voter.name} has voted`;
 }
 
 const suspectOf = (round: RoundView, playerId: number) =>

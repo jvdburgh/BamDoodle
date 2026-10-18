@@ -107,14 +107,49 @@ export const MarkAsSuspicious: Story = {
   },
 };
 
-export const PickInTheFinalVote: Story = {
+/** In the final vote a tap on a face is the vote, and another face changes it: no separate button to lock it in. */
+export const VoteByTappingAFace: Story = {
   args: { action: { kind: "vote", chosenId: null, onChoose: fn() }, votedIds: [1] },
   play: async ({ args, canvas, userEvent }) => {
-    const kiki = canvas.getByRole("button", { name: "Pick Kiki" });
+    const kiki = canvas.getByRole("button", { name: "Vote for Kiki" });
     await userEvent.click(kiki);
     await expect(args.action?.onChoose).toHaveBeenLastCalledWith(4);
-    await expect(kiki).toHaveAccessibleName("Pick Kiki");
+    await expect(kiki).toHaveAttribute("aria-pressed", "true");
+    const mo = canvas.getByRole("button", { name: "Vote for Mo" });
+    await userEvent.click(mo);
+    await expect(args.action?.onChoose).toHaveBeenLastCalledWith(3);
+    await expect(kiki).toHaveAttribute("aria-pressed", "false");
+    await expect(canvas.queryByRole("button", { name: /^Pick/ })).toBeNull();
     await waitFor(() => expect(canvas.getByText("voted")).toBeVisible());
+  },
+};
+
+/** After the vote the cards tell the story: the bamboozler in the hat, who voted for whom, then the points. */
+export const AfterTheVote: Story = {
+  args: {
+    activeId: null,
+    nextId: null,
+    outcome: {
+      bamboozlerId: 3,
+      votes: { 1: 3, 2: 4, 4: 3, 3: 1 },
+      scores: {
+        1: { points: 1, right: true },
+        2: { points: 0, right: false },
+        3: { points: 0, right: false },
+        4: { points: 1, right: true },
+      },
+      totals: { 1: 3, 2: 1, 3: 2, 4: 2 },
+    },
+  },
+  play: async ({ canvas }) => {
+    const cards = canvas.getAllByRole("listitem");
+    await waitFor(() => expect(cards[2]).toHaveTextContent("bamboozler"));
+    await expect(cards[0]).toHaveTextContent("voted Mo ✓, right");
+    await expect(cards[1]).toHaveTextContent("voted Kiki ✗, wrong");
+    await expect(cards[2]).toHaveTextContent("voted Pip");
+    await expect(cards[2]).not.toHaveTextContent("right");
+    await expect(cards[0]).toHaveTextContent("+1");
+    await expect(cards[0]).toHaveTextContent("3 total");
   },
 };
 

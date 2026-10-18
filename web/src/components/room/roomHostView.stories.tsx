@@ -16,7 +16,7 @@ function HostFromState({ phase, reconnecting = false }: { phase: PhaseView; reco
 
 /** Fedoras anyone can see right now: worn ones, not the faint preview that waits for a hover. */
 const wornHats = (root: HTMLElement) =>
-  [...root.querySelectorAll<HTMLImageElement>('img[src*="svgView"]')].filter(
+  [...root.querySelectorAll<HTMLImageElement>('img[src$="/hat.svg"]')].filter(
     (hat) => Number(getComputedStyle(hat).opacity) > 0.5,
   );
 const settle = () => new Promise((resolve) => setTimeout(resolve, 900));

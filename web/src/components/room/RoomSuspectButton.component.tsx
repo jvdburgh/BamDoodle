@@ -9,8 +9,11 @@ type RoomSuspectButtonProps = {
   avatar: AvatarStroke[];
   /** Identity colour, when players have one (shade families). */
   color?: string;
+  /** Wears the hat: marked as suspicious, or your vote. */
   suspected: boolean;
   onToggle: () => void;
+  /** "suspect" while drawing (on and off), "vote" in the final vote (a tap votes, another face changes it). */
+  kind?: "suspect" | "vote";
   /** Drawn over the face, like the active drawer's ring. */
   ring?: ReactNode;
   /** Size of the face. */
@@ -19,9 +22,9 @@ type RoomSuspectButtonProps = {
 
 /**
  * A player's face on their card, as the way to suspect them: hover or focus shows the fedora faintly over it with
- * "Mark as suspicious", a tap puts the hat on (it drops onto their head), another tap takes it off. The label shows as
- * a band across the card it sits in (the nearest positioned ancestor), and for a moment after a tap, so touch screens
- * see what happened.
+ * "Mark as suspicious", a tap puts the hat on (it drops onto their head), another tap takes it off. In the final vote
+ * the same face is the vote: a tap votes for them. The label shows as a band across the card it sits in (the nearest
+ * positioned ancestor), and for a moment after a tap, so touch screens see what happened.
  */
 export function RoomSuspectButton({
   name,
@@ -29,6 +32,7 @@ export function RoomSuspectButton({
   color,
   suspected,
   onToggle,
+  kind = "suspect",
   ring,
   className = "",
 }: RoomSuspectButtonProps) {
@@ -45,7 +49,7 @@ export function RoomSuspectButton({
         <button
           type="button"
           aria-pressed={suspected}
-          aria-label={`Mark ${name} as suspicious`}
+          aria-label={kind === "vote" ? `Vote for ${name}` : `Mark ${name} as suspicious`}
           onClick={() => {
             onToggle();
             setFlash(true);
@@ -56,6 +60,7 @@ export function RoomSuspectButton({
             strokes={avatar}
             color={color}
             hat={suspected ? "worn" : "preview"}
+            backdrop={false}
             className="size-full transition-transform motion-safe:group-hover:-rotate-6 motion-safe:group-active:scale-90"
           />
         </button>
@@ -63,11 +68,17 @@ export function RoomSuspectButton({
       </span>
       <span
         aria-hidden="true"
-        className={`pointer-events-none absolute inset-x-1 top-12 z-10 rounded-lg bg-night px-2 py-1 text-center text-xs font-semibold shadow-[0_3px_0_var(--color-night-deep)] transition-opacity motion-reduce:transition-none ${
+        className={`pointer-events-none absolute inset-x-1 top-[3.75rem] z-10 rounded-lg bg-night px-2 py-1 text-center text-xs font-semibold shadow-[0_3px_0_var(--color-night-deep)] transition-opacity motion-reduce:transition-none ${
           suspected ? "text-berry" : "text-white"
         } ${flash ? "opacity-100" : "opacity-0 peer-hover:opacity-100 peer-has-focus-visible:opacity-100"}`}
       >
-        {suspected ? "Marked as suspicious" : "Mark as suspicious"}
+        {kind === "vote"
+          ? suspected
+            ? "Your vote"
+            : `Vote for ${name}`
+          : suspected
+            ? "Marked as suspicious"
+            : "Mark as suspicious"}
       </span>
     </>
   );

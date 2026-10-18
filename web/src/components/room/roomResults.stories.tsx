@@ -11,13 +11,6 @@ const meta = {
     bamboozlerId: 3,
     word: "Giraffe",
     guess: { text: "Horse", right: false },
-    scores: {
-      1: { points: 1, right: true },
-      2: { points: 0, right: false },
-      4: { points: 1, right: true },
-      3: { points: 0, right: false },
-    },
-    totals: { 1: 3, 2: 1, 4: 2, 3: 2 },
     roundNumber: 2,
     rounds: 5,
     youId: 2,
@@ -32,8 +25,6 @@ export const AfterARound: Story = {
   play: async ({ args, canvas, userEvent }) => {
     await expect(canvas.getByText("Giraffe")).toBeVisible();
     await expect(canvas.getByText("Mo guessed “Horse”. Nope.")).toBeVisible();
-    const rows = canvas.getAllByRole("row").slice(1);
-    await expect(rows[0]).toHaveTextContent("Pip");
     await userEvent.click(canvas.getByRole("button", { name: "Next round" }));
     await expect(args.onNext).toHaveBeenCalled();
   },

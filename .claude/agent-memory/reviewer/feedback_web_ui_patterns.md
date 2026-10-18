@@ -19,6 +19,8 @@ Check these first; each was a real finding (2026-10-18, lobby avatar editor).
 - Image made decorative (alt="") because text names it, while a responsive class can `hidden` that text: the link
   loses its name on phones (falls to `title`). Hide visually with `sr-only`, or tie alt to visibility.
 - A flow change documented in game-rules.md but the same flow left stale in architecture.md "Screens and routes".
+- One-shot URL intent (`?start=join`) kept in state forever: a remount (key change, Back from setup) reopens it.
+- Copy/UI change to the donate ask without updating docs/brand.md's "only promotion" bullet (plain links, no banner).
 
 **Why:** these repeat in UI prototype work while the server side doesn't exist yet.
 **How to apply:** lead the review with these; grep for pointer handlers outside `canvas/` and `color=` on AvatarDoodle.

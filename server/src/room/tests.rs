@@ -873,7 +873,7 @@ mod voting {
     }
 
     #[test]
-    fn a_vote_is_once_for_someone_else_and_stays_secret() {
+    fn a_vote_is_for_someone_else_and_stays_secret() {
         let mut game = Game::voting(4);
         let [sam, noor, ..] = game.round().turn_order[..] else {
             panic!()
@@ -883,10 +883,6 @@ mod voting {
         assert_eq!(
             outbox,
             vec![(Audience::Everyone, ServerMessage::VoteCast { voter_id: sam })]
-        );
-        assert_eq!(
-            rejected(&game.send(sam, ClientMessage::CastVote { suspect_id: noor })),
-            Some(RejectReason::AlreadyVoted)
         );
         assert_eq!(
             rejected(&game.send(noor, ClientMessage::CastVote { suspect_id: noor })),
@@ -909,6 +905,35 @@ mod voting {
         assert_eq!(round.your_vote, None);
         assert_eq!(round.active_player_id, None);
         assert_eq!(voting_remaining_ms, 30_000);
+    }
+
+    #[test]
+    fn a_vote_can_change_until_the_vote_ends() {
+        let mut game = Game::voting(3);
+        let [sam, noor, jip] = game.round().turn_order[..] else {
+            panic!()
+        };
+        game.send(sam, ClientMessage::CastVote { suspect_id: noor });
+        let outbox = game.send(sam, ClientMessage::CastVote { suspect_id: jip });
+        assert_eq!(
+            outbox,
+            vec![(Audience::Player(sam), ServerMessage::VoteCast { voter_id: sam })],
+            "a change is confirmed to the voter only: the room already knows they voted"
+        );
+
+        let outbox = game.advance(limits::VOTE_TIME);
+        let reveal = outbox
+            .iter()
+            .find_map(|(_, message)| match message {
+                ServerMessage::Revealed { reveal } => Some(reveal),
+                _ => None,
+            })
+            .unwrap();
+        assert!(reveal.votes.contains(&Vote {
+            voter_id: sam,
+            suspect_id: jip
+        }));
+        assert_eq!(reveal.votes.iter().filter(|vote| vote.voter_id == sam).count(), 1);
     }
 
     #[test]

@@ -48,6 +48,7 @@ export function BrandFooter() {
           <AvatarDoodle
             strokes={makerAvatar}
             backdrop={false}
+            crop
             className="h-[1.2em] w-auto transition-transform motion-safe:group-hover:-rotate-12"
           />
           Joris van der Burgh

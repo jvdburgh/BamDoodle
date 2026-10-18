@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 
-const REPO_URL = "https://github.com/jvdburgh/BamDoodle";
+export const REPO_URL = "https://github.com/jvdburgh/BamDoodle";
 /** United24, Ukraine's official fundraising platform. */
-const DONATE_URL = "https://u24.gov.ua/";
+export const DONATE_URL = "https://u24.gov.ua/";
 
 const flags = {
   nl: { emoji: "🇳🇱", label: "Dutch flag" },

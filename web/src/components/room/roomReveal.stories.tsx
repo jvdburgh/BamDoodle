@@ -21,7 +21,6 @@ export const SomeCaughtThem: Story = {
   play: async ({ canvas }) => {
     await expect(canvas.getByText("The bamboozler was…")).toBeVisible();
     await expect(canvas.getByText("2 of 3 caught them")).toBeVisible();
-    await expect(canvas.getAllByText("right")).toHaveLength(2);
   },
 };
 
