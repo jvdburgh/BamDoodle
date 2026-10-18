@@ -18,6 +18,8 @@ pre-commit:
 pre-push:
   parallel: true
   commands:
+    check-agents:
+      run: node scripts/check-agents.mts
     server-clippy:
       root: "server/"
       run: cargo clippy --all-targets --quiet -- -D warnings

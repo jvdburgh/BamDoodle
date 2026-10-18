@@ -4,6 +4,9 @@
 
 - **BamDoodle**: bamboozle + doodle. Written with a capital D.
 - Tagline: **Draw • Guess • Deceive** (the dots in berry pink).
+- Second line, for the game itself (round start, reveal, loading): **Who's sketchy?** The logo is a sketchy
+  character, the game is about finding the sketchy one, and everything is sketched. Use it as a playful question,
+  not as the main tagline.
 - Never refer to other games or their names in the product, the docs or the marketing.
 
 ## Colours
@@ -28,16 +31,20 @@ The logo pairs every colour with a slightly darker shade; that pairing is a good
 All self-hosted through Fontsource npm packages. No Google Fonts CDN (privacy, GDPR) and no Adobe.
 
 - **Body:** Work Sans (Wei Huang, SIL OFL 1.1), `@fontsource-variable/work-sans`. Already installed.
-- **Display:** Grandstander (Tyler Finck, SIL OFL 1.1), `@fontsource-variable/grandstander`, wired to `--font-display`
-  (`font-display` in Tailwind). Chosen in the drawing prototype from the OFL shortlist below, as the closest to the
-  springy, hand-lettered feel of the original pitch's Chaloops (commercial, so not usable). It stays readable at UI
-  sizes (player names, timers, buttons), where DynaPuff got blobby and Fredoka and Baloo 2 felt too calm.
-  Also considered: DynaPuff, Fredoka, Sour Gummy, Baloo 2, Lilita One (all OFL, all on Fontsource).
+- **Display:** **Love Ya Like A Sister** (Kimberly Geswein, SIL OFL 1.1), `@fontsource/love-ya-like-a-sister`,
+  the maintainer's pick. Single weight, hand-lettered, a little scruffy. The original pitch used Chaloops, which is
+  commercial (Chank Fonts). The playground has a font switcher to compare these alternatives, all OFL on Fontsource:
+  - Grandstander (`@fontsource-variable/grandstander`): wonky, playful, hand-lettered
+  - DynaPuff (`@fontsource-variable/dynapuff`): puffy, very characterful
+  - Fredoka (`@fontsource-variable/fredoka`): soft and rounded, calmer
+  - Sour Gummy (`@fontsource-variable/sour-gummy`): gummy, slightly quirky
+  - Baloo 2 (`@fontsource-variable/baloo-2`): rounded and bouncy
+  - Lilita One (`@fontsource/lilita-one`): chunky, single weight
 
 ## Paper
 
 The drawing sheet is `paper` (`#f6f5fc`), a cool off-white: every ink colour, including black and night, shows up on
-it, and it reads as a lit sheet on the navy table. The canvas is the only large light area on screen.
+it, and it reads as a lit sheet on the navy table. The playground can switch the sheet to night navy to compare.
 
 ## Feel
 

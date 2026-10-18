@@ -8,20 +8,25 @@ behaviour, and move answered items out of "Open questions".
 Everyone in the room draws the same secret word together on one canvas, taking turns. Everyone, that is, except
 the **bamboozler**: they don't know the word and have to bluff along while the others try to spot them.
 
+## Where it's played
+
+**Phone first.** Everyone plays on their own phone: join with a link, QR code or room code, and the phone shows
+everything you need (the canvas, players and mini-maps, timers, your secret, your vote). Tablets and desktops join the
+same way and get a roomier layout.
+
+**Optional host screen.** Like the well-known party-game boxes, someone can also open the room on a TV, beamer or
+laptop as a host screen. It shows the shared canvas big, with more detail (players, mini-maps, timers, who is drawing).
+It never shows the secret word and doesn't draw. It's a bonus, never required.
+
+**Passing one device round** (a tablet, or taking turns on one laptop) may become a special mode later; it isn't a
+goal for now.
+
 ## Roles
 
 - **Artists** see the category and the secret word.
 - **The bamboozler** sees only the category. They draw along, trying to look like they know the word.
 - Exactly one bamboozler per round, picked at random by the server. Nobody but the server knows who it is
   until the reveal.
-
-## Devices
-
-Everyone plays on their own device: a laptop or computer first, phones should work too. That is what the game is
-designed for.
-
-A **one-device mode** is a special case for later: one tablet passed round, or a big screen everyone draws on in turn.
-The drawing prototype has it as "One device" so we can feel the difference, but it isn't the main goal for now.
 
 ## A round
 
@@ -55,7 +60,7 @@ Everyone can use every colour: there is nothing to unlock, ever. To still see wh
 
 - **Live highlight:** the active drawer is clearly marked while they draw: a ring around their avatar in the turn
   order, their name in the turn bar, and a name tag that follows their pen tip on the canvas.
-- **Mini-maps:** next to each player's name, a small canvas shows only *their* strokes. Always visible on desktop.
+- **Mini-maps:** next to each player's name, a small canvas shows only *their* strokes. Always visible, on phones too.
 - **Magnifying glass (spotlight):** click a player (or their mini-map) to highlight their strokes on the main
   canvas while the rest fades back to grey. Click again or press Esc to show everyone. Hovering a player with a mouse
   previews their spotlight without pinning it.
@@ -77,14 +82,27 @@ Split votes need no tie-break: points are per voter, not per majority.
 - English and Dutch, simple and drawable, grouped into categories. See [words.md](words.md).
 - An **adults pack** (18+, innuendo and rude-but-drawable words) the host can switch on. Off by default.
 
+## Current defaults (revisit after playtests)
+
+These are implemented in the server (`server/src/limits.rs`) and easy to change:
+
+- **Players:** 3 to start a round, at most 8 in a room. Designed for 4 to 6.
+- **Timers:** round 60 seconds (the host can pick 30 to 300), Classic turn 15 seconds, Timed turn 10 seconds, the
+  bamboozler's guess 20 seconds.
+- **Turn order** is shuffled each round and the bamboozler is picked fully at random, so the same player can be it
+  twice in a row (any rule about who it can't be would narrow it down). Words don't repeat until the pack runs out.
+- **Everyone votes, the bamboozler too**, so not voting doesn't give them away; their vote earns nothing. Votes stay
+  secret until the reveal; everyone sees who has voted.
+- **The guess** is free text, forgiving about case, accents, spaces and one typo in words of five letters or more.
+- **Disconnects:** the round goes on. A drawer who drops loses their turn. A player who drops still counts for the
+  vote for 15 seconds (a locked phone shouldn't end the round); after that they no longer hold it up. A session token
+  takes your seat and score back, and a second device with the same token takes over from the first. After a round,
+  the seat of someone who is gone is kept for 2 minutes.
+- **Late joiners** watch the current round (no word, no vote) and play from the next one.
+- **The host** is whoever created the room; when they drop out, the next player who joined takes over.
+
 ## Open questions
 
-- Player count: we design for 4 to 6, support 3 to 8? Mini-maps on desktop fit up to 8.
-- Classic mode: stroke time limit, and how many laps per round?
-- Does the bamboozler vote too (to blend in)? Their vote earns nothing either way.
-- The bamboozler's guess: free text with fuzzy matching, or pick from a few options?
-- Disconnects: does the round go on, pause, or end when the bamboozler leaves?
-- Can late joiners enter mid-round as spectators?
-- Big-screen mode: a watch-only view for a TV or Chromecast while people draw on their own devices. Related to the
-  one-device mode above, but not the same thing.
+- Does the host screen need its own controls (start the next round, kick a player), or is that the host's phone?
+- Should a round have a fixed number of laps instead of (or as well as) a timer?
 - A computer-controlled bamboozler (the original pitch said "player or AI"): later, if ever.

@@ -1,5 +1,9 @@
 {
   "name": "bamdoodle",
   "private": true,
-  "packageManager": "pnpm@11.3.0"
+  "packageManager": "pnpm@11.3.0",
+  "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "svgo": "^4.1.0"
+  }
 }

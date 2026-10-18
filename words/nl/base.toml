@@ -1,0 +1,13 @@
+# Startpakket, met de hand geschreven voor BamDoodle. CC BY-SA 4.0, zie words/NOTICE.
+# Eenvoudig, concreet en in een paar lijnen te tekenen.
+language = "nl"
+
+[categories]
+Dieren = ["kat", "hond", "giraf", "olifant", "slak", "octopus", "pinguïn", "spin", "konijn", "haai", "uil", "slang"]
+Eten = ["pizza", "banaan", "ijsje", "pannenkoek", "wortel", "kaas", "ei", "cupcake", "peer", "boterham", "popcorn", "watermeloen"]
+"In huis" = ["stoel", "lamp", "tandenborstel", "bad", "klok", "sleutel", "paraplu", "wc", "schaar", "kaars", "spiegel", "bank"]
+Plekken = ["vuurtoren", "kasteel", "strand", "vulkaan", "eiland", "brug", "tent", "windmolen", "iglo", "piramide", "speeltuin", "dierentuin"]
+Vervoer = ["fiets", "raket", "zeilboot", "trein", "helikopter", "skateboard", "onderzeeër", "luchtballon", "tractor", "kano"]
+Doen = ["zwemmen", "slapen", "dansen", "vissen", "jongleren", "niezen", "skiën", "klimmen", "schilderen", "huilen"]
+Natuur = ["regenboog", "boom", "bloem", "berg", "wolk", "maan", "bliksem", "cactus", "paddenstoel", "sneeuwpop", "waterval"]
+Kleding = ["bril", "kroon", "sok", "hoed", "sjaal", "laars", "ketting", "masker", "rugzak", "stropdas"]

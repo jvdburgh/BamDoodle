@@ -20,7 +20,11 @@ dev:
     pnpm --dir web dev
 
 # Everything CI runs
-check: fmt-check lint typecheck test
+check: fmt-check lint typecheck test check-agents
+
+# Every path cited in AGENTS.md, CLAUDE.md, .claude/ and the PR template exists
+check-agents:
+    node scripts/check-agents.mts
 
 fmt:
     cd server && cargo fmt
@@ -47,6 +51,10 @@ protocol:
 
 storybook:
     pnpm --dir web storybook
+
+# Clean brand/logo.svg and regenerate the favicon, touch icon and manifest icons in web/public
+icons:
+    node scripts/brand-icons.mjs
 
 # Production image (linux/amd64, which is what Scaleway runs)
 image:

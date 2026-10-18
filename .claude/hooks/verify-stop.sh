@@ -1,5 +1,6 @@
 #!/bin/sh
-# Stop: when this session edited code, block the end of the turn while clippy, typecheck or a touched story fails.
+# Stop: when this session edited code or guidance, block the end of the turn while clippy, typecheck, a touched
+# story or the cited-path check (scripts/check-agents.mts) fails.
 # Gives up after two blocks so a stuck check gets reported instead of looping. CLAUDE_SKIP_VERIFY=1 skips it.
 
 input=$(cat)
@@ -46,6 +47,9 @@ $(printf '%s\n' "$output" | head -40)"
 $(printf '%s\n' "$output" | tail -60)"
   fi
 fi
+
+output=$(node scripts/check-agents.mts 2>&1) || block "guidance cites paths that don't exist (scripts/check-agents.mts); fix the citation or the file:
+$(printf '%s\n' "$output" | head -20)"
 
 rm -f "$marker" "$counter"
 exit 0

@@ -1,0 +1,7 @@
+# Startpakket voor volwassenen (18+), met de hand geschreven voor BamDoodle. CC BY-SA 4.0, zie words/NOTICE.
+language = "nl"
+adult = true
+
+[categories]
+"Na middernacht" = ["kater", "handboeien", "bikini", "naaktzwemmen", "zuigzoen", "strippoker", "bierbuik", "speeddate", "vrijgezellenfeest", "afterparty"]
+"Lichamelijk" = ["scheet", "boer", "puistje", "wc-papier", "harige rug", "navel", "onderbroek", "beha", "zweetplek", "snurken"]

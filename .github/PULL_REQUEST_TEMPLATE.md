@@ -12,7 +12,13 @@
 
 - [ ] `just check`
 - [ ] Tried in Firefox
+- [ ] Reviewer agent run; Blocking and Important findings fixed
+- For a fix, fails on main with:
 - Not checked:
+
+## Not addressed
+
+- (none)
 
 ## Follow-ups
 

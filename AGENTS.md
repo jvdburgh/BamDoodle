@@ -20,7 +20,9 @@ Use `just` (it wraps cargo and pnpm the same way CI does):
 
 - `just setup` once after cloning (mise tools, pnpm install, Playwright browsers, git hooks)
 - `just dev`: server on :8080 and Vite on :5173 (proxies `/api` and `/ws`)
-- `just check`: everything CI runs (`fmt-check`, `lint`, `typecheck`, `test`)
+- `just check`: everything CI runs (`fmt-check`, `lint`, `typecheck`, `test`, `check-agents`)
+- `just check-agents`: every path cited in this file, `CLAUDE.md`, `.claude/` and the PR template exists
+  (`scripts/check-agents.mts`). Rename a file, fix the citation in the same commit.
 - `just fmt`, `just protocol` (regenerate TypeScript types from `server/src/protocol.rs`), `just storybook`
 - In `web/`: `pnpm storybook:test` (stories in Firefox and Chromium), `pnpm test:unit`, one story file with
   `pnpm exec vitest run --project=storybook <file>`
@@ -36,25 +38,42 @@ Use `just` (it wraps cargo and pnpm the same way CI does):
 
 ## How we work
 
-1. **Agree before building.** Gameplay, protocol shape, dependencies, data model, hosting and cost: propose with a
-   recommendation and wait for the maintainer. Mechanical work doesn't need that.
-2. **Push back honestly.** If an idea is worse than an alternative, say so with the reason.
-3. **The server is the referee.** Secrets (the word, who the bamboozler is) never reach a client that shouldn't see
+1. **Size the task.** A one-sentence diff: just do it. Anything else: read the code it touches, write a short plan
+   (files, approach, how you'll verify it) and show it before editing.
+2. **Ask before guessing, agree before building.** An ambiguous request, gameplay, protocol shape, dependencies,
+   data model, hosting or cost: one round of concrete questions, each with your recommended answer, then wait for
+   the maintainer. Don't ask what the code can tell you; mechanical work doesn't need a round.
+3. **Push back honestly.** If an idea is worse than an alternative, say so with the reason.
+4. **The server is the referee.** Secrets (the word, who the bamboozler is) never reach a client that shouldn't see
    them; turn, vote and size limits are enforced server-side. Clients send intents, not outcomes.
-4. **Simplest thing that works.** It's a fun game, not a bank: no abstraction with one caller, no option nobody
-   asked for, no speculative infrastructure (database, queue, cache) before there's a need.
-5. **Reuse first.** Search `web/src/components` and `server/src` before adding something new; extend what exists.
-6. **Living docs.** A change in behaviour updates `docs/` in the same commit. A new decision gets a record in
-   `docs/decisions/`.
-7. **Evidence over assertion.** Done means `just check` is green, new behaviour has a test (Rust unit test, Vitest
-   unit test or story play test), and UI was seen in a running browser, Firefox first.
-8. **Follow-ups** go in the PR body under "Follow-ups" or as GitHub issues, not as TODO comments.
+5. **Reuse first.** Before adding a component, hook, util or server module, search `web/src/components` and
+   `server/src` by behaviour, not by the name you had in mind. Extend what exists; don't wrap, fork or re-implement
+   it.
+6. **Simplest explicit thing that works.** It's a fun game, not a bank: no abstraction with one caller, no option
+   nobody asked for, no defensive fallback for what can't happen, no speculative infrastructure (database, queue,
+   cache) before there's a need, no "while I'm here" refactor.
+7. **Generic fix, not a local patch.** A bug that can hit another component, message, phase or reconnect path is
+   fixed where every caller gets it, and the other paths are checked. Out of scope? Fix the case at hand and list
+   the generic fix under Follow-ups. Never a silent one-off.
+8. **Test-driven where it pays.** A bug, or a suspected one: first write the test that reproduces it (Rust unit
+   test, Vitest unit test or story play test, whichever fits), run it red, then fix, then green. New behaviour
+   ships with a test the same way.
+9. **Evidence over assertion.** Done means the new test fails without the change and passes with it, `just check`
+   is green, and UI was seen in a running browser, Firefox first. Say what ran and what you didn't check.
+10. **Show your work.** Before a non-trivial edit, say in two to four lines what you'll change and why. When asking,
+    include the code in question, the options and your recommendation, so the question can be answered without
+    opening the repo. Report findings as `file:line`.
+11. **Living docs.** A change in behaviour updates `docs/` in the same commit. A new decision gets a record in
+    `docs/decisions/`.
+12. **Follow-ups** go in the PR body under "Follow-ups" or as GitHub issues, not as TODO comments.
+13. **Corrected twice on the same point?** The guidance is wrong: fix this file, a rule or a skill in the same PR.
 
 ## Conventions
 
 - **Commits:** Conventional Commits, `type(scope): imperative summary`, scopes `server`, `web`, `protocol`, `docs`,
   `words`, `infra`, `ci`, `agents`. Commits are GPG-signed with the maintainer's own identity; don't change git config.
-- **Branches:** `feat/slug`, `fix/slug`, `chore/slug`. `main` is protected by CI.
+- **Branches:** none for normal work: commit straight to `main` in small, green commits. Only a parallel session in
+  its own worktree gets a branch, merged back when it's done.
 - **Names (web):** `{Domain}{Kind}` components, noun first (`PlayerMiniMap`, `RoomCodeInput`); files
   `Name.component.tsx`, `name.stories.tsx`, `name.utils.ts` (exports one object, `CanvasUtils.normalise`),
   `name.hook.ts`. Import through `@/`.
@@ -76,7 +95,8 @@ Use `just` (it wraps cargo and pnpm the same way CI does):
 - Load fonts or scripts from Google, Adobe or other third-party CDNs. Self-host through npm.
 - Add analytics, tracking, ads or accounts.
 - Add non-EU services. GitHub (and Codeberg) are the accepted exceptions.
-- Hand-edit `web/src/protocol/generated/`.
+- Hand-edit `web/src/protocol/generated/` or the lockfiles (`pnpm-lock.yaml`, `server/Cargo.lock`).
+- Change `LICENSE` or anything in `brand/`: propose it to the maintainer.
 - Commit secrets, `.env` files or Terraform state.
 - Push, create cloud resources, change DNS or publish anything without the maintainer saying so. Prepare the
   commands instead.
