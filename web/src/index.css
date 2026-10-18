@@ -132,4 +132,43 @@
   .sketchy {
     filter: url(#sketchy);
   }
+
+  /* The bamboozler's own logo (BrandLogo sly), noticed by whoever holds the phone: the collar goes up, the hat's
+     colours swirl while the face hides, then the collar comes down. The hat's wedges turn inside its clip paths, around
+     the point they all meet; the coat is the last two paths. */
+  .logo-sly g > path {
+    transform-box: view-box;
+    transform-origin: 1078px 757px;
+    animation: hat-swirl 8s ease-in-out infinite;
+  }
+
+  .logo-sly svg > path:nth-last-child(-n + 2) {
+    transform-box: view-box;
+    transform-origin: 50% 100%;
+    animation: collar-up 8s ease-in-out infinite;
+  }
+
+  @keyframes hat-swirl {
+    0%,
+    20% {
+      transform: rotate(0deg);
+    }
+    55%,
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes collar-up {
+    0%,
+    10%,
+    66%,
+    100% {
+      transform: scaleY(1);
+    }
+    18%,
+    58% {
+      transform: scaleY(1.22);
+    }
+  }
 }
