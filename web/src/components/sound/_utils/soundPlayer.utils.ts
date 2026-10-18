@@ -102,7 +102,8 @@ function unlock() {
     context = new AudioContext();
     updateMusic();
   }
-  if (context.state !== "running") void context.resume().then(updateMusic);
+  // Refused outside a gesture (iOS after an interruption): the next tap tries again.
+  if (context.state !== "running") context.resume().then(updateMusic, () => {});
 }
 
 if (typeof window !== "undefined") {

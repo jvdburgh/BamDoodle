@@ -16,6 +16,8 @@ type FakeSource = {
   loop: boolean;
   loopStart: number;
   loopEnd: number;
+  /** The node this source plays into: the music's own gain, for the music. */
+  output: unknown;
   start: ReturnType<typeof vi.fn>;
   stop: ReturnType<typeof vi.fn>;
 };
@@ -56,7 +58,20 @@ function fakeAudio() {
     createBiquadFilter = () => ({ ...node(), type: "", frequency: param(), Q: param() });
     createBuffer = (_channels: number, length: number) => ({ getChannelData: () => new Float32Array(length) });
     createBufferSource = () => {
-      const source = { ...node(), buffer: null, loop: false, loopStart: 0, loopEnd: 0, start: vi.fn(), stop: vi.fn() };
+      const source: FakeSource & Record<string, unknown> = {
+        buffer: null,
+        loop: false,
+        loopStart: 0,
+        loopEnd: 0,
+        output: null,
+        disconnect: vi.fn(),
+        connect: (next: unknown) => {
+          source.output = next;
+          return next;
+        },
+        start: vi.fn(),
+        stop: vi.fn(),
+      };
       sources.push(source);
       return source;
     };
@@ -69,6 +84,7 @@ function fakeAudio() {
 describe("SoundPlayer music", () => {
   let audio: ReturnType<typeof fakeAudio>;
   let tap: () => void;
+  let becomeVisible: () => void;
   let fetchMusic: ReturnType<typeof vi.fn>;
 
   const load = async () => {
@@ -76,10 +92,10 @@ describe("SoundPlayer music", () => {
     const { SoundPlayer } = await import("@/components/sound/_utils/soundPlayer.utils");
     return SoundPlayer;
   };
-  /** The level the music's own output was last sent to. */
+  /** The level the music's own output gain was last sent to. */
   const musicLevel = () => {
-    const output = audio.gains.find((gain) => gain.setTargetAtTime.mock.calls.length > 0);
-    return output?.setTargetAtTime.mock.lastCall?.[0] as number | undefined;
+    const output = audio.musicSources()[0]?.output as { gain: FakeParam } | undefined;
+    return output?.gain.setTargetAtTime.mock.lastCall?.[0] as number | undefined;
   };
 
   beforeEach(() => {
@@ -91,6 +107,7 @@ describe("SoundPlayer music", () => {
       AudioContext: Context,
       addEventListener: (type: string, listener: () => void) => {
         if (type === "pointerup") tap = listener;
+        if (type === "visibilitychange") becomeVisible = listener;
       },
       setTimeout,
       clearTimeout,
@@ -101,6 +118,7 @@ describe("SoundPlayer music", () => {
       },
     });
     vi.stubGlobal("AudioContext", Context);
+    vi.stubGlobal("document", { visibilityState: "visible" });
     fetchMusic = vi.fn(() => Promise.resolve({ arrayBuffer: () => Promise.resolve(new ArrayBuffer(8)) }));
     vi.stubGlobal("fetch", fetchMusic);
   });
@@ -132,9 +150,21 @@ describe("SoundPlayer music", () => {
     player.setMusic(screen);
     await vi.advanceTimersByTimeAsync(10);
     const level = musicLevel();
-    const cues: SoundCue[] = ["start", "turn", "yourTurn", "tick", "voteTick", "timeUp", "reveal", "pick", "vote"];
-    for (const cue of cues) player.play(cue);
-    player.play("scribble");
+    const cues: Record<SoundCue, true> = {
+      start: true,
+      turn: true,
+      yourTurn: true,
+      tick: true,
+      voteTick: true,
+      timeUp: true,
+      reveal: true,
+      fanfare: true,
+      suspect: true,
+      pick: true,
+      vote: true,
+      scribble: true,
+    };
+    for (const cue of Object.keys(cues) as SoundCue[]) player.play(cue);
     await vi.advanceTimersByTimeAsync(120_000);
 
     const [music] = audio.musicSources();
@@ -209,6 +239,21 @@ describe("SoundPlayer music", () => {
     context!.resume.mockClear();
     tap();
     expect(context!.resume).toHaveBeenCalled();
+    expect(context!.state).toBe("running");
+  });
+
+  it("resumes suspended audio when the page is shown again, and shrugs off a refusal", async () => {
+    const player = await load();
+    tap();
+    player.setMusic(screen);
+    await vi.advanceTimersByTimeAsync(10);
+    const [context] = audio.contexts;
+    context!.state = "suspended";
+    context!.resume.mockImplementationOnce(() => Promise.reject(new Error("needs a gesture")));
+    becomeVisible();
+    await vi.advanceTimersByTimeAsync(10);
+    expect(context!.resume).toHaveBeenCalled();
+    tap();
     expect(context!.state).toBe("running");
   });
 
