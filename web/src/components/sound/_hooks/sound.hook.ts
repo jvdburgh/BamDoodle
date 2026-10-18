@@ -15,3 +15,16 @@ export function useSoundCues(moment: SoundMoment) {
     previous.current = moment;
   });
 }
+
+/** Whether background music is on on this device (its own choice, or the screen's default). */
+export function useMusicOn() {
+  return useSyncExternalStore(SoundPlayer.subscribe, SoundPlayer.isMusicOn, () => false);
+}
+
+/** Tells the player whether this screen wants music now, and whether it plays music unless switched off. */
+export function useMusic(wanted: boolean, byDefault: boolean) {
+  useEffect(() => {
+    SoundPlayer.setMusicWanted(wanted, byDefault);
+  }, [wanted, byDefault]);
+  useEffect(() => () => SoundPlayer.setMusicWanted(false, false), []);
+}

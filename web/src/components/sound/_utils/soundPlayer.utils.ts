@@ -1,13 +1,20 @@
+import { MusicUtils } from "@/components/sound/_utils/music.utils";
 import type { SoundCue } from "@/components/sound/_utils/soundCues.utils";
 
 /**
- * Every sound is synthesised here with the Web Audio API: no audio files, so nothing to license or download.
+ * Every sound effect is synthesised here with the Web Audio API: no effect files, so nothing to license or download.
+ * The one file is the background music (web/public/sounds, see its NOTICE), with its own toggle.
  * The audio context only starts after the first tap or key press (browsers block sound before that), and the
  * mute choice is remembered per device.
  */
 
 const STORAGE_KEY = "bamdoodle.muted";
+const MUSIC_KEY = "bamdoodle.music";
 const MASTER_GAIN = 0.22;
+const MUSIC_SRC = "/sounds/quirky-detective.m4a";
+const MUSIC_GAIN = 0.14;
+/** Seconds of crossfade where the loop meets itself. */
+const MUSIC_OVERLAP_S = 3;
 
 type Note = { frequency: number; at: number; length: number; type?: OscillatorType; gain?: number };
 
@@ -63,6 +70,7 @@ const notes: Record<Exclude<SoundCue, "scribble">, Note[]> = {
 
 let context: AudioContext | null = null;
 let muted = readMuted();
+let musicChoice = readMusicChoice();
 const listeners = new Set<() => void>();
 
 function readMuted(): boolean {
@@ -73,6 +81,16 @@ function readMuted(): boolean {
   }
 }
 
+function readMusicChoice(): boolean | null {
+  try {
+    if (typeof window === "undefined") return null;
+    const stored = window.localStorage.getItem(MUSIC_KEY);
+    return stored === null ? null : stored === "1";
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Starts (or resumes) audio inside a user gesture. `pointerup` counts as one on touch screens where `pointerdown`
  * doesn't, and iOS only resumes a context from within the gesture itself; keep listening until it's running.
@@ -80,8 +98,9 @@ function readMuted(): boolean {
 function unlock() {
   if (!("AudioContext" in window)) return;
   context ??= new AudioContext();
-  if (context.state !== "running") void context.resume();
+  if (context.state !== "running") void context.resume().then(updateMusic);
   if (context.state === "running") {
+    updateMusic();
     window.removeEventListener("pointerup", unlock, true);
     window.removeEventListener("keydown", unlock, true);
   }
@@ -184,6 +203,105 @@ function pencilStop() {
   pencil.gain.gain.setTargetAtTime(0, now, 0.03);
 }
 
+/**
+ * Background music: a crossfaded loop of one track, fading in when this screen wants music and it's switched on,
+ * fading out otherwise (while someone draws or votes). Off by default on a player's phone, so a table of phones
+ * doesn't play it out of step; on by default on the host screen. The choice is remembered per device.
+ */
+let musicByDefault = false;
+let musicWanted = false;
+let musicTrack: Promise<AudioBuffer | null> | null = null;
+let musicLoop: { output: GainNode; sources: AudioBufferSourceNode[]; timer: number; stopTimer: number } | null = null;
+
+const musicOn = () => musicChoice ?? musicByDefault;
+
+function loadMusic(audio: AudioContext) {
+  musicTrack ??= fetch(MUSIC_SRC)
+    .then((response) => response.arrayBuffer())
+    .then((data) => audio.decodeAudioData(data))
+    .catch(() => null);
+  return musicTrack;
+}
+
+function playPass(audio: AudioContext, track: AudioBuffer, at: number) {
+  if (!musicLoop) return;
+  const loop = musicLoop;
+  const pass = MusicUtils.pass(at, track.duration, MUSIC_OVERLAP_S);
+  const source = audio.createBufferSource();
+  source.buffer = track;
+  const envelope = audio.createGain();
+  envelope.gain.setValueAtTime(0, pass.at);
+  envelope.gain.linearRampToValueAtTime(1, pass.fadedIn);
+  envelope.gain.setValueAtTime(1, pass.fadeOut);
+  envelope.gain.linearRampToValueAtTime(0, pass.end);
+  source.connect(envelope).connect(loop.output);
+  source.start(pass.at);
+  source.onended = () => {
+    loop.sources = loop.sources.filter((playing) => playing !== source);
+  };
+  loop.sources.push(source);
+  loop.timer = window.setTimeout(
+    () => playPass(audio, track, pass.next),
+    Math.max(0, (pass.next - audio.currentTime - 1) * 1000),
+  );
+}
+
+function stopMusic() {
+  if (!musicLoop) return;
+  window.clearTimeout(musicLoop.timer);
+  window.clearTimeout(musicLoop.stopTimer);
+  for (const source of musicLoop.sources) source.stop();
+  musicLoop.output.disconnect();
+  musicLoop = null;
+}
+
+function updateMusic() {
+  const audio = context;
+  if (!audio || audio.state !== "running") return;
+  const audible = musicOn() && musicWanted;
+  if (!audible) {
+    if (!musicLoop) return;
+    musicLoop.output.gain.setTargetAtTime(0, audio.currentTime, 0.4);
+    window.clearTimeout(musicLoop.stopTimer);
+    musicLoop.stopTimer = window.setTimeout(stopMusic, 3000);
+    return;
+  }
+  if (musicLoop) {
+    window.clearTimeout(musicLoop.stopTimer);
+    musicLoop.output.gain.setTargetAtTime(MUSIC_GAIN, audio.currentTime, 0.8);
+    return;
+  }
+  void loadMusic(audio).then((track) => {
+    if (!track || musicLoop || !musicOn() || !musicWanted) return;
+    const output = audio.createGain();
+    output.gain.value = 0;
+    output.connect(audio.destination);
+    musicLoop = { output, sources: [], timer: 0, stopTimer: 0 };
+    output.gain.setTargetAtTime(MUSIC_GAIN, audio.currentTime, 0.8);
+    playPass(audio, track, audio.currentTime + 0.05);
+  });
+}
+
+/** What this screen wants now (no music while drawing or voting), and whether it plays music unless told not to. */
+function setMusicWanted(wanted: boolean, byDefault: boolean) {
+  const changedDefault = musicByDefault !== byDefault;
+  musicWanted = wanted;
+  musicByDefault = byDefault;
+  if (changedDefault) for (const listener of listeners) listener();
+  updateMusic();
+}
+
+function setMusicOn(next: boolean) {
+  musicChoice = next;
+  try {
+    window.localStorage.setItem(MUSIC_KEY, next ? "1" : "0");
+  } catch {
+    // Not remembered, but on or off for now.
+  }
+  for (const listener of listeners) listener();
+  updateMusic();
+}
+
 function play(cue: SoundCue) {
   if (muted || !context || context.state !== "running") return;
   const master = context.createGain();
@@ -211,4 +329,14 @@ function subscribe(listener: () => void) {
   };
 }
 
-export const SoundPlayer = { play, pencilMove, pencilStop, isMuted: () => muted, setMuted, subscribe };
+export const SoundPlayer = {
+  play,
+  pencilMove,
+  pencilStop,
+  isMuted: () => muted,
+  setMuted,
+  isMusicOn: musicOn,
+  setMusicOn,
+  setMusicWanted,
+  subscribe,
+};

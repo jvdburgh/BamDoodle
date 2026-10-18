@@ -16,6 +16,8 @@ forbid it, like PolyForm Noncommercial or CC BY-NC, make the project "source-ava
 - **Brand: reserved.** The BamDoodle name, logo and visual identity (`brand/`) are not covered by the AGPL. Forks
   are welcome, under their own name and look.
 - **Word lists:** our own curated lists under CC BY-SA 4.0, with third-party sources credited in `words/NOTICE`.
+- **Music (added later):** the background track is third-party, under the Pixabay Content License (free to use in
+  the game, not to resell or redistribute on its own), not the AGPL; `web/public/sounds/NOTICE` names it for forks.
 
 ## Consequences
 

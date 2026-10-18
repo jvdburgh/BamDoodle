@@ -27,7 +27,7 @@ export function WatchRoute({ code }: { code: string }) {
 }
 
 function WatchRoom({ state }: { state: RoomViewState }) {
-  useRoomSounds(state);
+  useRoomSounds(state, { musicByDefault: true });
   return (
     <main>
       <RoomHostView state={state} />

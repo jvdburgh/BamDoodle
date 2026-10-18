@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { ScribbleUtils } from "@/components/brand/_utils/scribble.utils";
 import { CanvasUtils } from "@/components/canvas/_utils/canvas.utils";
 
-export type BrandScribbleShape = "ring" | "underline" | "magnifier" | "speaker" | "speakerOff";
+export type BrandScribbleShape = "ring" | "underline" | "magnifier" | "speaker" | "speakerOff" | "note" | "noteOff";
 
 const speakerBody = [
   [8, 19, 0.5],
@@ -48,6 +48,23 @@ const shapes: Record<BrandScribbleShape, { viewBox: string; paths: (seed: number
       CanvasUtils.freehandPath(speakerBody, 3.5 * weight),
       CanvasUtils.freehandPath(ScribbleUtils.line(seed, 31, 18, 41, 30), 3.5 * weight),
       CanvasUtils.freehandPath(ScribbleUtils.line(seed + 1, 41, 18, 31, 30), 3.5 * weight),
+    ],
+  },
+  note: {
+    viewBox: "0 0 48 48",
+    paths: (seed, weight) => [
+      CanvasUtils.freehandPath(ScribbleUtils.loop(seed, { cx: 17, cy: 35, rx: 6, ry: 5, turns: 1.1 }), 4 * weight),
+      CanvasUtils.freehandPath(ScribbleUtils.line(seed + 1, 23, 35, 23, 9, 0.5), 3.5 * weight),
+      CanvasUtils.freehandPath(ScribbleUtils.line(seed + 2, 23, 9, 34, 17, -2), 3.5 * weight),
+    ],
+  },
+  noteOff: {
+    viewBox: "0 0 48 48",
+    paths: (seed, weight) => [
+      CanvasUtils.freehandPath(ScribbleUtils.loop(seed, { cx: 17, cy: 35, rx: 6, ry: 5, turns: 1.1 }), 4 * weight),
+      CanvasUtils.freehandPath(ScribbleUtils.line(seed + 1, 23, 35, 23, 9, 0.5), 3.5 * weight),
+      CanvasUtils.freehandPath(ScribbleUtils.line(seed + 2, 23, 9, 34, 17, -2), 3.5 * weight),
+      CanvasUtils.freehandPath(ScribbleUtils.line(seed + 3, 8, 8, 40, 40), 3.5 * weight),
     ],
   },
   magnifier: {

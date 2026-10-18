@@ -33,3 +33,11 @@ export const Speaker: Story = {
 export const SpeakerOff: Story = {
   args: { shape: "speakerOff", className: "size-12 text-white" },
 };
+
+export const Note: Story = {
+  args: { shape: "note", className: "size-12 text-white" },
+};
+
+export const NoteOff: Story = {
+  args: { shape: "noteOff", className: "size-12 text-white" },
+};

@@ -1,0 +1,14 @@
+BamDoodle sounds
+
+Every sound effect is synthesised in the browser (web/src/components/sound/); there are no effect files.
+
+The background music in this folder is third-party and NOT covered by the AGPL licence of this repository:
+
+quirky-detective.m4a
+  Title:   Quirky Awkward Detective Comedy Music (60 sec), by Pixabay user zec53
+  Source:  https://pixabay.com/sound-effects/musical-quirky-awkward-detective-comedy-music-60-sec-499399/
+  Licence: Pixabay Content License (https://pixabay.com/service/license-summary/), not covered by the AGPL.
+           Free to use in the game, no attribution required; it may not be sold or redistributed as a
+           standalone file. Re-encoded from the original MP3 to 96 kbps AAC.
+
+Forks: keep this notice with the file, or replace the music.

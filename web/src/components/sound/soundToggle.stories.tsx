@@ -29,3 +29,20 @@ export const MuteAndUnmute: Story = {
     await expect(SoundPlayer.isMuted()).toBe(false);
   },
 };
+
+export const MusicOnAndOff: Story = {
+  args: { channel: "music" },
+  play: async ({ canvas, userEvent }) => {
+    const toggle = canvas.getByRole("button", { name: "Music" });
+    const before = SoundPlayer.isMusicOn();
+    await expect(toggle).toHaveAttribute("aria-pressed", String(before));
+
+    await userEvent.click(toggle);
+    await expect(toggle).toHaveAttribute("aria-pressed", String(!before));
+    await expect(window.localStorage.getItem("bamdoodle.music")).toBe(before ? "0" : "1");
+    await expect(SoundPlayer.isMuted()).toBe(false);
+
+    await userEvent.click(toggle);
+    await expect(SoundPlayer.isMusicOn()).toBe(before);
+  },
+};

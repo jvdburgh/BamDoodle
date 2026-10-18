@@ -51,7 +51,7 @@ export function LabPlayground({
   useEffect(() => {
     if (started) roundStart.current?.();
   }, [started]);
-  useRoomSounds(lab.player);
+  useRoomSounds(lab.player, { musicByDefault: true });
   const yourName = players.find((player) => player.id === youId)?.name;
 
   const player = (

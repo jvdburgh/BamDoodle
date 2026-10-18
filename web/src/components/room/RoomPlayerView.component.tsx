@@ -201,13 +201,14 @@ export function RoomPlayerView({
               {players.length} {players.length === 1 ? "player" : "players"} in the room
             </p>
           )}
-          <div className="flex items-center gap-2 justify-self-end">
+          <div className="flex items-center gap-1.5 justify-self-end">
             <p className="flex flex-col items-end leading-none">
               <span className="text-xs whitespace-nowrap text-white/75">Room code</span>
               <span className="mt-0.5 font-display text-2xl tracking-[0.15em] text-white @5xl/room:text-3xl">
                 {room.code}
               </span>
             </p>
+            <SoundToggle channel="music" />
             <SoundToggle />
           </div>
         </header>

@@ -100,6 +100,7 @@ export function RoomHostView({ state, revealCode = false, colours = "free", home
                 </>
               )}
             </p>
+            <SoundToggle channel="music" />
             <SoundToggle />
           </div>
         </header>

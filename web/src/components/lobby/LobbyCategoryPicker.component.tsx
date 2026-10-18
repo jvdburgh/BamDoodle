@@ -60,10 +60,8 @@ export function LobbyCategoryPicker({ categories, selected, onChange }: LobbyCat
           </label>
         ))}
       </div>
-      <p id={hintId} className="mt-1.5 text-sm text-white/70" aria-live="polite">
-        {selected.length === 0
-          ? "Pick at least one category."
-          : `${selected.length} of ${categories.length} picked. 18+ ones only when you tick them.`}
+      <p id={hintId} className="text-sm text-white/70 not-empty:mt-1.5" aria-live="polite">
+        {selected.length === 0 && "Pick at least one category."}
       </p>
     </fieldset>
   );

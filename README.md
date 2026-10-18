@@ -48,4 +48,5 @@ people and coding agents alike.
 
 The code is licensed under the [GNU AGPL v3](LICENSE): you can use, change and share it, but if you run a modified
 version online you must share your source too. The BamDoodle name and logo are not part of that licence; see
-[brand/README.md](brand/README.md).
+[brand/README.md](brand/README.md). Neither is the background music, which is under the Pixabay Content License; see
+[web/public/sounds/NOTICE](web/public/sounds/NOTICE).
