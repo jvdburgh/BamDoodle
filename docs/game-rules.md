@@ -15,6 +15,14 @@ the **bamboozler**: they don't know the word and have to bluff along while the o
 - Exactly one bamboozler per round, picked at random by the server. Nobody but the server knows who it is
   until the reveal.
 
+## Devices
+
+Everyone plays on their own device: a laptop or computer first, phones should work too. That is what the game is
+designed for.
+
+A **one-device mode** is a special case for later: one tablet passed round, or a big screen everyone draws on in turn.
+The drawing prototype has it as "One device" so we can feel the difference, but it isn't the main goal for now.
+
 ## A round
 
 1. **Lobby.** Players join with a room code or link, pick a nickname and draw or tweak their avatar while they
@@ -45,10 +53,12 @@ Simultaneous drawing is parked: it is hard to follow who draws what and much hea
 
 Everyone can use every colour: there is nothing to unlock, ever. To still see who drew what:
 
-- **Live highlight:** the active drawer is clearly marked while they draw.
+- **Live highlight:** the active drawer is clearly marked while they draw: a ring around their avatar in the turn
+  order, their name in the turn bar, and a name tag that follows their pen tip on the canvas.
 - **Mini-maps:** next to each player's name, a small canvas shows only *their* strokes. Always visible on desktop.
 - **Magnifying glass (spotlight):** click a player (or their mini-map) to highlight their strokes on the main
-  canvas while the rest fades back.
+  canvas while the rest fades back to grey. Click again or press Esc to show everyone. Hovering a player with a mouse
+  previews their spotlight without pinning it.
 
 If playtests show this isn't enough, a fallback is one colour family per player. We try the free palette first.
 
@@ -75,5 +85,6 @@ Split votes need no tie-break: points are per voter, not per majority.
 - The bamboozler's guess: free text with fuzzy matching, or pick from a few options?
 - Disconnects: does the round go on, pause, or end when the bamboozler leaves?
 - Can late joiners enter mid-round as spectators?
-- Big-screen mode: a watch-only view for a TV or Chromecast while people draw on their own devices.
+- Big-screen mode: a watch-only view for a TV or Chromecast while people draw on their own devices. Related to the
+  one-device mode above, but not the same thing.
 - A computer-controlled bamboozler (the original pitch said "player or AI"): later, if ever.

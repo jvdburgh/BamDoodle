@@ -75,12 +75,14 @@ and solve problems we don't have).
    pressure 0.5; treat that as "no pressure" and simulate it.
 2. **Coordinates** are normalised (0 to 1 on a fixed aspect ratio), so every screen size and pixel density shows the
    same drawing.
-3. **Sending:** the points of the stroke in progress are batched (around every 50 ms) and simplified
-   ([simplify-js](https://github.com/mourner/simplify-js), BSD-2) before going over the wire, so others see it live.
+3. **Sending:** the points of the stroke in progress are batched (around every 50 ms) and simplified before going over
+   the wire, so others see it live. For now `CanvasUtils.simplify` drops points closer than a small distance to the
+   previous one; [simplify-js](https://github.com/mourner/simplify-js) (BSD-2) is the next step if payloads need it.
 4. **Rendering:** [perfect-freehand](https://github.com/steveruizok/perfect-freehand) (MIT, about 5 KB) turns points
    into nice variable-width outlines.
 5. **Layers:** one offscreen canvas per player, composited onto the visible canvas. The mini-maps and the
-   magnifying-glass spotlight draw from the same layers.
+   magnifying-glass spotlight draw from the same layers. Trade-off: strokes stack by player (turn order), not by when
+   they were drawn, so a later stroke can end up under an earlier one from another player.
 6. **High-DPI:** canvas buffer = CSS size × `devicePixelRatio`; resize when the ratio changes (zoom, monitor move).
 
 No canvas framework (Konva, Fabric, Pixi): per-player layers are plain offscreen canvases, and those libraries add
