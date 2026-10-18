@@ -41,7 +41,7 @@ function Version() {
 /** The start page's small print: who made it, where it runs, the one thing we ask, and the version. */
 export function BrandFooter() {
   return (
-    <footer className="flex flex-col items-center gap-1 px-4 pt-2 pb-3 text-center text-sm leading-relaxed text-white/75">
+    <footer className="flex flex-col items-center gap-1 px-4 pt-2 pb-3 text-center md:pt-4 md:pb-8 text-sm leading-relaxed text-white/75">
       <p className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1">
         <span>Made by</span>
         <BrandLink href={MAKER_URL} className="group inline-flex items-center gap-1.5">
