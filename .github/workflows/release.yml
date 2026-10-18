@@ -81,14 +81,15 @@ jobs:
 
       - name: Point the container at the new image (redeploys; running games end)
         run: |
-          scw container container update "$SCW_CONTAINER_ID" \
+          # Terraform's id is "<region>/<uuid>"; the CLI wants the uuid (the region comes from SCW_DEFAULT_REGION).
+          scw container container update "${SCW_CONTAINER_ID##*/}" \
             image="${REGISTRY}/${IMAGE_NAME}:${{ steps.tags.outputs.primary }}"
 
       - name: Wait until it's ready
         id: ready
         run: |
           for i in $(seq 1 30); do
-            container=$(scw container container get "$SCW_CONTAINER_ID" -o json)
+            container=$(scw container container get "${SCW_CONTAINER_ID##*/}" -o json)
             status=$(echo "$container" | jq -r .status)
             echo "attempt $i: $status"
             case "$status" in
