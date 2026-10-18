@@ -41,7 +41,8 @@ type RoomPlayerListProps = {
   /** After the vote: the bamboozler in the hat, who voted for whom, then the round's points and the totals. */
   outcome?: RoomOutcome;
   /**
-   * "grid": two or three columns of cards on a phone, and one column of wide cards in a laptop's `room` container;
+   * "grid": two columns of cards on a phone (so names fit), three on a tablet, and one column of wide cards in a
+   * laptop's `room` container;
    * "row": everyone in one row (host screen).
    */
   layout?: "grid" | "row";
@@ -87,7 +88,7 @@ export function RoomPlayerList({
     <div className="@container/players">
       <ol
         aria-label="Players"
-        className={`grid gap-2 ${layout === "row" ? `grid-cols-3 ${rowColumns[players.length] ?? rowColumns[6]}` : "grid-cols-2 @xs/players:grid-cols-3 @5xl/room:grid-cols-1"}`}
+        className={`grid gap-2 ${layout === "row" ? `grid-cols-3 ${rowColumns[players.length] ?? rowColumns[6]}` : "grid-cols-2 @lg/players:grid-cols-3 @5xl/room:grid-cols-1"}`}
       >
         {players.map((player, index) => {
           const you = player.id === youId;
