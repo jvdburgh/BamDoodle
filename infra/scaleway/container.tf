@@ -55,10 +55,10 @@ resource "scaleway_container" "game" {
   }
 }
 
-# Custom domain, once its DNS CNAME points at the container's endpoint. Scaleway then issues a Let's Encrypt
-# certificate for it.
+# Custom domains, once their DNS points at the container's endpoint. Scaleway then issues a Let's Encrypt certificate
+# for each.
 resource "scaleway_container_domain" "game" {
-  count        = var.custom_hostname == "" ? 0 : 1
+  for_each     = toset(var.custom_hostnames)
   container_id = scaleway_container.game.id
-  hostname     = var.custom_hostname
+  hostname     = each.value
 }

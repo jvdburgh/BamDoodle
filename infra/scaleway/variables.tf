@@ -16,8 +16,8 @@ variable "project_name" {
   default     = "bamdoodle"
 }
 
-variable "custom_hostname" {
-  type        = string
-  description = "Public hostname bound to the container, e.g. play.bamdoodle.io. Empty: no custom domain yet, use the container's own endpoint. Create the DNS CNAME to `container_endpoint` before setting this."
-  default     = ""
+variable "custom_hostnames" {
+  type        = list(string)
+  description = "Public hostnames bound to the container, e.g. [\"bamdoodle.io\", \"www.bamdoodle.io\"]. Point each at `container_endpoint` in DNS first (ALIAS for the root, CNAME for www), then apply; Scaleway issues the certificates."
+  default     = []
 }
