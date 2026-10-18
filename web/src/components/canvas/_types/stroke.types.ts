@@ -1,5 +1,7 @@
-/** `[x, y, pressure]`, with x and y normalised to 0..1 of the canvas and pressure 0..1. */
-export type StrokePoint = [number, number, number];
+import type { Point } from "@/protocol/generated/Point";
+
+/** `[x, y, pressure]`, with x and y normalised to 0..1 of the canvas and pressure 0..1: the protocol's `Point`. */
+export type StrokePoint = Point;
 
 export type Stroke = {
   id: string;

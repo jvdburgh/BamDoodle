@@ -1,4 +1,6 @@
+import type { Language } from "@/protocol/generated/Language";
 import type { TurnMode } from "@/protocol/generated/TurnMode";
+import type { WordCategory } from "@/protocol/generated/WordCategory";
 
 export type RoomPlayer = {
   id: string;
@@ -12,7 +14,7 @@ export type { TurnMode };
 /** Free colours for everyone, or one shade family per player: the attribution question the prototype compares. */
 export type Attribution = "free" | "shades";
 
-export type WordLanguage = "en" | "nl";
+export type WordLanguage = Language;
 
 /** What the host picks before the first round (docs/game-rules.md, "A round"). */
 export type RoomSetup = {
@@ -28,7 +30,8 @@ export type RoomSetup = {
   categories: string[];
 };
 
-export type WordCategory = { language: WordLanguage; name: string; adult: boolean; words: string[] };
+/** A category with its words, as the playground deals them; the server's `WordCategory` only carries the count. */
+export type WordPack = Omit<WordCategory, "words"> & { words: string[] };
 
 /**
  * waiting → drawing (turns go round for the laps) → voting (30 s final vote) → reveal (the bamboozler and the votes)

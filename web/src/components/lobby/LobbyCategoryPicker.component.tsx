@@ -1,9 +1,9 @@
 import { useId } from "react";
-import type { WordCategory } from "@/components/room/_types/room.types";
+import type { WordPack } from "@/components/room/_types/room.types";
 
 type LobbyCategoryPickerProps = {
   /** The categories in the room's language. */
-  categories: WordCategory[];
+  categories: WordPack[];
   selected: string[];
   onChange: (names: string[]) => void;
 };

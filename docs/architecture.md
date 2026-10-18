@@ -144,6 +144,15 @@ and solve problems we don't have).
 No canvas framework (Konva, Fabric, Pixi): per-player layers are plain offscreen canvases, and those libraries add
 weight without helping freehand strokes. tldraw is out: its licence isn't open source.
 
+### The playground (for now, at "/")
+
+Until the screens are wired to `web/src/protocol/`, the app at "/" is a hot-seat playground: one device plays one
+seat and simulated players do the rest (draw, suspect, vote, guess). It mirrors the server's round flow and scoring
+in `components/room/_utils/` and `_hooks/roomSimulation.hook.ts` only to drive the UI; the server stays the referee,
+and those copies go once the views render server state. A "Lab" panel (bottom right on a laptop, `?lab` on a phone)
+switches view (phone, host screen, both), role, player count and screen; settings persist per viewer and in the URL.
+To try it on a phone on the same Wi-Fi: `pnpm --dir web dev --host`.
+
 ### Code layout
 
 Conventions (see AGENTS.md):

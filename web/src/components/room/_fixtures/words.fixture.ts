@@ -1,10 +1,10 @@
-import type { WordCategory } from "@/components/room/_types/room.types";
+import type { WordPack } from "@/components/room/_types/room.types";
 
 /**
  * Word categories for the playground, copied from words/ on main (CC BY-SA 4.0, see words/NOTICE). Once the
  * playground talks to the server, these come from the room snapshot's `wordCategories` instead.
  */
-export const wordCategoriesFixture: WordCategory[] = [
+export const wordCategoriesFixture: WordPack[] = [
   {
     language: "en",
     name: "Animals",

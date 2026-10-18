@@ -4,7 +4,7 @@ import { BrandSketchyFrame } from "@/components/brand/BrandSketchyFrame.componen
 import { BrandTagline } from "@/components/brand/BrandTagline.component";
 import { BrandStyles } from "@/components/brand/_utils/brandStyles.utils";
 import { LobbyCategoryPicker } from "@/components/lobby/LobbyCategoryPicker.component";
-import type { Attribution, RoomSetup, TurnMode, WordCategory, WordLanguage } from "@/components/room/_types/room.types";
+import type { Attribution, RoomSetup, TurnMode, WordPack, WordLanguage } from "@/components/room/_types/room.types";
 import { WordsUtils } from "@/components/room/_utils/words.utils";
 import { RoundUtils } from "@/components/room/_utils/round.utils";
 
@@ -14,7 +14,7 @@ type LobbyStartProps = {
   onEnter: (entry: LobbyEntry) => void;
   defaultName?: string;
   /** Every word category, in every language. */
-  wordCategories: WordCategory[];
+  wordCategories: WordPack[];
 };
 
 type Step = "choose" | "join" | "setup" | "name";
@@ -126,6 +126,9 @@ export function LobbyStart({ onEnter, defaultName = "", wordCategories }: LobbyS
           >
             Create a room
           </button>
+          <p className="mt-1 text-center text-sm text-white/60">
+            Prototype: everything runs on this device with pretend players; nothing syncs between phones yet.
+          </p>
         </div>
       ) : (
         <form

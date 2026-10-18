@@ -51,7 +51,7 @@ it, and it reads as a lit sheet on the navy table. (A night-navy sheet was tried
 Every sound is synthesised in the browser with the Web Audio API (`web/src/components/sound/`): short triangle and
 square-wave notes and a filtered-noise pencil scratch. No audio files, so nothing to license, credit or download.
 Cues: a start jingle, a blip per turn (brighter when it's yours), ticks in the last 3 seconds of a turn and the last 5
-of the round, a falling chime when time's up, and small sounds for picking a colour, finishing a stroke and voting.
+of the vote, a falling chime when time's up, and small sounds for picking a colour, finishing a stroke and voting.
 Quiet by default, silent until the first tap (browsers require it), and a mute toggle remembered per device.
 
 ## Feel

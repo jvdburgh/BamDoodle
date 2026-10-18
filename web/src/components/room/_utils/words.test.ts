@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import type { WordCategory } from "@/components/room/_types/room.types";
+import type { WordPack } from "@/components/room/_types/room.types";
 import { WordsUtils } from "@/components/room/_utils/words.utils";
 
-const all: WordCategory[] = [
+const all: WordPack[] = [
   { language: "en", name: "Animals", adult: false, words: ["cat", "dog"] },
   { language: "en", name: "Food", adult: false, words: ["pizza"] },
   { language: "en", name: "After dark", adult: true, words: ["hangover"] },

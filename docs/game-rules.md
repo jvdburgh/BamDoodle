@@ -79,8 +79,9 @@ Everyone can use every colour: there is nothing to unlock, ever. To still see wh
   canvas while the rest fades back to grey. Click again or press Esc to show everyone. Hovering a player with a mouse
   previews their spotlight without pinning it.
 
-The room's creator picks **Any colour** (everyone uses every colour, the default) or **Own colours** (each player
-gets a family of five shades, and their avatar wears it) when setting up the room, so playtests can compare both.
+**In the playground only** (not a server setting yet): the room's creator picks **Any colour** (everyone uses every
+colour, the default) or **Own colours** (each player gets a family of five shades, and their avatar wears it), so
+playtests can compare both. Making it a real setting needs a protocol change.
 
 **Suspecting and voting in the playground:** every player card (avatar, name, mini-map of their strokes) has a
 "Mark as sketchy" button; marking or changing it is public table talk ("Noor thinks Jip is sketchy") and cards show
