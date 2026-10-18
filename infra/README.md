@@ -156,24 +156,24 @@ A deploy restarts the container, so running games end: release when nobody's pla
 
 ### 10. The domain
 
-bamdoodle.io is at Namecheap. In Domain List > bamdoodle.io > Manage > Advanced DNS, remove the parking records
-(the `@` URL redirect or A record and the `www` CNAME to parkingpage.namecheap.com) and add, with TTL 5 min:
+The game lives at plain `bamdoodle.io` (no www). The domain is at Namecheap: in Domain List > bamdoodle.io > Manage >
+Advanced DNS, remove the parking records (the `@` URL redirect or A record, and the `www` CNAME to
+parkingpage.namecheap.com) and add, with TTL 5 min:
 
 | Type | Host | Value |
 | --- | --- | --- |
 | ALIAS Record | `@` | the output of `terraform -chdir=infra/scaleway output -raw container_endpoint` |
-| CNAME Record | `www` | the same |
 
-Check with `dig +short bamdoodle.io` and `dig +short www.bamdoodle.io` until both resolve to Scaleway, then bind them
-(Scaleway issues the certificates):
+Check with `dig +short bamdoodle.io` until it resolves to Scaleway instead of the parking page, then bind it (Scaleway
+issues the certificate):
 
 ```bash
-cd infra/scaleway && terraform apply -var 'custom_hostnames=["bamdoodle.io","www.bamdoodle.io"]'
+cd infra/scaleway && terraform apply -var 'custom_hostnames=["bamdoodle.io"]'
 ```
 
-Put `custom_hostnames = ["bamdoodle.io", "www.bamdoodle.io"]` in `infra/scaleway/terraform.tfvars` (gitignored) so
-later applies keep them. To move DNS to an EU provider too, Scaleway Domains & DNS can host the zone (about €5 a
-month).
+Put `custom_hostnames = ["bamdoodle.io"]` in `infra/scaleway/terraform.tfvars` (gitignored) so later applies keep it.
+To add www later, add a `www` CNAME to the same value and `"www.bamdoodle.io"` to the list. To move DNS to an EU
+provider too, Scaleway Domains & DNS can host the zone (about €5 a month).
 
 ## Later
 
