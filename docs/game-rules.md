@@ -78,13 +78,14 @@ Everyone can use every colour: there is nothing to unlock, ever. To still see wh
 The room's creator picks **Any colour** (everyone uses every colour, the default) or **Own colours** (each player
 gets a family of five shades, and their avatar wears it) when setting up the room, so playtests can compare both.
 
-**Suspecting and voting on a phone** (the playground's take on the agreed flow): while drawing, a "Who's sketchy?"
-bar is pinned to the bottom of the screen with player chips (mini-map, avatar, name); a tap marks or changes who you
-suspect, everyone sees it as table talk ("Noor thinks Jip is sketchy") and the host screen counts suspicions per
-player. After the last turn the bar becomes "Time's up! Who's sketchy? Who do you think didn't know the word?" with
-a 30 s countdown, your suspicion pre-selected and a "Lock in my vote" button; it shows who has voted, never for whom.
-Then the reveal, the bamboozler's guess, the round's points with the running totals, and a podium after the last
-round.
+**Suspecting and voting in the playground:** every player card (avatar, name, mini-map of their strokes) has a
+"Mark as sketchy" button; marking or changing it is public table talk ("Noor thinks Jip is sketchy") and cards show
+how many suspect that player. After the last turn the same cards turn into the choice ("Pick"), next to a "Time's up!
+Who's sketchy? Who do you think didn't know the word?" prompt with a 30 s countdown, your suspicion pre-selected and
+a "Lock in my vote" button; it shows who has voted, never for whom. On a laptop everything fits one screen (cards
+left, canvas sized to fit, pens and colours docked right, round and turn progress bottom-left); on a phone the cards
+or your tools follow the canvas depending on whose turn it is. Then the reveal, the bamboozler's guess, the round's
+points with the running totals, and a podium after the last round.
 
 ## Points (starting point, tune in playtests)
 

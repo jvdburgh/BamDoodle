@@ -4,10 +4,20 @@ import { CanvasMiniMap } from "@/components/canvas/CanvasMiniMap.component";
 import type { Drawing } from "@/components/canvas/_utils/drawing.utils";
 import type { RoomPlayer } from "@/components/room/_types/room.types";
 
+/**
+ * What the card's button does: mark someone as sketchy while drawing (changeable, public), or pick them in the final
+ * vote. Left out on the host screen and once you've voted.
+ */
+export type RoomPlayerAction = {
+  kind: "suspect" | "vote";
+  chosenId: string | null;
+  onChoose: (id: string | null) => void;
+};
+
 type RoomPlayerListProps = {
   players: RoomPlayer[];
   drawing: Drawing;
-  /** The player at this screen, marked "you"; null on a host screen or a shared device. */
+  /** The player at this screen, marked "you"; null on the host screen. */
   youId: string | null;
   activeId: string | null;
   nextId: string | null;
@@ -15,31 +25,32 @@ type RoomPlayerListProps = {
   onSpotlight: (playerId: string | null) => void;
   /** Hovering a player previews their spotlight without pinning it. */
   onPeek: (playerId: string | null) => void;
+  action?: RoomPlayerAction;
+  /** Your locked final vote, shown as a badge. */
+  yourVoteId?: string | null;
   /** Identity colour per player, when players have one (shade families). */
   colours?: Record<string, string>;
   /** How many players suspect each player right now (public while drawing). */
   suspectedBy?: Record<string, number>;
   /** Who has locked a final vote (not for whom). */
   votedIds?: string[];
-  /**
-   * "auto": one row in narrow `room` containers (phones), a rail beside the canvas in wide ones.
-   * "row": always one row, for the host screen.
-   */
-  layout?: "auto" | "row";
+  /** "grid": two or three columns, depending on the space; "row": everyone in one row (host screen). */
+  layout?: "grid" | "row";
 };
 
-const columns: Record<number, string> = {
-  1: "grid-cols-1",
-  2: "grid-cols-2",
-  3: "grid-cols-3",
-  4: "grid-cols-4",
-  5: "grid-cols-5",
-  6: "grid-cols-6",
+/** Full class names, so Tailwind sees them. */
+const rowColumns: Record<number, string> = {
+  1: "@3xl/players:grid-cols-1",
+  2: "@3xl/players:grid-cols-2",
+  3: "@3xl/players:grid-cols-3",
+  4: "@3xl/players:grid-cols-4",
+  5: "@3xl/players:grid-cols-5",
+  6: "@3xl/players:grid-cols-6",
 };
 
 /**
- * The turn order. Each player is a toggle that spotlights their strokes on the main canvas, with a live mini-map of
- * only their strokes.
+ * The turn order and who drew what: one card per player with a live mini-map of only their strokes (click it to
+ * spotlight them on the canvas), and the button to mark them as sketchy or, in the final vote, to pick them.
  */
 export function RoomPlayerList({
   players,
@@ -50,114 +61,116 @@ export function RoomPlayerList({
   spotlightId,
   onSpotlight,
   onPeek,
+  action,
+  yourVoteId = null,
   colours,
   suspectedBy = {},
   votedIds = [],
-  layout = "auto",
+  layout = "grid",
 }: RoomPlayerListProps) {
-  const rail = layout === "auto";
   return (
-    <ol
-      aria-label="Turn order"
-      className={`grid gap-2 ${columns[players.length] ?? "grid-cols-6"} ${rail ? "@4xl/room:grid-cols-1 @4xl/room:gap-2.5" : "@4xl/room:gap-3"}`}
-    >
-      {players.map((player) => {
-        const active = player.id === activeId;
-        const spotlit = player.id === spotlightId;
-        const status = active ? "Drawing now" : player.id === nextId ? "Up next" : null;
-        const colour = colours?.[player.id];
-        return (
-          <li key={player.id} className="min-w-0">
-            <button
-              type="button"
-              aria-pressed={spotlit}
-              onClick={() => {
-                onPeek(null);
-                onSpotlight(spotlit ? null : player.id);
-              }}
-              onPointerEnter={(event) => event.pointerType === "mouse" && onPeek(player.id)}
-              onPointerLeave={() => onPeek(null)}
-              className={`group relative flex w-full flex-col gap-1 rounded-[12px_16px_14px_10px] p-1 text-left transition-colors focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-white @md/room:gap-1.5 @md/room:p-1.5 ${
-                rail
-                  ? "@4xl/room:grid @4xl/room:grid-cols-[4.5rem_1fr] @4xl/room:items-center @4xl/room:gap-x-3 @4xl/room:p-2.5"
-                  : "@4xl/room:p-2.5"
-              } ${active ? "bg-night-soft" : "bg-night-deep/70 hover:bg-night-soft/70"} ${
-                spotlit
-                  ? "shadow-[inset_0_0_0_2px_var(--color-white)]"
-                  : active
-                    ? "shadow-[inset_0_0_0_2px_var(--color-sun)]"
-                    : ""
-              }`}
+    <div className="@container/players">
+      <ol
+        aria-label="Players"
+        className={`grid gap-2 ${layout === "row" ? `grid-cols-3 ${rowColumns[players.length] ?? rowColumns[6]}` : "grid-cols-2 @xs/players:grid-cols-3"}`}
+      >
+        {players.map((player) => {
+          const you = player.id === youId;
+          const active = player.id === activeId;
+          const spotlit = player.id === spotlightId;
+          const chosen = action?.chosenId === player.id;
+          const status = active ? "Drawing now" : player.id === nextId ? "Up next" : null;
+          const colour = colours?.[player.id];
+          const suspects = suspectedBy[player.id] ?? 0;
+          const ring = chosen
+            ? "shadow-[inset_0_0_0_2px_var(--color-berry)]"
+            : spotlit
+              ? "shadow-[inset_0_0_0_2px_var(--color-white)]"
+              : active
+                ? "shadow-[inset_0_0_0_2px_var(--color-sun)]"
+                : "";
+          return (
+            <li
+              key={player.id}
+              className={`flex min-w-0 flex-col gap-1.5 rounded-[12px_16px_14px_10px] p-1.5 transition-colors ${active ? "bg-night-soft" : "bg-night-deep/70"} ${ring}`}
             >
-              <span
-                className={`flex min-w-0 items-center justify-center gap-1.5 @md/room:justify-start ${rail ? "@4xl/room:flex-col @4xl/room:items-start" : ""}`}
+              <button
+                type="button"
+                aria-pressed={spotlit}
+                onClick={() => {
+                  onPeek(null);
+                  onSpotlight(spotlit ? null : player.id);
+                }}
+                onPointerEnter={(event) => event.pointerType === "mouse" && onPeek(player.id)}
+                onPointerLeave={() => onPeek(null)}
+                className="group flex flex-col gap-1 rounded-[10px_12px_11px_9px] text-left focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-white"
               >
-                <span
-                  className={`relative hidden shrink-0 @md/room:block ${rail ? "size-7 @4xl/room:size-11" : "size-9"}`}
-                >
-                  <AvatarDoodle seed={player.avatarSeed} color={colour} className="size-full" />
-                  {active && (
-                    <BrandScribble
-                      shape="ring"
-                      seed={player.avatarSeed}
-                      weight={1.4}
-                      className="absolute -inset-1 size-[calc(100%+0.5rem)] text-sun"
-                    />
-                  )}
-                </span>
-                <span className="min-w-0">
-                  <span className="sr-only">Spotlight </span>
-                  <span
-                    className={`block truncate font-display text-sm leading-tight @md/room:text-base @4xl/room:text-lg ${active ? "text-sun" : "text-white"}`}
-                  >
-                    {colour && (
-                      <span
-                        aria-hidden="true"
-                        className="mr-1 inline-block size-2 rounded-full @md/room:hidden"
-                        style={{ backgroundColor: colour }}
+                <span className="flex min-w-0 items-center gap-1.5">
+                  <span className="relative size-6 shrink-0">
+                    <AvatarDoodle seed={player.avatarSeed} color={colour} className="size-full" />
+                    {active && (
+                      <BrandScribble
+                        shape="ring"
+                        seed={player.avatarSeed}
+                        weight={1.4}
+                        className="absolute -inset-1 size-[calc(100%+0.5rem)] text-sun"
                       />
                     )}
-                    {player.name}
-                    {player.id === youId && (
-                      <span className="ml-1 font-body text-xs text-white/65">
-                        <span className="sr-only @md/room:not-sr-only">(you)</span>
-                      </span>
-                    )}
                   </span>
-                  {(votedIds.includes(player.id) || (suspectedBy[player.id] ?? 0) > 0) && (
-                    <span className="mt-0.5 flex flex-wrap gap-1 text-xs">
-                      {votedIds.includes(player.id) && (
-                        <span className="rounded-full bg-sun px-1.5 text-night">voted</span>
-                      )}
-                      {(suspectedBy[player.id] ?? 0) > 0 && (
-                        <span className="rounded-full bg-berry/80 px-1.5 text-white">
-                          {suspectedBy[player.id]} suspect{suspectedBy[player.id] === 1 ? "s" : ""}
-                        </span>
-                      )}
-                    </span>
-                  )}
-                  <span
-                    className={`sr-only text-sm text-white/65 ${rail ? "@4xl/room:not-sr-only @4xl/room:block @4xl/room:h-5" : ""}`}
-                  >
-                    {status && <span className="sr-only">, </span>}
-                    {status}
+                  <span className={`min-w-0 truncate font-display leading-tight ${active ? "text-sun" : "text-white"}`}>
+                    <span className="sr-only">Spotlight </span>
+                    {player.name}
+                    {you && <span className="ml-1 font-body text-xs text-white/65">(you)</span>}
+                    {status && <span className="sr-only">, {status}</span>}
                   </span>
                 </span>
-              </span>
-              <span className="relative">
-                <CanvasMiniMap drawing={drawing} playerId={player.id} />
-                <span
-                  className={`absolute right-1 bottom-1 hidden size-7 place-items-center rounded-full bg-night text-white transition-opacity @4xl/room:grid ${
-                    spotlit ? "opacity-100" : "opacity-0 group-hover:opacity-90 group-focus-visible:opacity-90"
+                <span className="relative">
+                  <CanvasMiniMap drawing={drawing} playerId={player.id} />
+                  <span
+                    className={`absolute right-1 bottom-1 grid size-6 place-items-center rounded-full bg-night text-white transition-opacity ${
+                      spotlit ? "opacity-100" : "opacity-0 group-hover:opacity-90 group-focus-visible:opacity-90"
+                    }`}
+                  >
+                    <BrandScribble shape="magnifier" seed={player.avatarSeed + 2} className="size-3.5" />
+                  </span>
+                </span>
+              </button>
+
+              {(votedIds.includes(player.id) || suspects > 0 || yourVoteId === player.id) && (
+                <span className="flex flex-wrap gap-1 text-xs">
+                  {yourVoteId === player.id && (
+                    <span className="rounded-full bg-berry px-1.5 font-semibold text-night">your vote</span>
+                  )}
+                  {votedIds.includes(player.id) && <span className="rounded-full bg-sun px-1.5 text-night">voted</span>}
+                  {suspects > 0 && (
+                    <span className="rounded-full bg-night px-1.5 text-white/85">suspected by {suspects}</span>
+                  )}
+                </span>
+              )}
+
+              {action && !you && (
+                <button
+                  type="button"
+                  aria-pressed={chosen}
+                  onClick={() => action.onChoose(chosen ? null : player.id)}
+                  className={`min-h-9 rounded-full px-2 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+                    chosen ? "bg-berry text-night" : "bg-night text-white/90 hover:bg-night-soft"
                   }`}
                 >
-                  <BrandScribble shape="magnifier" seed={player.avatarSeed + 2} className="size-4" />
-                </span>
-              </span>
-            </button>
-          </li>
-        );
-      })}
-    </ol>
+                  {action.kind === "suspect"
+                    ? chosen
+                      ? "Marked sketchy"
+                      : "Mark as sketchy"
+                    : chosen
+                      ? "Picked"
+                      : "Pick"}
+                  <span className="sr-only"> ({player.name})</span>
+                </button>
+              )}
+            </li>
+          );
+        })}
+      </ol>
+    </div>
   );
 }

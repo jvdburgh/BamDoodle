@@ -10,12 +10,12 @@ import { RoomFeed } from "@/components/room/RoomFeed.component";
 import { RoomGuess } from "@/components/room/RoomGuess.component";
 import { RoomJoinCard } from "@/components/room/RoomJoinCard.component";
 import { RoomPenTag } from "@/components/room/RoomPenTag.component";
-import { RoomPlayerList } from "@/components/room/RoomPlayerList.component";
+import { RoomPlayerList, type RoomPlayerAction } from "@/components/room/RoomPlayerList.component";
 import { RoomPodium } from "@/components/room/RoomPodium.component";
+import { RoomProgress } from "@/components/room/RoomProgress.component";
 import { RoomResults } from "@/components/room/RoomResults.component";
 import { RoomReveal } from "@/components/room/RoomReveal.component";
 import { RoomSpotlightChip } from "@/components/room/RoomSpotlightChip.component";
-import { RoomTurnBar } from "@/components/room/RoomTurnBar.component";
 import { RoomTurnCall } from "@/components/room/RoomTurnCall.component";
 import { RoomWordCard } from "@/components/room/RoomWordCard.component";
 import type { RoomSimulation } from "@/components/room/_hooks/roomSimulation.hook";
@@ -24,11 +24,11 @@ import type { RoomPlayer } from "@/components/room/_types/room.types";
 import { RoundUtils } from "@/components/room/_utils/round.utils";
 import { SoundToggle } from "@/components/sound/SoundToggle.component";
 import { SoundPlayer } from "@/components/sound/_utils/soundPlayer.utils";
-import { VoteBallot } from "@/components/vote/VoteBallot.component";
+import { VotePrompt } from "@/components/vote/VotePrompt.component";
 
 type RoomPlayerViewProps = {
   sim: RoomSimulation;
-  /** Your seat; null when the device is passed round and draws every turn. */
+  /** Your seat. */
   youId: string | null;
   roomCode: string;
   /** Play the room-created reveal on the join card. */
@@ -36,19 +36,22 @@ type RoomPlayerViewProps = {
 };
 
 /**
- * What a player sees on their own phone: everything they need, in one column, phase by phase. In a wide `room`
- * container (tablet, desktop) the players move to a rail beside the canvas.
+ * What a player sees, phase by phase. On a laptop (a `room` container of 64rem or more) everything fits on one
+ * screen: the player cards on the left, the canvas sized to the height that's left, the tools docked on the right.
+ * On a phone it's one column, ordered by the moment: your tools under the canvas on your turn, the cards when you
+ * watch or vote.
  */
 export function RoomPlayerView({ sim, youId, roomCode, revealCode = false }: RoomPlayerViewProps) {
   const { players, setup, drawing, round, now, word, families, identities, active, next, yourTurn, order } = sim;
   const { phase } = round;
   const [chosenColour, setChosenColour] = useState(CanvasTools.colours[0]?.value ?? "#000000");
   const [brushSize, setBrushSize] = useState(CanvasTools.brushes[1]?.size ?? 0.014);
+  /** Your pick in the final vote; until you change it, it's your last suspicion. */
+  const [pick, setPick] = useState<{ phaseStartedAt: number; id: string | null } | null>(null);
   const spotlight = useSpotlight();
   const toolsRef = useRef<HTMLElement>(null);
-  const playersRef = useRef<HTMLElement>(null);
+  const cardsRef = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
-  const startRef = useRef<HTMLButtonElement>(null);
   const podiumRef = useRef<HTMLDivElement>(null);
 
   const you = players.find((player) => player.id === youId);
@@ -60,21 +63,22 @@ export function RoomPlayerView({ sim, youId, roomCode, revealCode = false }: Roo
     ? chosenColour
     : (palette[2]?.value ?? chosenColour);
   const spotlit = players.find((player) => player.id === spotlight.shown);
-  const afterDrawing = phase !== "waiting" && phase !== "drawing";
+  const drawingPhase = phase === "waiting" || phase === "drawing";
+  const suspicion = you ? (round.suspicions[you.id] ?? null) : null;
+  const pickedId = pick?.phaseStartedAt === round.phaseStartedAt ? pick.id : suspicion;
+  const yourVoteId = you ? (round.votes[you.id] ?? null) : null;
 
   // Each phase swaps what's on screen. If that took keyboard focus with it (to the page, or into the hidden tools),
-  // hand it to what replaced it: the tools while drawing, the vote/reveal/guess/results panel, or the podium.
+  // hand it to what replaced it: the tools while drawing, the cards in the vote, the panel after, or the podium.
   useLayoutEffect(() => {
     if (phase === "waiting") return;
     const focused = document.activeElement;
-    const lost =
-      !focused || focused === document.body || (phase !== "drawing" && !!toolsRef.current?.contains(focused));
+    const lost = !focused || focused === document.body || (!drawingPhase && !!toolsRef.current?.contains(focused));
     if (!lost) return;
-    const target = sim.gameOver ? podiumRef : phase === "drawing" ? toolsRef : stageRef;
+    const target = sim.gameOver ? podiumRef : phase === "drawing" ? toolsRef : phase === "voting" ? cardsRef : stageRef;
     target.current?.focus({ preventScroll: true });
-  }, [phase, sim.gameOver]);
+  }, [phase, sim.gameOver, drawingPhase]);
 
-  // These buttons disappear once used; keep keyboard focus nearby instead of dropping it to the page.
   const start = () => {
     sim.start();
     toolsRef.current?.focus();
@@ -83,53 +87,68 @@ export function RoomPlayerView({ sim, youId, roomCode, revealCode = false }: Roo
     sim.endTurn();
     toolsRef.current?.focus();
   };
-  const nextRound = () => {
-    spotlight.pin(null);
-    sim.nextRound();
-  };
 
   const turnTitle = (player: RoomPlayer) => (player.id === you?.id ? "Your turn" : `${player.name}’s turn`);
   const canvasLabel = active
     ? `Shared drawing. ${active.id === you?.id ? "Your turn to draw." : `${active.name} is drawing.`}`
-    : afterDrawing
-      ? "Shared drawing. The drawing is done."
-      : "Shared drawing. The round hasn't started.";
+    : drawingPhase
+      ? "Shared drawing. The round hasn't started."
+      : "Shared drawing. The drawing is done.";
 
-  const ballot = you && (phase === "drawing" || phase === "voting") && (
-    <VoteBallot
-      key={phase}
-      mode={phase === "voting" ? "final" : "suspect"}
-      candidates={players.filter((player) => player.id !== you.id)}
-      players={players}
-      drawing={drawing}
-      suspicion={round.suspicions[you.id] ?? null}
-      vote={round.votes[you.id] ?? null}
-      onSuspect={(suspectId) => {
-        sim.suspect(you.id, suspectId);
-        SoundPlayer.play("suspect");
-      }}
-      onVote={(suspectId) => {
-        sim.vote(you.id, suspectId);
-        SoundPlayer.play("vote");
-      }}
-      onConsider={spotlight.pin}
-      votedIds={Object.keys(round.votes)}
-      msLeft={RoundUtils.phaseLeft(round, now)}
-      colours={identities}
+  const action: RoomPlayerAction | undefined =
+    !you || yourVoteId
+      ? undefined
+      : phase === "drawing"
+        ? {
+            kind: "suspect",
+            chosenId: suspicion,
+            onChoose: (id) => {
+              sim.suspect(you.id, id);
+              spotlight.pin(id);
+              SoundPlayer.play("suspect");
+            },
+          }
+        : phase === "voting"
+          ? {
+              kind: "vote",
+              chosenId: pickedId,
+              onChoose: (id) => {
+                setPick({ phaseStartedAt: round.phaseStartedAt, id });
+                spotlight.pin(id);
+              },
+            }
+          : undefined;
+
+  const progress = (
+    <RoomProgress
+      roundNumber={sim.roundNumber}
+      rounds={setup.rounds}
+      lap={RoundUtils.lap(round, players.length)}
+      laps={RoundUtils.lapsFor(setup)}
+      phase={phase}
+      turnTitle={active ? turnTitle(active) : undefined}
+      msLeft={phase === "voting" ? RoundUtils.phaseLeft(round, now) : RoundUtils.turnLeft(round, now)}
+      msTotal={phase === "voting" ? RoundUtils.VOTE_MS : round.turnMs}
     />
   );
-  // Pinned to the bottom of a phone while you watch and during the final vote, never over your own tools.
-  const pinBallot = phase === "voting" || (phase === "drawing" && !yourTurn);
+
+  // Phone order: canvas first, then what you need right now.
+  const placeOnPhone = (section: "tools" | "cards" | "stage") => {
+    if (phase === "drawing" && yourTurn) return { tools: "order-2", cards: "order-3", stage: "order-4" }[section];
+    if (phase === "drawing") return { tools: "order-3", cards: "order-2", stage: "order-4" }[section];
+    if (phase === "voting") return { tools: "order-4", cards: "order-3", stage: "order-4" }[section];
+    return { tools: "order-4", cards: "order-3", stage: "order-2" }[section];
+  };
 
   return (
     <div className="@container/room">
-      <div className="mx-auto flex max-w-[90rem] flex-col gap-4 p-4 @4xl/room:gap-6 @4xl/room:p-8">
+      <div className="mx-auto flex max-w-[110rem] flex-col gap-3 p-3 @5xl/room:h-svh @5xl/room:gap-4 @5xl/room:px-5 @5xl/room:py-4">
         <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-x-2">
           <div className="flex items-center gap-2">
-            <BrandLogo href="/?screen=start" className="size-9 @4xl/room:size-12" />
+            <BrandLogo href="/?screen=start" className="size-9 @5xl/room:size-11" />
             <div className="hidden leading-tight @2xl/room:block">
-              <p className="font-display text-xl @4xl/room:text-2xl">BamDoodle</p>
-              <BrandTagline className="hidden text-sm @4xl/room:block" />
+              <p className="font-display text-xl">BamDoodle</p>
+              <BrandTagline className="hidden text-sm @5xl/room:block" />
             </div>
           </div>
           <RoomWordCard
@@ -138,21 +157,10 @@ export function RoomPlayerView({ sim, youId, roomCode, revealCode = false }: Roo
             view={youAreBamboozler ? "bamboozler" : "artist"}
           />
           <div className="flex items-center gap-2 justify-self-end">
-            <div className="text-right text-xs leading-tight text-white/75">
-              <p>
-                Round <span className="font-display text-base text-white">{sim.roundNumber}</span>/{setup.rounds}
-              </p>
-              {phase === "drawing" && (
-                <p>
-                  Lap <span className="font-display text-base text-white">{RoundUtils.lap(round, players.length)}</span>
-                  /{RoundUtils.lapsFor(setup)}
-                </p>
-              )}
-              <p>
-                <span className="sr-only">Room code </span>
-                <span className="font-display tracking-widest text-white">{roomCode}</span>
-              </p>
-            </div>
+            <p className="text-right text-xs leading-tight text-white/70">
+              <span className="sr-only">Room code </span>
+              <span className="font-display text-sm tracking-widest text-white">{roomCode}</span>
+            </p>
             <SoundToggle />
           </div>
         </header>
@@ -168,30 +176,23 @@ export function RoomPlayerView({ sim, youId, roomCode, revealCode = false }: Roo
             />
           </div>
         ) : (
-          <div className="grid gap-4 @4xl/room:grid-cols-[16rem_minmax(0,1fr)] @4xl/room:items-start @4xl/room:gap-6">
-            <aside
-              ref={playersRef}
-              tabIndex={-1}
-              aria-label="Players"
-              className={`flex-col gap-4 outline-none @4xl/room:flex ${afterDrawing ? "hidden" : "flex"}`}
-            >
-              <RoomPlayerList
-                players={players}
-                drawing={drawing}
-                youId={you?.id ?? null}
-                activeId={active?.id ?? null}
-                nextId={next?.id ?? null}
-                spotlightId={spotlight.pinned}
-                onSpotlight={spotlight.pin}
-                onPeek={spotlight.setPeek}
-                colours={identities}
-                suspectedBy={RoundUtils.suspectedBy(round)}
-              />
-            </aside>
+          <div
+            className={`flex min-h-0 flex-1 flex-col gap-3 @5xl/room:grid @5xl/room:gap-5 ${
+              drawingPhase
+                ? "@5xl/room:grid-cols-[17rem_minmax(0,1fr)_13rem]"
+                : phase === "voting"
+                  ? "@5xl/room:grid-cols-[17rem_minmax(0,1fr)_17rem]"
+                  : "@5xl/room:grid-cols-[17rem_minmax(0,1fr)_24rem]"
+            }`}
+          >
+            <div className="order-first @5xl/room:hidden">{progress}</div>
 
-            <div className="flex min-w-0 flex-col gap-4 @4xl/room:mx-auto @4xl/room:w-full @4xl/room:max-w-[calc((100svh-16rem)*4/3)]">
+            {/* The canvas: full width on a phone, as big as the leftover height allows on a laptop. */}
+            <div className="order-1 flex min-h-0 justify-center @5xl/room:col-start-2 @5xl/room:row-start-1 @5xl/room:items-start">
               <div
-                className={`relative rounded-[12px_16px_14px_11px] transition-shadow ${you && yourTurn ? "shadow-[0_0_0_4px_var(--color-sun)]" : ""}`}
+                className={`relative w-full rounded-[12px_16px_14px_11px] transition-shadow @5xl/room:max-w-[calc((100svh-7.5rem)*4/3)] ${
+                  you && yourTurn ? "shadow-[0_0_0_4px_var(--color-sun)]" : ""
+                }`}
               >
                 <CanvasBoard
                   drawing={drawing}
@@ -216,7 +217,7 @@ export function RoomPlayerView({ sim, youId, roomCode, revealCode = false }: Roo
                           spotlight.pinned
                             ? () => {
                                 spotlight.pin(null);
-                                playersRef.current?.focus();
+                                cardsRef.current?.focus();
                               }
                             : undefined
                         }
@@ -232,7 +233,7 @@ export function RoomPlayerView({ sim, youId, roomCode, revealCode = false }: Roo
                   {phase === "waiting" && (
                     <div className="absolute inset-0 grid place-items-center p-4">
                       <RoomJoinCard roomCode={roomCode} reveal={revealCode}>
-                        <button ref={startRef} type="button" onClick={start} className={BrandStyles.primaryButton}>
+                        <button type="button" onClick={start} className={BrandStyles.primaryButton}>
                           Start round
                         </button>
                       </RoomJoinCard>
@@ -240,104 +241,134 @@ export function RoomPlayerView({ sim, youId, roomCode, revealCode = false }: Roo
                   )}
                 </CanvasBoard>
               </div>
+            </div>
 
-              {phase === "drawing" && active && (
-                <section aria-label="Turn" className={BrandStyles.panel}>
-                  <RoomTurnBar
-                    title={turnTitle(active)}
-                    hint={yourTurn ? undefined : "Watch what they draw"}
-                    mode={round.mode}
-                    msLeft={RoundUtils.turnLeft(round, now)}
-                    msTotal={round.turnMs}
-                  />
-                </section>
-              )}
+            {/* The players: who drew what, and who you think is sketchy. Bottom-left on a laptop: where we are. */}
+            <aside
+              ref={cardsRef}
+              tabIndex={-1}
+              aria-label="Who drew what"
+              className={`flex min-h-0 flex-col gap-3 outline-none @5xl/room:col-start-1 @5xl/room:row-start-1 @5xl/room:h-[calc(100svh-7rem)] ${placeOnPhone("cards")}`}
+            >
+              <div className="min-h-0 @5xl/room:flex-1 @5xl/room:overflow-y-auto @5xl/room:pr-1">
+                <RoomPlayerList
+                  players={players}
+                  drawing={drawing}
+                  youId={you?.id ?? null}
+                  activeId={active?.id ?? null}
+                  nextId={next?.id ?? null}
+                  spotlightId={spotlight.pinned}
+                  onSpotlight={spotlight.pin}
+                  onPeek={spotlight.setPeek}
+                  action={action}
+                  yourVoteId={yourVoteId}
+                  colours={identities}
+                  suspectedBy={RoundUtils.suspectedBy(round)}
+                  votedIds={phase === "voting" ? Object.keys(round.votes) : []}
+                />
+              </div>
+              <div className="hidden @5xl/room:block">{progress}</div>
+            </aside>
 
-              <section
-                ref={toolsRef}
-                hidden={afterDrawing}
-                tabIndex={-1}
-                aria-label="Drawing tools"
-                className={`${BrandStyles.panel} flex flex-col gap-4 outline-none @2xl/room:flex-row @2xl/room:items-center`}
-              >
-                <div className="min-w-0 flex-1">
-                  <CanvasPalette
-                    colours={palette}
-                    value={colour}
-                    onChange={(value) => {
-                      setChosenColour(value);
-                      SoundPlayer.play("pick");
-                    }}
-                  />
-                </div>
-                <div className="flex items-center justify-between gap-3">
-                  <CanvasBrushPicker
-                    brushes={CanvasTools.brushes}
-                    value={brushSize}
-                    onChange={(size) => {
-                      setBrushSize(size);
-                      SoundPlayer.play("pick");
-                    }}
-                    color={colour}
-                  />
-                  {yourTurn && (
-                    <button type="button" onClick={endTurn} className={BrandStyles.quietButton}>
-                      End turn
-                    </button>
-                  )}
-                </div>
-              </section>
+            {/* The final call: right column on a laptop (the cards stay whole on the left), above the cards on a phone. */}
+            {phase === "voting" && you && (
+              <div className="order-2 @5xl/room:col-start-3 @5xl/room:row-start-1 @5xl/room:self-start">
+                <VotePrompt
+                  players={players}
+                  picked={players.find((player) => player.id === pickedId)}
+                  voted={players.find((player) => player.id === yourVoteId)}
+                  onLock={(suspectId) => {
+                    sim.vote(you.id, suspectId);
+                    spotlight.pin(null);
+                    SoundPlayer.play("vote");
+                  }}
+                  votedIds={Object.keys(round.votes)}
+                  msLeft={RoundUtils.phaseLeft(round, now)}
+                  colours={identities}
+                />
+              </div>
+            )}
 
+            {/* Pens and colours: docked on the right on a laptop, always in view while drawing. */}
+            <section
+              ref={toolsRef}
+              hidden={!drawingPhase}
+              tabIndex={-1}
+              aria-label="Drawing tools"
+              className={`${BrandStyles.panel} flex flex-col gap-4 outline-none @2xl/room:flex-row @2xl/room:items-center @5xl/room:col-start-3 @5xl/room:row-start-1 @5xl/room:flex-col @5xl/room:items-stretch @5xl/room:self-start ${placeOnPhone("tools")}`}
+            >
+              <div className="min-w-0 flex-1">
+                <CanvasPalette
+                  colours={palette}
+                  value={colour}
+                  onChange={(value) => {
+                    setChosenColour(value);
+                    SoundPlayer.play("pick");
+                  }}
+                />
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <CanvasBrushPicker
+                  brushes={CanvasTools.brushes}
+                  value={brushSize}
+                  onChange={(size) => {
+                    setBrushSize(size);
+                    SoundPlayer.play("pick");
+                  }}
+                  color={colour}
+                />
+                {yourTurn && (
+                  <button type="button" onClick={endTurn} className={`${BrandStyles.quietButton} @5xl/room:w-full`}>
+                    End turn
+                  </button>
+                )}
+              </div>
+            </section>
+
+            {/* After the drawing: the reveal, the guess, the results. Right column on a laptop. */}
+            {!drawingPhase && phase !== "voting" && (
               <div
                 ref={stageRef}
                 tabIndex={-1}
-                className={`outline-none ${
-                  pinBallot
-                    ? "sticky bottom-2 z-10 shadow-[0_-8px_24px_var(--color-night)] @4xl/room:static @4xl/room:shadow-none"
-                    : ""
-                }`}
+                className={`${BrandStyles.panel} outline-none @5xl/room:col-start-3 @5xl/room:row-start-1 @5xl/room:max-h-[calc(100svh-7rem)] @5xl/room:overflow-y-auto ${placeOnPhone("stage")}`}
               >
-                {ballot}
                 {phase === "reveal" && (
-                  <div className={BrandStyles.panel}>
-                    <RoomReveal
-                      players={players}
-                      bamboozlerId={round.bamboozlerId}
-                      votes={round.votes}
-                      youId={you?.id}
-                      colours={identities}
-                    />
-                  </div>
+                  <RoomReveal
+                    players={players}
+                    bamboozlerId={round.bamboozlerId}
+                    votes={round.votes}
+                    youId={you?.id}
+                    colours={identities}
+                  />
                 )}
                 {phase === "guess" && (
-                  <div className={BrandStyles.panel}>
-                    <RoomGuess
-                      bamboozlerName={bamboozler?.name ?? "The bamboozler"}
-                      yours={youAreBamboozler}
-                      msLeft={RoundUtils.phaseLeft(round, now)}
-                      onGuess={sim.guess}
-                    />
-                  </div>
+                  <RoomGuess
+                    bamboozlerName={bamboozler?.name ?? "The bamboozler"}
+                    yours={youAreBamboozler}
+                    msLeft={RoundUtils.phaseLeft(round, now)}
+                    onGuess={sim.guess}
+                  />
                 )}
                 {phase === "results" && sim.roundScores && (
-                  <div className={BrandStyles.panel}>
-                    <RoomResults
-                      players={players}
-                      bamboozlerId={round.bamboozlerId}
-                      word={word.word}
-                      guess={round.guess}
-                      scores={sim.roundScores}
-                      totals={sim.totals}
-                      roundNumber={sim.roundNumber}
-                      rounds={setup.rounds}
-                      youId={you?.id}
-                      colours={identities}
-                      onNext={nextRound}
-                    />
-                  </div>
+                  <RoomResults
+                    players={players}
+                    bamboozlerId={round.bamboozlerId}
+                    word={word.word}
+                    guess={round.guess}
+                    scores={sim.roundScores}
+                    totals={sim.totals}
+                    roundNumber={sim.roundNumber}
+                    rounds={setup.rounds}
+                    youId={you?.id}
+                    colours={identities}
+                    onNext={() => {
+                      spotlight.pin(null);
+                      sim.nextRound();
+                    }}
+                  />
                 )}
               </div>
-            </div>
+            )}
           </div>
         )}
 
@@ -345,7 +376,7 @@ export function RoomPlayerView({ sim, youId, roomCode, revealCode = false }: Roo
           {active
             ? turnTitle(active)
             : phase === "voting"
-              ? "Time’s up! Vote for who you think didn’t know the word."
+              ? "Time’s up! Pick who you think didn’t know the word on their card, then lock in your vote."
               : ""}
         </p>
       </div>
