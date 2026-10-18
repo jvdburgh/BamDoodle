@@ -16,3 +16,8 @@ Lead with these when reviewing `web/src/protocol/` (first seen 2026-10-18, typed
 
 **Why:** each was confirmed with a scratch Vitest against the real code, not guessed.
 **How to apply:** write a throwaway test in web/src/protocol/ (results to scratchpad file; console output is swallowed by grep), run, delete.
+
+Seen 2026-10-18 wiring views to the server (confirmed with a scratch Drawing test):
+- Local-vs-echo stroke reconciliation (`Drawing.sync`) that only covers the stroke in progress: a late echo after local end, or a second stroke begun before the first's `strokeEnded`, briefly erases the stroke you just drew.
+- Screens that gate on `state.room` alone (`inRoom`) keep showing a stale room after `failed`/`reconnecting`; check every route, not just the player one.
+- Client derivations of server rules (`next` up) that skip what the server skips (disconnected players).
