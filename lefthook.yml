@@ -1,0 +1,26 @@
+# Git hooks. `lefthook install` once after cloning (`just setup` does it).
+pre-commit:
+  parallel: true
+  commands:
+    server-fmt:
+      root: "server/"
+      glob: "*.rs"
+      run: cargo fmt --check
+    web-fmt:
+      root: "web/"
+      glob: "*.{ts,tsx,js,mjs,json,css,md}"
+      run: pnpm exec oxfmt --check --no-error-on-unmatched-pattern {staged_files}
+    web-lint:
+      root: "web/"
+      glob: "*.{ts,tsx}"
+      run: pnpm exec oxlint {staged_files}
+
+pre-push:
+  parallel: true
+  commands:
+    server-clippy:
+      root: "server/"
+      run: cargo clippy --all-targets --quiet -- -D warnings
+    web-typecheck:
+      root: "web/"
+      run: pnpm typecheck
