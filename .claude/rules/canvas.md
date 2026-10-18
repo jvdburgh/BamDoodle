@@ -6,7 +6,9 @@ paths:
 # Canvas
 
 - Pointer Events only: `setPointerCapture` on `pointerdown`, read `getCoalescedEvents()` on every `pointermove`
-  (fall back to `[event]` when empty), finish on `pointerup` and `pointercancel`.
+  (fall back to `[event]` when empty), finish on `pointerup` and `pointercancel`. A failing `setPointerCapture`
+  (`NotFoundError`, thrown for pointers the browser doesn't track, including every synthetic one in Firefox) must
+  not abort the stroke.
 - `touch-action: none` on the canvas element only, never on the page.
 - A mouse reports `pressure` 0.5: treat that as "no pressure" and let perfect-freehand simulate it.
 - Store and send points normalised to 0..1; scale to pixels only when drawing. Canvas buffer = CSS size ×

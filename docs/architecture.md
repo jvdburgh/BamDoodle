@@ -93,7 +93,7 @@ weight without helping freehand strokes. tldraw is out: its licence isn't open s
 
 ### Code layout
 
-Follows the curriculum-ui conventions:
+Conventions (see AGENTS.md):
 
 - `src/app/`: the app shell and routes.
 - `src/components/<domain>/`: one home per domain (`canvas`, `lobby`, `room`, `avatar`, `vote`, `brand`, …), with
