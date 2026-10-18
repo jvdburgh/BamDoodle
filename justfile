@@ -68,6 +68,10 @@ storybook:
 icons:
     node scripts/brand-icons.mjs
 
+# The link preview card (web/public/share.png) from the logo and the brand fonts
+share-image:
+    node scripts/share-image.mjs
+
 # WebSocket smoke/soak test against a running server, e.g. just soak ws://localhost:8080/ws 1 0
 soak url="ws://localhost:8080/ws" rooms="1" minutes="0":
     node scripts/ws-soak.mjs --url {{url}} --rooms {{rooms}} --minutes {{minutes}}

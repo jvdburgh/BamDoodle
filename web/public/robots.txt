@@ -1,0 +1,11 @@
+# Room links are for players, not search results; link previews may still read them.
+User-agent: Twitterbot
+User-agent: LinkedInBot
+Allow: /
+
+User-agent: *
+Disallow: /join/
+Disallow: /watch/
+Disallow: /lab
+
+Sitemap: https://bamdoodle.io/sitemap.xml

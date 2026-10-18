@@ -1,7 +1,8 @@
 {
   "name": "BamDoodle",
   "short_name": "BamDoodle",
-  "description": "Draw, guess, deceive. A free party drawing game where one player is bluffing.",
+  "description": "A drawing and bluffing party game: draw the secret word together and catch the bamboozler who doesn't know it.",
+  "categories": ["games", "entertainment"],
   "start_url": "/",
   "display": "standalone",
   "background_color": "#080357",

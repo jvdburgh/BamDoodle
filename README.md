@@ -6,9 +6,10 @@
 
 <p align="center"><strong>Draw • Guess • Deceive</strong></p>
 
-A free, open-source party game for your browser. Everyone draws the secret word together on one canvas, taking
-turns. Everyone except the **bamboozler**: they don't know the word and bluff their way through, while the rest try
-to spot them before time runs out.
+A multiplayer drawing and bluffing party game for your phone. Everyone draws the secret word together on one
+canvas, taking turns. Everyone except the **bamboozler**: they don't know the word and bluff their way through, while
+the rest try to spot them before time runs out. Play it at [bamdoodle.io](https://bamdoodle.io); it's free and open
+source.
 
 No accounts, no ads, no colours to unlock. Share a room code with your friends and play, on your laptop or on the
 big screen at Christmas.

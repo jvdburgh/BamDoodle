@@ -168,7 +168,7 @@ mod tests {
             "/assets/",
             "/assets/nodot",
             "/api/nope",
-            "/robots.txt",
+            "/nonexistent.txt",
         ] {
             let (status, _, _) = get(&router, path).await;
             assert_eq!(status, StatusCode::NOT_FOUND, "{path}");

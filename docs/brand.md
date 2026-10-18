@@ -8,6 +8,9 @@
   character, the game is about finding the sketchy one, and everything is sketched. Use it as a playful question,
   not as the main tagline.
 - Never refer to other games or their names in the product, the docs or the marketing.
+- Describing it (search results, link previews, the manifest, the README): say what it is first, "a multiplayer
+  drawing and bluffing party game for your phone", then how it plays. Free and open source come after, if at all.
+  The link preview card is `web/public/share.png`, rendered by `just share-image`; the tags are in `web/index.html`.
 
 ## Colours
 
