@@ -8,9 +8,12 @@ pub const MAX_ROOMS: usize = 500;
 pub const NAME_MAX_CHARS: usize = 20;
 pub const GUESS_MAX_CHARS: usize = 40;
 
-pub const ROUND_SECONDS: std::ops::RangeInclusive<u32> = 30..=300;
-pub const CLASSIC_TURN: Duration = Duration::from_secs(15);
-pub const TIMED_TURN: Duration = Duration::from_secs(10);
+pub const TURNS_PER_PLAYER: std::ops::RangeInclusive<u32> = 1..=5;
+pub const TIMED_TURNS_PER_PLAYER: u32 = 2;
+pub const TURN_SECONDS: [u32; 4] = [10, 20, 30, 60];
+pub const ROUNDS: std::ops::RangeInclusive<u32> = 1..=10;
+pub const ONE_STROKE_TURN: Duration = Duration::from_secs(15);
+pub const VOTE_TIME: Duration = Duration::from_secs(30);
 pub const GUESS_TIME: Duration = Duration::from_secs(20);
 
 pub const POINTS_PER_MESSAGE: usize = 128;
@@ -37,3 +40,5 @@ pub const HELLO_TIMEOUT: Duration = Duration::from_secs(10);
 /// Messages queued for one connection before it counts as too slow and is dropped.
 pub const OUTBOX_CAPACITY: usize = 256;
 pub const ROOM_COMMAND_CAPACITY: usize = 256;
+/// How often one player can change who they suspect; every change is announced to the whole room.
+pub const SUSPICION_COOLDOWN: Duration = Duration::from_secs(1);

@@ -50,7 +50,8 @@ All live state lives in the process ([decision 0002](decisions/0002-in-memory-st
   back the same seat (and score) after a refresh or a dropped connection. Nickname and avatar are client-side.
 - **Cleanup:** a player who is gone between rounds loses their seat after 2 minutes; a room with no players
   connected closes after 5 minutes (30 seconds if nobody ever joined it). Host screens don't keep a room open.
-- **Words** come from `words/<language>/<pack>.toml`, loaded at startup (`WORDS_DIR`).
+- **Words** come from `words/<language>/<pack>.toml`, loaded at startup (`WORDS_DIR`). Players pick categories, not
+  files: the room snapshot lists every category (`wordCategories`), and `settings.categories` says which are in play.
 - **Limits** are all in `server/src/limits.rs`.
 
 The catch: a deploy or crash ends all running games. At hobby scale that's acceptable; deploy when it's quiet.
@@ -64,28 +65,33 @@ The catch: a deploy or crash ends all running games. At hobby scale that's accep
 - **The first message picks the room:** `createRoom { name }` (you become host), `joinRoom { code, name,
   sessionToken? }` or `watchRoom { code }` for a host screen. The answer is `joined` with your player id, your
   session token and a snapshot of the room as you may see it, or `rejected` with a reason.
-- **A round:** the host sends `startRound`; each device gets its own `roundStarted` (artists with the word, the
-  bamboozler and host screens without). The active player sends `beginStroke`, `extendStroke` (batches of points)
-  and `endStroke`; everyone gets `strokeBegun`, `strokeExtended`, `strokeEnded` and `turnStarted`. Votes
-  (`castVote`) are announced as `voteCast` with only the voter. When everyone has voted or the time is up,
-  `revealed` names the bamboozler and every vote; their `guessWord` (or the guess timer) ends the round with
-  `roundFinished`: the word, the guess, the awards and the scores.
+- **A game and its rounds:** the host can `updateSettings` between rounds (mode, turns per player, seconds per turn, rounds,
+  words) and sends `startRound`; the first round of a game comes with `gameStarted` (scores from zero). Each device
+  gets its own `roundStarted` (artists with the word, the bamboozler and host screens without). The active player
+  sends `beginStroke`, `extendStroke` (batches of points) and `endStroke`; everyone gets `strokeBegun`,
+  `strokeExtended`, `strokeEnded` and `turnStarted` (with which turn it is). While drawing, `suspect` is announced to everyone
+  as `suspicionChanged`. After the last turn comes `votingStarted`: the final `castVote` is announced as `voteCast`
+  with only the voter. When everyone has voted or the time is up (unsubmitted suspicions count), `revealed` names
+  the bamboozler and every vote; their `guessWord` (or the guess timer) ends the round with `roundFinished`: the word,
+  the guess, the awards, the scores and whether that was the last round (`gameOver`).
 - Times are sent as milliseconds remaining, never as clock times, so device clocks don't matter.
 - Per-device views: the server builds each view itself, so the bamboozler's device and host screens never receive
   the word before `roundFinished`, and nobody learns who the bamboozler is before `revealed`. Tests check the actual
   socket traffic for this.
-- The client should reconnect automatically with backoff (needed anyway; Scaleway Serverless Containers also cap a
-  connection at the request timeout, max 60 minutes).
+- The client reconnects automatically with backoff, see [Talking to the server](#talking-to-the-server-websrcprotocol)
+  (needed anyway; Scaleway Serverless Containers also cap a connection at the request timeout, max 60 minutes).
 
 ### Fair play, without over-engineering
 
 - Secrets never leave the server early (above).
 - Turns are enforced on the server: strokes from the wrong player, after the turn, off the canvas, with an odd
-  colour or too many points are dropped. Classic turns allow one stroke, timed turns up to 40.
+  colour or too many points are dropped. One-stroke turns allow one stroke, timed turns up to 40.
 - Limits: 16 KiB per message, 128 points per message, 2,048 per stroke, 60,000 per round, 60 messages per second
   per connection, 10 seconds to say which room you want, 4 host screens per room, 500 rooms. A name is checked
   before a room is created. Not yet: a limit on rooms per IP address.
-- A vote counts once per round, never for yourself, only from players in the round.
+- A suspicion can change at most once a second (every change is announced to everyone). The final vote counts once
+  per round, never for yourself, only from players in the round; a suspicion counts as your vote if you don't submit
+  one.
 - Only the host changes settings and starts rounds, only between rounds.
 - What we don't try to stop: friends telling each other things on a voice call. That's part of a party game.
 
@@ -94,6 +100,29 @@ The catch: a deploy or crash ends all running games. At hobby scale that's accep
 React + Vite + TypeScript, Tailwind 4, Storybook. React only renders the UI around the canvas; the drawing itself is
 imperative canvas code, so the framework matters little for performance. No SSR (Next.js would add a Node server
 and solve problems we don't have).
+
+### Talking to the server (`web/src/protocol/`)
+
+- `RoomConnection` (`roomConnection.ts`) is one device's connection. `start()` says hello (`createRoom`,
+  `joinRoom` with the saved session token, or `watchRoom`), `send()` sends while joined, `close()` leaves for good.
+- **Reconnects** use exponential backoff with jitter (0.5 s doubling to 10 s), and take the seat back with the
+  session token (`sessionTokens.utils.ts`: `localStorage` per room code, offered only for the same name so a second
+  tab under another name gets its own seat; without storage, the seat lasts as long as the page).
+- **Dead sockets:** a hello with no answer within 10 s, or a ping (every 15 s) with nothing coming back within 10 s,
+  means the socket is dead, which sleeping phones produce. Times use `Date.now()`, which keeps counting while a
+  phone sleeps.
+- **A create is never retried once its hello went out:** that could make a second room. The client fails instead
+  and the player taps again.
+- **It stops for good** on `replaced` (another device took the seat), on a rejection that retrying can't fix
+  (`roomNotFound`, `roomFull`, `nameTaken`, …) and on `close()`. The status says which: `connecting`, `joined`,
+  `reconnecting`, `failed`, `replaced`, `closed`.
+- **State** (`roomState.utils.ts`) is a pure reducer from server messages to a `RoomState`: the snapshot kept up to
+  date, timers as deadlines on the device's clock, the last rejection and your own vote (the server only says *that*
+  you voted). Immutable, so React can compare by reference.
+- **React:** `useRoomConnection(intent)` opens a connection for a component's lifetime and returns it with its
+  state; `useRoom(connection)` subscribes to one that exists elsewhere (`room.hook.ts`).
+- Tests: unit tests with a fake socket and fake timers, plus `just test-live` (also in CI), which starts the Rust
+  server and plays a round through the real client.
 
 ### Drawing pipeline
 

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, fn } from "storybook/test";
+import { expect, fn, waitFor } from "storybook/test";
 import { RoomGuess } from "./RoomGuess.component";
 
 const meta = {
@@ -22,7 +22,7 @@ export const YourGuess: Story = {
   args: { yours: true },
   play: async ({ args, canvas, userEvent }) => {
     const field = canvas.getByLabelText("Your guess");
-    await expect(field).toHaveFocus();
+    await waitFor(() => expect(field).toHaveFocus());
     await userEvent.type(field, "giraffe{Enter}");
     await expect(args.onGuess).toHaveBeenCalledWith("giraffe");
   },

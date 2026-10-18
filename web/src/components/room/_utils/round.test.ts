@@ -5,7 +5,7 @@ import { RoundUtils } from "@/components/room/_utils/round.utils";
 const players = ["pip", "juno", "mo"];
 const TURN = 10_000;
 
-const drawing = (mode: "classic" | "timed" = "timed", laps = 2) =>
+const drawing = (mode: "oneStroke" | "timed" = "timed", laps = 2) =>
   RoundUtils.start(
     RoundUtils.create({ mode, turnMs: TURN, totalTurns: laps * players.length, bamboozlerId: "mo" }),
     1_000,
@@ -22,26 +22,26 @@ describe("RoundUtils: drawing", () => {
   });
 
   it("ends a one-stroke turn after one stroke, a timed turn only when its time is up", () => {
-    expect(RoundUtils.strokeFinished(drawing("classic"), 0, 2_000).turnCount).toBe(1);
+    expect(RoundUtils.strokeFinished(drawing("oneStroke"), 0, 2_000).turnCount).toBe(1);
     const timed = drawing("timed");
     expect(RoundUtils.strokeFinished(timed, 0, 2_000)).toBe(timed);
     expect(RoundUtils.tick(timed, 1_000 + TURN).turnCount).toBe(1);
   });
 
   it("doesn't skip the next player when a stroke ends just after the turn timed out", () => {
-    const timedOut = RoundUtils.tick(drawing("classic"), 1_000 + TURN);
+    const timedOut = RoundUtils.tick(drawing("oneStroke"), 1_000 + TURN);
     expect(RoundUtils.strokeFinished(timedOut, 0, 11_001)).toBe(timedOut);
   });
 
   it("counts each player's turns", () => {
-    let round = drawing("classic", 3);
+    let round = drawing("oneStroke", 3);
     for (let turn = 0; turn < 4; turn++) round = RoundUtils.endTurn(round, turn, 2_000 + turn);
     expect(RoundUtils.turn(round, 3)).toBe(2);
     expect(RoundUtils.activeIndex(round, 3)).toBe(1);
   });
 
   it("moves to the final vote after the last turn of the last lap", () => {
-    let round = drawing("classic", 1);
+    let round = drawing("oneStroke", 1);
     for (let turn = 0; turn < 3; turn++) round = RoundUtils.endTurn(round, turn, 5_000);
     expect(round.phase).toBe("voting");
     expect(round.phaseStartedAt).toBe(5_000);
@@ -148,7 +148,7 @@ describe("RoundUtils: reveal, guess, results", () => {
 
 describe("RoundUtils: setup and clocks", () => {
   const setup: RoomSetup = {
-    mode: "classic",
+    mode: "oneStroke",
     turnsPerPlayer: 3,
     turnSeconds: 20,
     rounds: 5,

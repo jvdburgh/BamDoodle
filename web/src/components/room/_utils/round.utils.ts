@@ -1,7 +1,7 @@
 import type { Round, RoomSetup, TurnMode } from "@/components/room/_types/room.types";
 
 /** Starting points (docs/game-rules.md); the server will own them, the prototype mirrors them. */
-const CLASSIC_TURN_MS = 15_000;
+const ONE_STROKE_TURN_MS = 15_000;
 const TIMED_TURNS_PER_PLAYER = 2;
 const VOTE_MS = 30_000;
 const REVEAL_MS = 7_000;
@@ -12,7 +12,7 @@ const TURNS_PER_PLAYER_CHOICES = [1, 2, 3, 4, 5];
 const TURN_SECOND_CHOICES = [10, 20, 30, 60];
 const ROUND_CHOICES = [3, 5, 10];
 const DEFAULT_SETUP: RoomSetup = {
-  mode: "classic",
+  mode: "oneStroke",
   turnsPerPlayer: 3,
   turnSeconds: 20,
   rounds: 5,
@@ -22,9 +22,9 @@ const DEFAULT_SETUP: RoomSetup = {
 };
 
 const turnsPerPlayerFor = (setup: Pick<RoomSetup, "mode" | "turnsPerPlayer">) =>
-  setup.mode === "classic" ? setup.turnsPerPlayer : TIMED_TURNS_PER_PLAYER;
+  setup.mode === "oneStroke" ? setup.turnsPerPlayer : TIMED_TURNS_PER_PLAYER;
 const turnMsFor = (setup: Pick<RoomSetup, "mode" | "turnSeconds">) =>
-  setup.mode === "classic" ? CLASSIC_TURN_MS : setup.turnSeconds * 1000;
+  setup.mode === "oneStroke" ? ONE_STROKE_TURN_MS : setup.turnSeconds * 1000;
 
 type NewRound = { mode: TurnMode; turnMs: number; totalTurns: number; bamboozlerId: string };
 
@@ -60,7 +60,7 @@ function endTurn(round: Round, turnCount: number, now: number): Round {
 
 /** One-stroke turns end with the stroke; timed turns keep going until their time is up. */
 function strokeFinished(round: Round, turnCount: number, now: number): Round {
-  return round.mode === "classic" ? endTurn(round, turnCount, now) : round;
+  return round.mode === "oneStroke" ? endTurn(round, turnCount, now) : round;
 }
 
 /** Final votes: the locked ones, and for anyone who didn't lock one, their last suspicion. */

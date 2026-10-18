@@ -12,13 +12,13 @@ const meta = {
       </div>
     ),
   ],
-  args: { title: "Juno’s turn", mode: "classic", msLeft: 5_300, msTotal: 8_000 },
+  args: { title: "Juno’s turn", mode: "oneStroke", msLeft: 5_300, msTotal: 8_000 },
 } satisfies Meta<typeof RoomTurnBar>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Classic: Story = {
+export const OneStroke: Story = {
   play: async ({ canvas }) => {
     await expect(canvas.getByText("Juno’s turn")).toBeVisible();
     await expect(canvas.getByRole("progressbar", { name: "Juno’s turn: time left" })).toHaveAttribute(

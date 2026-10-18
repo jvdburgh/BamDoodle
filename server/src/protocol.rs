@@ -19,9 +19,9 @@ pub struct Point(pub f32, pub f32, pub f32);
 #[serde(rename_all = "camelCase")]
 #[ts(export)]
 pub enum TurnMode {
-    /// One stroke per turn.
-    Classic,
-    /// A few seconds of free drawing per turn.
+    /// One stroke per turn, a set number of turns per player.
+    OneStroke,
+    /// A set number of seconds of free drawing per turn.
     Timed,
 }
 
@@ -55,19 +55,27 @@ pub enum Role {
 #[ts(export)]
 pub struct RoomSettings {
     pub mode: TurnMode,
+    /// How often each player draws in one-stroke mode, 1 to 5 (timed turns: always twice).
+    pub turns_per_player: u32,
+    /// Length of a timed turn: 10, 20, 30 or 60.
+    pub turn_seconds: u32,
+    /// Rounds in a game; after the last one comes the final scoreboard.
+    pub rounds: u32,
     pub language: Language,
-    /// Mix the adults pack (18+) into the words.
-    pub adults: bool,
-    pub round_seconds: u32,
+    /// The word categories in play, by name, in `language`. Adult (18+) categories are only in play when picked.
+    pub categories: Vec<String>,
 }
 
 impl Default for RoomSettings {
+    /// No categories: a new room fills in its language's everyday ones (`Room::new`).
     fn default() -> Self {
         Self {
-            mode: TurnMode::Classic,
+            mode: TurnMode::OneStroke,
+            turns_per_player: 3,
+            turn_seconds: 20,
+            rounds: 5,
             language: Language::En,
-            adults: false,
-            round_seconds: 60,
+            categories: Vec::new(),
         }
     }
 }
@@ -98,7 +106,7 @@ pub enum ClientMessage {
     UpdateSettings {
         settings: RoomSettings,
     },
-    /// Host only, between rounds.
+    /// Host only, between rounds. After the final scoreboard, this starts a new game.
     StartRound,
     /// The active player starts a stroke. `colour` is `#rrggbb`.
     #[serde(rename_all = "camelCase")]
@@ -114,7 +122,13 @@ pub enum ClientMessage {
     },
     /// The active player lifts the pen.
     EndStroke,
-    /// Once per round, while drawing goes on.
+    /// While the drawing goes on: who you suspect right now, for everyone to see. Change it as often as you like;
+    /// `null` takes it back.
+    #[serde(rename_all = "camelCase")]
+    Suspect {
+        suspect_id: Option<PlayerId>,
+    },
+    /// Your final answer in the "Who's sketchy?" vote after the drawing. Once per round.
     #[serde(rename_all = "camelCase")]
     CastVote {
         suspect_id: PlayerId,
@@ -160,6 +174,11 @@ pub enum ServerMessage {
     SettingsChanged {
         settings: RoomSettings,
     },
+    /// A new game begins (the first round, or a new game after the final scoreboard): scores start from here.
+    #[serde(rename_all = "camelCase")]
+    GameStarted {
+        scores: Vec<PlayerSummary>,
+    },
     /// Sent to each viewer separately: only artists get the word.
     #[serde(rename_all = "camelCase")]
     RoundStarted {
@@ -169,6 +188,7 @@ pub enum ServerMessage {
     TurnStarted {
         player_id: PlayerId,
         duration_ms: u32,
+        turn: u32,
     },
     #[serde(rename_all = "camelCase")]
     StrokeBegun {
@@ -183,12 +203,23 @@ pub enum ServerMessage {
     StrokeEnded {
         stroke_id: StrokeId,
     },
+    /// Who someone suspects now, during the drawing. Public on purpose.
+    #[serde(rename_all = "camelCase")]
+    SuspicionChanged {
+        player_id: PlayerId,
+        suspect_id: Option<PlayerId>,
+    },
+    /// The last turn is over: "Who's sketchy?" Everyone makes their final choice.
+    #[serde(rename_all = "camelCase")]
+    VotingStarted {
+        duration_ms: u32,
+    },
     /// Someone voted. Who they voted for stays secret until the reveal.
     #[serde(rename_all = "camelCase")]
     VoteCast {
         voter_id: PlayerId,
     },
-    /// Drawing is over: here's the bamboozler and every vote. The bamboozler now gets to guess the word.
+    /// Voting is over: here's the bamboozler and every vote. The bamboozler now gets to guess the word.
     #[serde(rename_all = "camelCase")]
     Revealed {
         reveal: Reveal,
@@ -245,7 +276,20 @@ pub struct RoomSnapshot {
     pub host_id: Option<PlayerId>,
     pub players: Vec<PlayerSummary>,
     pub settings: RoomSettings,
+    /// Every category the host can pick from, in every language.
+    pub word_categories: Vec<WordCategory>,
     pub phase: PhaseView,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct WordCategory {
+    pub language: Language,
+    pub name: String,
+    /// 18+: never picked unless the host picks it.
+    pub adult: bool,
+    pub words: u32,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
@@ -256,6 +300,11 @@ pub enum PhaseView {
     #[serde(rename_all = "camelCase")]
     Drawing {
         round: RoundView,
+    },
+    #[serde(rename_all = "camelCase")]
+    Voting {
+        round: RoundView,
+        voting_remaining_ms: u32,
     },
     #[serde(rename_all = "camelCase")]
     Guessing {
@@ -274,6 +323,8 @@ pub enum PhaseView {
 #[ts(export)]
 pub struct RoundView {
     pub number: u32,
+    /// Rounds in this game.
+    pub rounds: u32,
     pub category: String,
     /// Absent for the bamboozler and for host screens.
     pub word: Option<String>,
@@ -282,9 +333,13 @@ pub struct RoundView {
     pub turn_order: Vec<PlayerId>,
     pub active_player_id: Option<PlayerId>,
     pub turn_remaining_ms: u32,
-    pub round_remaining_ms: u32,
+    /// The turn being drawn, from 1 to `turns_per_player`.
+    pub turn: u32,
+    pub turns_per_player: u32,
     pub strokes: Vec<StrokeView>,
-    /// Who has voted already (not for whom).
+    /// Who suspects whom right now. Public.
+    pub suspicions: Vec<Suspicion>,
+    /// Who has cast their final vote (not for whom).
     pub voted: Vec<PlayerId>,
     pub your_vote: Option<PlayerId>,
 }
@@ -299,6 +354,14 @@ pub struct StrokeView {
     pub size: BrushSize,
     pub points: Vec<Point>,
     pub done: bool,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct Suspicion {
+    pub player_id: PlayerId,
+    pub suspect_id: PlayerId,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
@@ -323,6 +386,9 @@ pub struct Reveal {
 #[ts(export)]
 pub struct RoundResult {
     pub number: u32,
+    pub rounds: u32,
+    /// The last round of the game: show the final scoreboard. The host's next `startRound` begins a new game.
+    pub game_over: bool,
     pub category: String,
     pub word: String,
     pub bamboozler_id: PlayerId,
@@ -367,6 +433,9 @@ mod tests {
         )
         .unwrap();
         assert!(matches!(message, ClientMessage::BeginStroke { points, .. } if points == vec![Point(0.5, 0.25, 0.5)]));
+
+        let message: ClientMessage = serde_json::from_str(r#"{ "type": "suspect", "suspectId": null }"#).unwrap();
+        assert!(matches!(message, ClientMessage::Suspect { suspect_id: None }));
     }
 
     #[test]
@@ -374,11 +443,23 @@ mod tests {
         let message = ServerMessage::TurnStarted {
             player_id: 2,
             duration_ms: 10_000,
+            turn: 1,
         };
         let json = serde_json::to_value(&message).unwrap();
         assert_eq!(
             json,
-            serde_json::json!({ "type": "turnStarted", "playerId": 2, "durationMs": 10000 })
+            serde_json::json!({ "type": "turnStarted", "playerId": 2, "durationMs": 10000, "turn": 1 })
+        );
+    }
+
+    #[test]
+    fn settings_use_the_names_the_ui_shows() {
+        let json = serde_json::to_value(RoomSettings::default()).unwrap();
+        assert_eq!(
+            json,
+            serde_json::json!({
+                "mode": "oneStroke", "turnsPerPlayer": 3, "turnSeconds": 20, "rounds": 5, "language": "en", "categories": []
+            })
         );
     }
 

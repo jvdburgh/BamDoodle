@@ -28,38 +28,41 @@ goal for now.
 - Exactly one bamboozler per round, picked at random by the server. Nobody but the server knows who it is
   until the reveal.
 
+## A game
+
+A game is a few rounds (the host picks how many, default 5). Every round has a new word and a new bamboozler. After
+the last round comes the final scoreboard, with confetti for the winner; the host can start a new game from there. The host
+can change the number of rounds between rounds; when that's already been reached, the next start begins a new game.
+
 ## A round
 
-1. **Lobby.** The start page offers two things: **Create a room** or **Join a room**. Creating asks for a nickname
-   and the room settings; joining asks for the four-letter room code (shown as "Join at bamdoodle.io with code …" on
-   the host's screen) and a nickname, or skips the code when you open a shared link. Players draw or tweak their
-   avatar while they wait. The host starts the first round.
-2. **Secret.** The server picks a word from the pack and tells each player their role.
-3. **Drawing.** Players take turns on the shared canvas in a fixed order shown on screen, until each player has drawn the chosen
-   number of times ("Turn 2 of 3"). The player whose turn it is is highlighted, and their strokes appear live for everyone.
-4. **Suspecting runs alongside the drawing.** At any moment a player can mark who they suspect, and change it. It's
-   public: every screen shows it ("Noor thinks Jip is sketchy").
-5. **Final vote.** After the last turn: "Time's up! Who's sketchy?" for 30 seconds, with your suspicion pre-selected.
-   Locking in a vote is final; if you don't, your last suspicion counts. Everyone sees who has voted, not for whom.
-6. **Reveal.** The bamboozler and everyone's votes are revealed. The bamboozler then gets one chance to guess the
-   word, even when everyone caught them.
-7. **Results.** Per player: right or wrong, this round's points and the running scores. The host starts the next
-   round with a new bamboozler. After the last round: a final scoreboard with a podium; the host can start a new
-   game, which resets the scores.
-
-There is no separate investigation phase: you have to pay attention while the drawing happens.
+1. **Lobby.** The start page offers **Join a room** (most people) or **Create a room**. Joining asks for the
+   four-letter room code (shown as "Join at bamdoodle.io with code …" on the host's screen) and a nickname, or skips
+   the code when you open a shared link; players draw or tweak their avatar while they wait. The host sets up the room: mode, turns per player or turn length, rounds per game, the language and the
+   word categories to play with (Efteling, Places, Very British, …, and 18+ ones if they want), then starts.
+2. **Secret.** The server picks a word from the chosen categories and tells each player their role.
+3. **Drawing.** Players take turns on the shared canvas in a shuffled order shown on screen; each player
+   gets the same number of turns. The player whose turn it is is highlighted, and their strokes appear live for everyone.
+4. **Suspecting, while the drawing goes on.** Any time, a player can point at who they suspect, and change their mind.
+   That's public and part of the fun: everyone sees "Noor thinks Jip is sketchy".
+5. **Who's sketchy?** After the last turn, everyone makes their final choice: "Who do you think didn't know the word?"
+   Your current suspicion is pre-selected; submitting locks it. Voting ends when everyone has voted or after 30
+   seconds, and anyone who didn't submit votes for whoever they suspected last (or not at all).
+6. **Reveal.** The bamboozler and every vote are shown. The bamboozler gets one chance to guess the word, even when
+   everyone caught them.
+7. **Results.** Who was right, who was wrong, the points of this round and the scores so far. The host starts the
+   next round.
 
 ## Turn modes
 
-| Mode | A turn is | Notes |
+| Mode | A turn is | The host sets |
 | --- | --- | --- |
-| **One stroke each** (`classic`) | one stroke (press, draw, release), with a short time limit | Tense, every stroke counts. |
-| **Timed turns** (`timed`) | about 10 seconds of free drawing, any number of strokes | More expressive. Gives the bamboozler more clues, so fewer turns each. |
+| **One stroke each** | one stroke (press, draw, release), with a 15 second limit | turns per player: 1 to 5 (default 3) |
+| **Timed turns** | free drawing, any number of strokes | seconds per turn: 10, 20 (default), 30 or 60; 2 turns each |
 
-The app shows the descriptive names; `classic` and `timed` are the names in code and on the wire. Creating a room
-picks the mode (with how many times each player draws, or the seconds per turn), the number of rounds, the colours
-(below), the language and the word categories in play: chips with the word count, everything but the 18+ categories
-ticked by default, at least one required. Switching language picks that language's non-adult categories.
+In the app these are named "One stroke each" and "Timed turns" ("Each player draws: once / 2 / 3 … times"); in code
+and on the wire they're `oneStroke` and `timed`. The categories are picked as chips with their word count, every
+non-18+ category of the room's language ticked by default, 18+ ones marked and only in play when ticked.
 
 The server enforces the turn: strokes from someone whose turn it isn't, or after the time limit, are dropped.
 Simultaneous drawing is parked: it is hard to follow who draws what and much heavier to sync.
@@ -84,7 +87,8 @@ gets a family of five shades, and their avatar wears it) when setting up the roo
 how many suspect that player. After the last turn the same cards turn into the choice ("Pick"), next to a "Time's up!
 Who's sketchy? Who do you think didn't know the word?" prompt with a 30 s countdown, your suspicion pre-selected and
 a "Lock in my vote" button; it shows who has voted, never for whom. On a laptop everything fits one screen (cards
-left, canvas sized to fit, pens and colours docked right, round and turn progress bottom-left); on a phone the cards
+in one column on the left, the canvas sized to fit with pens and colours right under it, round and turn progress
+bottom-left); on a phone the cards
 or your tools follow the canvas depending on whose turn it is. Then the reveal, the bamboozler's guess, the round's
 points with the running totals, and a podium after the last round.
 
@@ -92,31 +96,36 @@ points with the running totals, and a podium after the last round.
 
 | Who | When | Points |
 | --- | --- | --- |
-| Artist | voted for the bamboozler | +1 |
+| Artist | final vote for the bamboozler | +1 |
 | Bamboozler | guessed the word | +1 |
 | Bamboozler | fewer than half of the artists voted for them | +1 |
 
 Split votes need no tie-break: points are per voter, not per majority.
 
-## Word packs
+## Words and categories
 
-- English and Dutch, simple and drawable, grouped into categories. See [words.md](words.md).
-- An **adults pack** (18+, innuendo and rude-but-drawable words) the host can switch on. Off by default.
+- English and Dutch, simple and drawable. See [words.md](words.md).
+- The host picks which **categories** are in play before starting: everyday ones (Animals, Food, Places, …) and
+  themed ones (Efteling, Sinterklaas, Typisch Nederlands, Lekker Nederlands, Very British, Christmas, Fairy tales,
+  Landmarks). A new room starts with every category of its language that isn't 18+, themed ones included; the
+  host narrows it down.
+- **18+ categories** (innuendo and rude-but-drawable words) are categories like any other, marked 18+ and never in
+  play unless the host picks them.
 
 ## Current defaults (revisit after playtests)
 
 These are implemented in the server (`server/src/limits.rs`) and easy to change:
 
 - **Players:** 3 to start a round, at most 8 in a room. Designed for 4 to 6.
-- **Timers:** round 60 seconds (the host can pick 30 to 300), Classic turn 15 seconds, Timed turn 10 seconds, the
-  bamboozler's guess 20 seconds.
+- **Timers:** one-stroke turns 15 seconds, timed turns as set, the final vote 30 seconds, the bamboozler's guess 20
+  seconds. There's no separate round timer: the turns decide how long the drawing lasts.
 - **Turn order** is shuffled each round and the bamboozler is picked fully at random, so the same player can be it
-  twice in a row (any rule about who it can't be would narrow it down). Words don't repeat until the pack runs out.
-- **Everyone votes, the bamboozler too**, so not voting doesn't give them away; their vote earns nothing. Votes stay
-  secret until the reveal; everyone sees who has voted.
+  twice in a row (any rule about who it can't be would narrow it down). Words don't repeat until the picked categories run out.
+- **Everyone votes, the bamboozler too**, so not voting doesn't give them away; their vote earns nothing. Final votes
+  stay secret until the reveal; everyone sees who has voted. Suspicions during the drawing are public.
 - **The guess** is free text, forgiving about case, accents, spaces and one typo in words of five letters or more.
 - **Disconnects:** the round goes on. A drawer who drops loses their turn. A player who drops still counts for the
-  vote for 15 seconds (a locked phone shouldn't end the round); after that they no longer hold it up. A session token
+  vote for 15 seconds (a locked phone shouldn't end it); after that they no longer hold it up. A session token
   takes your seat and score back, and a second device with the same token takes over from the first. After a round,
   the seat of someone who is gone is kept for 2 minutes.
 - **Late joiners** watch the current round (no word, no vote) and play from the next one.
@@ -125,5 +134,5 @@ These are implemented in the server (`server/src/limits.rs`) and easy to change:
 ## Open questions
 
 - Does the host screen need its own controls (start the next round, kick a player), or is that the host's phone?
-- Should a round have a fixed number of laps instead of (or as well as) a timer?
+- Should timed turns also let the host pick the number of turns per player?
 - A computer-controlled bamboozler (the original pitch said "player or AI"): later, if ever.

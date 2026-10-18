@@ -2,8 +2,20 @@
 import type { Language } from "./Language";
 import type { TurnMode } from "./TurnMode";
 
-export type RoomSettings = { mode: TurnMode, language: Language, 
+export type RoomSettings = { mode: TurnMode, 
 /**
- * Mix the adults pack (18+) into the words.
+ * How often each player draws in one-stroke mode, 1 to 5 (timed turns: always twice).
  */
-adults: boolean, roundSeconds: number, };
+turnsPerPlayer: number, 
+/**
+ * Length of a timed turn: 10, 20, 30 or 60.
+ */
+turnSeconds: number, 
+/**
+ * Rounds in a game; after the last one comes the final scoreboard.
+ */
+rounds: number, language: Language, 
+/**
+ * The word categories in play, by name, in `language`. Adult (18+) categories are only in play when picked.
+ */
+categories: Array<string>, };

@@ -35,7 +35,7 @@ const defaults: LabSettings = {
 
 const choices: { [K in keyof LabSettings]: readonly LabSettings[K][] } = {
   screen: ["start", "room"],
-  mode: ["classic", "timed"],
+  mode: ["oneStroke", "timed"],
   turnsPerPlayer: RoundUtils.TURNS_PER_PLAYER_CHOICES,
   turnSeconds: RoundUtils.TURN_SECOND_CHOICES,
   rounds: RoundUtils.ROUND_CHOICES,

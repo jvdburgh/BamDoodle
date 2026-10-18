@@ -24,6 +24,8 @@ Use `just` (it wraps cargo and pnpm the same way CI does):
 - `just check-agents`: every path cited in this file, `CLAUDE.md`, `.claude/` and the PR template exists
   (`scripts/check-agents.mts`). Rename a file, fix the citation in the same commit.
 - `just fmt`, `just protocol` (regenerate TypeScript types from `server/src/protocol.rs`), `just storybook`
+- `just test-live`: starts the Rust server and runs the web client's live tests against it
+  (`web/src/protocol/roomConnection.live.test.ts`)
 - In `web/`: `pnpm storybook:test` (stories in Firefox and Chromium), `pnpm test:unit`, one story file with
   `pnpm exec vitest run --project=storybook <file>`
 

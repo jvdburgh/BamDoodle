@@ -30,7 +30,7 @@ const field =
 type Option<T> = { value: T; title: string; detail: string };
 
 const turnOptions: Option<TurnMode>[] = [
-  { value: "classic", title: "One stroke each", detail: "Draw one line, pass it on" },
+  { value: "oneStroke", title: "One stroke each", detail: "Draw one line, pass it on" },
   { value: "timed", title: "Timed turns", detail: "A few seconds to draw freely" },
 ];
 const colourOptions: Option<Attribution>[] = [
@@ -171,7 +171,7 @@ export function LobbyStart({ onEnter, defaultName = "", wordCategories }: LobbyS
                 onChange={(mode) => change({ mode })}
                 firstRef={first}
               />
-              {setup.mode === "classic" ? (
+              {setup.mode === "oneStroke" ? (
                 <LobbyPills
                   legend="Each player draws"
                   name="lobby-turns"

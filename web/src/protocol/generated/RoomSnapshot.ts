@@ -2,5 +2,10 @@
 import type { PhaseView } from "./PhaseView";
 import type { PlayerSummary } from "./PlayerSummary";
 import type { RoomSettings } from "./RoomSettings";
+import type { WordCategory } from "./WordCategory";
 
-export type RoomSnapshot = { code: string, hostId: number | null, players: Array<PlayerSummary>, settings: RoomSettings, phase: PhaseView, };
+export type RoomSnapshot = { code: string, hostId: number | null, players: Array<PlayerSummary>, settings: RoomSettings, 
+/**
+ * Every category the host can pick from, in every language.
+ */
+wordCategories: Array<WordCategory>, phase: PhaseView, };

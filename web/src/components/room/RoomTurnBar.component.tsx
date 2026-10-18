@@ -11,7 +11,7 @@ type RoomTurnBarProps = {
 };
 
 const hints: Record<TurnMode, string> = {
-  classic: "One stroke, then pass it on",
+  oneStroke: "One stroke, then pass it on",
   timed: "Draw as much as you like",
 };
 

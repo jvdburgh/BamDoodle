@@ -10,7 +10,7 @@ function PlayerWithSimulation({ attribution, width }: { attribution: Attribution
     players: playersFixture,
     youId: "juno",
     words: wordsFixture,
-    setup: { ...setupFixture, mode: "classic", attribution },
+    setup: { ...setupFixture, mode: "oneStroke", attribution },
   });
   return (
     <div style={{ width }}>

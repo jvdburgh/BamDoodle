@@ -141,29 +141,62 @@ async fn a_whole_round_with_three_players_and_a_host_screen() {
         1
     );
 
-    let drawer = players.iter_mut().find(|(id, _)| *id == active).unwrap();
-    drawer
-        .1
-        .send(&ClientMessage::BeginStroke {
-            colour: "#2da8c3".into(),
-            size: bamdoodle_server::protocol::BrushSize::Bold,
-            points: vec![Point(0.1, 0.2, 0.5), Point(0.3, 0.4, 0.5)],
-        })
-        .await;
-    drawer.1.send(&ClientMessage::EndStroke).await;
-    let stroke = screen
-        .expect(|message| match message {
-            ServerMessage::StrokeBegun { stroke } => Some(stroke),
-            _ => None,
-        })
-        .await;
-    assert_eq!(stroke.player_id, active);
-
     let artists: Vec<PlayerId> = players
         .iter()
         .map(|(id, _)| *id)
         .filter(|id| *id != bamboozler)
         .collect();
+    let (_, suspicious) = players.iter_mut().find(|(id, _)| *id == artists[0]).unwrap();
+    suspicious
+        .send(&ClientMessage::Suspect {
+            suspect_id: Some(bamboozler),
+        })
+        .await;
+    let suspicion = screen
+        .expect(|message| match message {
+            ServerMessage::SuspicionChanged { player_id, suspect_id } => Some((player_id, suspect_id)),
+            _ => None,
+        })
+        .await;
+    assert_eq!(suspicion, (artists[0], Some(bamboozler)));
+
+    // Three turns each of one stroke, then the final vote.
+    let mut active = active;
+    let mut strokes = 0;
+    loop {
+        let drawer = players.iter_mut().find(|(id, _)| *id == active).unwrap();
+        drawer
+            .1
+            .send(&ClientMessage::BeginStroke {
+                colour: "#2da8c3".into(),
+                size: bamdoodle_server::protocol::BrushSize::Bold,
+                points: vec![Point(0.1, 0.2, 0.5), Point(0.3, 0.4, 0.5)],
+            })
+            .await;
+        drawer.1.send(&ClientMessage::EndStroke).await;
+        let stroke = screen
+            .expect(|message| match message {
+                ServerMessage::StrokeBegun { stroke } => Some(stroke),
+                _ => None,
+            })
+            .await;
+        assert_eq!(stroke.player_id, active);
+        strokes += 1;
+
+        let next = screen
+            .expect(|message| match message {
+                ServerMessage::TurnStarted { player_id, .. } => Some(Some(player_id)),
+                ServerMessage::VotingStarted { .. } => Some(None),
+                _ => None,
+            })
+            .await;
+        match next {
+            Some(player_id) => active = player_id,
+            None => break,
+        }
+    }
+    assert_eq!(strokes, 9);
+
     for (id, client) in &mut players {
         let suspect = if *id == bamboozler { artists[0] } else { bamboozler };
         client.send(&ClientMessage::CastVote { suspect_id: suspect }).await;

@@ -6,7 +6,7 @@ import { ScoreUtils } from "@/components/room/_utils/score.utils";
 const players = ["pip", "juno", "mo", "kiki", "rafa"];
 
 const finished = (votes: Record<string, string>, guessed: boolean | null, suspicions = {}): Round => ({
-  ...RoundUtils.create({ mode: "classic", turnMs: 15_000, totalTurns: 10, bamboozlerId: "mo" }),
+  ...RoundUtils.create({ mode: "oneStroke", turnMs: 15_000, totalTurns: 10, bamboozlerId: "mo" }),
   phase: "results",
   votes,
   suspicions,

@@ -3,5 +3,5 @@ language = "nl"
 adult = true
 
 [categories]
-"Na middernacht" = ["kater", "handboeien", "bikini", "naaktzwemmen", "zuigzoen", "strippoker", "bierbuik", "speeddate", "vrijgezellenfeest", "afterparty"]
-"Lichamelijk" = ["scheet", "boer", "puistje", "wc-papier", "harige rug", "navel", "onderbroek", "beha", "zweetplek", "snurken"]
+"Na middernacht" = ["afterparty", "bierbuik", "bikini", "handboeien", "kater", "naaktzwemmen", "speeddate", "strippoker", "vrijgezellenfeest", "zuigzoen"]
+"Lichamelijk" = ["beha", "boer", "harige rug", "navel", "onderbroek", "puistje", "scheet", "snurken", "wc-papier", "zweetplek"]

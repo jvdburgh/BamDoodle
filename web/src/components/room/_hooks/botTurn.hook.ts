@@ -11,7 +11,7 @@ const MAX_TIMED_STROKES = 3;
 
 /**
  * Plays a simulated player's turn: waits a moment, then draws strokes point by point into the shared drawing, the way
- * a remote player's strokes will stream in from the server. Classic turns get one stroke, timed turns up to three.
+ * a remote player's strokes will stream in from the server. One-stroke turns get one stroke, timed turns up to three.
  */
 export function useBotTurn(
   drawing: Drawing,

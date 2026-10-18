@@ -3,4 +3,8 @@ import type { Award } from "./Award";
 import type { PlayerSummary } from "./PlayerSummary";
 import type { Vote } from "./Vote";
 
-export type RoundResult = { number: number, category: string, word: string, bamboozlerId: number, guess: string | null, guessCorrect: boolean, votes: Array<Vote>, awards: Array<Award>, scores: Array<PlayerSummary>, };
+export type RoundResult = { number: number, rounds: number, 
+/**
+ * The last round of the game: show the final scoreboard. The host's next `startRound` begins a new game.
+ */
+gameOver: boolean, category: string, word: string, bamboozlerId: number, guess: string | null, guessCorrect: boolean, votes: Array<Vote>, awards: Array<Award>, scores: Array<PlayerSummary>, };
