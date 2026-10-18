@@ -139,6 +139,9 @@
 @layer base {
   html {
     color-scheme: dark;
+    /* The height of a phone browser's bottom toolbar while it shows (Firefox and Safari draw it over the page), 0
+       once it hides: for anything pinned to the bottom of the screen. */
+    --browser-bar: calc(100lvh - 100dvh);
   }
 
   body {

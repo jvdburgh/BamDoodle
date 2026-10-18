@@ -178,7 +178,7 @@ export function RoomPlayerView({
 
   return (
     <div className="@container/room">
-      <div className="mx-auto flex max-w-[110rem] flex-col gap-3 p-3 @5xl/room:h-svh @5xl/room:gap-4 @5xl/room:px-5 @5xl/room:py-4">
+      <div className="mx-auto flex max-w-[110rem] flex-col gap-3 p-3 pb-16 @5xl/room:h-svh @5xl/room:gap-4 @5xl/room:px-5 @5xl/room:py-4">
         <header className="grid grid-cols-[auto_1fr_auto] items-center gap-x-2 @5xl/room:grid-cols-[1fr_auto_1fr]">
           <BrandLogo
             key={view.roundNumber}

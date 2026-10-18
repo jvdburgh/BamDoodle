@@ -74,7 +74,7 @@ export function LobbySetup({
   };
 
   return (
-    <div className="flex min-h-svh flex-col">
+    <div className="flex min-h-svh flex-col pb-16 md:pb-0">
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-3 px-4 py-3 md:max-w-5xl md:gap-6 md:py-8">
         <header className="flex items-center justify-between gap-3">
           <BrandLogo named href={home} className="size-10" />
@@ -189,7 +189,7 @@ export function LobbySetup({
               />
             </section>
 
-            <div className="sticky bottom-3 z-10 flex items-center justify-end gap-3 md:col-span-2">
+            <div className="sticky bottom-[calc(0.75rem_+_var(--browser-bar))] z-10 flex items-center justify-end gap-3 md:col-span-2 md:bottom-3">
               {onBack && (
                 <button type="button" onClick={onBack} className={`${BrandStyles.quietButton} mr-auto`}>
                   Back
