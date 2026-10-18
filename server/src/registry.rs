@@ -60,6 +60,10 @@ impl Registry {
         Ok((code, handle))
     }
 
+    pub fn words(&self) -> &WordLibrary {
+        &self.words
+    }
+
     pub fn find(&self, code: &str) -> Option<RoomHandle> {
         let code = code.trim().to_ascii_uppercase();
         self.rooms

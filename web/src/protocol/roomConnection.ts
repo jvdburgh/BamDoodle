@@ -1,13 +1,15 @@
 import type { AvatarStroke } from "@/protocol/generated/AvatarStroke";
 import type { ClientMessage } from "@/protocol/generated/ClientMessage";
 import type { RejectReason } from "@/protocol/generated/RejectReason";
+import type { RoomSettings } from "@/protocol/generated/RoomSettings";
 import type { ServerMessage } from "@/protocol/generated/ServerMessage";
 import { type RoomState, RoomStateUtils } from "@/protocol/roomState.utils";
 import { type SessionTokenStore, SessionTokenUtils } from "@/protocol/sessionTokens.utils";
 import { APP_VERSION } from "@/protocol/version";
 
 export type RoomIntent =
-  | { kind: "create"; name: string }
+  /** With the settings picked before the room existed. */
+  | { kind: "create"; name: string; settings?: RoomSettings }
   | { kind: "join"; code: string; name: string }
   | { kind: "watch"; code: string };
 
@@ -109,6 +111,18 @@ export class RoomConnection {
     }
   }
 
+  /** The server runs another release than this app; local builds never count. */
+  static outdated(appVersion: string, serverVersion: string | null): serverVersion is string {
+    return appVersion !== "dev" && serverVersion !== null && serverVersion !== "dev" && serverVersion !== appVersion;
+  }
+
+  /** Before work a reload would throw away (setting up a room): reloads now when a new release is out. */
+  static async reloadIfOutdated(): Promise<boolean> {
+    if (APP_VERSION === "dev") return false;
+    const serverVersion = await RoomConnection.fetchServerVersion(RoomConnection.defaultUrl());
+    return RoomConnection.outdated(APP_VERSION, serverVersion) && RoomConnection.reloadOnce(serverVersion);
+  }
+
   /** Reloads to fetch the new release, at most once per version so a stale cache can never loop. */
   static reloadOnce(serverVersion: string): boolean {
     const key = "bamdoodle:reloaded-for";
@@ -203,8 +217,7 @@ export class RoomConnection {
     if (this.#appVersion !== "dev") {
       const serverVersion = await this.#fetchVersion(this.#url ?? RoomConnection.defaultUrl());
       if (this.#socket !== socket) return;
-      const outdated = serverVersion !== null && serverVersion !== "dev" && serverVersion !== this.#appVersion;
-      if (outdated && this.#onNewVersion(serverVersion)) return;
+      if (RoomConnection.outdated(this.#appVersion, serverVersion) && this.#onNewVersion(serverVersion)) return;
     }
     this.#helloSent = true;
     socket.send(JSON.stringify(this.#hello()));
@@ -213,7 +226,7 @@ export class RoomConnection {
   #hello(): ClientMessage {
     switch (this.#intent.kind) {
       case "create":
-        return { type: "createRoom", name: this.#intent.name };
+        return { type: "createRoom", name: this.#intent.name, settings: this.#intent.settings ?? null };
       case "join":
         return {
           type: "joinRoom",

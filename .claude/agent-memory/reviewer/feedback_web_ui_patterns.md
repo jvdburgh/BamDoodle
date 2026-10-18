@@ -15,5 +15,8 @@ Check these first; each was a real finding (2026-10-18, lobby avatar editor).
   the protocol proposal names (count, points, colour allow-list).
 - Playground screens offering host-only actions (start round) to joiners, against docs/game-rules.md.
 
+- Back across a remount (key change, other component) loses focus: an opener ref inside the component can't survive it.
+- A flow change documented in game-rules.md but the same flow left stale in architecture.md "Screens and routes".
+
 **Why:** these repeat in UI prototype work while the server side doesn't exist yet.
 **How to apply:** lead the review with these; grep for pointer handlers outside `canvas/` and `color=` on AvatarDoodle.

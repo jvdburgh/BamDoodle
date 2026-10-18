@@ -47,12 +47,21 @@ pub fn app(registry: Arc<Registry>, static_dir: &Path) -> Router {
     Router::new()
         .route("/api/health", get(|| async { "ok" }))
         .route("/api/version", get(|| async { VERSION }))
+        .route("/api/room-defaults", get(room_defaults))
         .route("/ws", get(websocket))
         .with_state(registry)
         .fallback_service(ServeDir::new(static_dir).fallback(app_routes))
         .layer(middleware::from_fn(headers))
         .layer(CompressionLayer::new())
         .layer(TraceLayer::new_for_http())
+}
+
+async fn room_defaults(State(registry): State<Arc<Registry>>) -> axum::Json<protocol::RoomDefaults> {
+    let words = registry.words();
+    axum::Json(protocol::RoomDefaults {
+        settings: room::Room::default_settings(words),
+        word_categories: words.catalogue(),
+    })
 }
 
 async fn websocket(upgrade: WebSocketUpgrade, State(registry): State<Arc<Registry>>) -> Response {
@@ -182,6 +191,19 @@ mod tests {
             "a 404 is never cached for a year"
         );
         fs::remove_dir_all(dir).unwrap();
+    }
+
+    #[tokio::test]
+    async fn a_host_can_set_up_a_room_before_it_exists() {
+        let words = WordLibrary::load(&Path::new(env!("CARGO_MANIFEST_DIR")).join("../words")).unwrap();
+        let dir = std::env::temp_dir();
+        let router = app(Registry::new(Arc::new(words)), &dir);
+        let (status, headers, body) = get(&router, "/api/room-defaults").await;
+        assert_eq!(status, StatusCode::OK);
+        assert_eq!(headers[header::CONTENT_TYPE], "application/json");
+        let defaults: protocol::RoomDefaults = serde_json::from_str(&body).unwrap();
+        assert!(!defaults.settings.categories.is_empty());
+        assert!(defaults.word_categories.iter().any(|category| category.adult));
     }
 
     #[tokio::test]

@@ -70,6 +70,18 @@ export const SetUpTheRoom: Story = {
   },
 };
 
+/** Creating a room: set it up before it exists, then on to your name. */
+export const BeforeTheRoomExists: Story = {
+  args: { roomCode: undefined, doneLabel: "Next", onBack: fn() },
+  play: async ({ args, canvas, userEvent }) => {
+    await expect(canvas.queryByText("Room")).toBeNull();
+    await userEvent.click(canvas.getByRole("button", { name: "Next" }));
+    await expect(args.onDone).toHaveBeenCalled();
+    await userEvent.click(canvas.getByRole("button", { name: "Back" }));
+    await expect(args.onBack).toHaveBeenCalled();
+  },
+};
+
 export const WithColoursInTheLab: Story = {
   args: { attribution: "free", onAttribution: fn() },
   play: async ({ args, canvas, userEvent }) => {

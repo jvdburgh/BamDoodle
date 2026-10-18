@@ -4,8 +4,9 @@ use std::{path::Path, sync::Arc, time::Duration};
 
 use bamdoodle_server::{
     app,
-    protocol::{ClientMessage, PhaseView, PlayerId, Point, RejectReason, Role, ServerMessage},
+    protocol::{ClientMessage, PhaseView, PlayerId, Point, RejectReason, Role, RoomSettings, ServerMessage},
     registry::Registry,
+    room::Room,
     words::WordLibrary,
 };
 use futures_util::{SinkExt, StreamExt};
@@ -84,7 +85,11 @@ async fn a_whole_round_with_three_players_and_a_host_screen() {
     let address = start_server().await;
 
     let mut sam = Client::connect(&address).await;
-    sam.send(&ClientMessage::CreateRoom { name: "Sam".into() }).await;
+    sam.send(&ClientMessage::CreateRoom {
+        name: "Sam".into(),
+        settings: None,
+    })
+    .await;
     let (Some(sam_id), _, code, phase) = sam.joined().await else {
         panic!("no seat")
     };
@@ -270,7 +275,11 @@ async fn a_dropped_player_takes_their_seat_back_with_the_session_token() {
     let address = start_server().await;
 
     let mut sam = Client::connect(&address).await;
-    sam.send(&ClientMessage::CreateRoom { name: "Sam".into() }).await;
+    sam.send(&ClientMessage::CreateRoom {
+        name: "Sam".into(),
+        settings: None,
+    })
+    .await;
     let (_, _, code, _) = sam.joined().await;
 
     let mut noor = Client::connect(&address).await;
@@ -336,10 +345,38 @@ async fn unknown_rooms_and_messages_before_joining_are_turned_away() {
 }
 
 #[tokio::test]
+async fn a_room_starts_with_the_settings_picked_before_it_existed() {
+    let (address, registry) = start_server_with_registry().await;
+    let settings = RoomSettings {
+        rounds: 3,
+        ..Room::default_settings(registry.words())
+    };
+    let mut sam = Client::connect(&address).await;
+    sam.send(&ClientMessage::CreateRoom {
+        name: "Sam".into(),
+        settings: Some(settings.clone()),
+    })
+    .await;
+    sam.joined().await;
+    let changed = sam
+        .expect(|message| match message {
+            ServerMessage::SettingsChanged { settings } => Some(settings),
+            _ => None,
+        })
+        .await;
+    assert_eq!(changed, settings);
+}
+
+#[tokio::test]
 async fn a_rejected_create_leaves_no_room_behind() {
     let (address, registry) = start_server_with_registry().await;
     let mut client = Client::connect(&address).await;
-    client.send(&ClientMessage::CreateRoom { name: "   ".into() }).await;
+    client
+        .send(&ClientMessage::CreateRoom {
+            name: "   ".into(),
+            settings: None,
+        })
+        .await;
     let reason = client
         .expect(|message| match message {
             ServerMessage::Rejected { reason } => Some(reason),
@@ -354,7 +391,12 @@ async fn a_rejected_create_leaves_no_room_behind() {
 async fn a_second_device_with_the_same_token_replaces_the_first() {
     let address = start_server().await;
     let mut first = Client::connect(&address).await;
-    first.send(&ClientMessage::CreateRoom { name: "Sam".into() }).await;
+    first
+        .send(&ClientMessage::CreateRoom {
+            name: "Sam".into(),
+            settings: None,
+        })
+        .await;
     let (_, Some(token), code, _) = first.joined().await else {
         panic!("no seat")
     };

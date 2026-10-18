@@ -9,6 +9,10 @@ export type LobbyEntry = { name: string } & ({ kind: "create" } | { kind: "join"
 
 type LobbyStartProps = {
   onEnter: (entry: LobbyEntry) => void;
+  /** Creating starts with setting the room up; your name comes after (the `create` step). */
+  onCreate: () => void;
+  /** Back from the step you opened on, e.g. from your name to the room setup. Without it: back to the choice. */
+  onBack?: () => void;
   defaultName?: string;
   /** From a shared link: opens straight on joining this room. */
   defaultCode?: string;
@@ -16,8 +20,10 @@ type LobbyStartProps = {
   step?: "join" | "create";
   /** Why the last try didn't get you in. */
   problem?: string;
-  /** While the server is being asked: the button waits. */
+  /** While the server is being asked: the button waits (Create a room, on the choice). */
   busy?: boolean;
+  /** Back from creating a room, or it couldn't start: focus Create a room. */
+  focusCreate?: boolean;
 };
 
 type Step = "choose" | "join" | "create";
@@ -30,14 +36,17 @@ const NOT_IN_CODE = /[^BCDFGHJKLMNPQRSTVWXZ]/g;
 const field =
   "w-full rounded-[10px_14px_12px_9px] bg-night-deep px-4 py-3 text-lg text-white placeholder:text-white/40 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-sun";
 
-/** The first page: join a room (most people) or create one. Creating asks your name; the room is set up after. */
+/** The first page: join a room (most people) or create one. Creating sets the room up first, then asks your name. */
 export function LobbyStart({
   onEnter,
+  onCreate,
+  onBack,
   defaultName = "",
   defaultCode = "",
   step: firstStep,
   problem,
   busy = false,
+  focusCreate = false,
 }: LobbyStartProps) {
   const [step, setStep] = useState<Step>(firstStep ?? (defaultCode ? "join" : "choose"));
   const [name, setName] = useState(defaultName);
@@ -45,18 +54,23 @@ export function LobbyStart({
   const nameId = useId();
   const codeId = useId();
   const firstField = useRef<HTMLElement | null>(null);
-  const opener = useRef<"join" | "create" | null>(null);
+  const opened = useRef(false);
   const joinButton = useRef<HTMLButtonElement>(null);
   const createButton = useRef<HTMLButtonElement>(null);
 
   // Each step replaces the button you pressed: focus the step's first control, or on Back the button that opened it.
   useEffect(() => {
     if (step !== "choose") firstField.current?.focus();
-    else if (opener.current) (opener.current === "join" ? joinButton : createButton).current?.focus();
+    else if (opened.current) joinButton.current?.focus();
   }, [step]);
 
+  // Once it's enabled again: a disabled button can't hold the focus.
+  useEffect(() => {
+    if (focusCreate && !busy) createButton.current?.focus();
+  }, [focusCreate, busy]);
+
   const go = (next: Step) => {
-    if (next !== "choose") opener.current = next;
+    if (next !== "choose") opened.current = true;
     setStep(next);
   };
   const first = (element: HTMLElement | null) => {
@@ -111,11 +125,17 @@ export function LobbyStart({
             <button
               ref={createButton}
               type="button"
-              onClick={() => go("create")}
+              onClick={onCreate}
+              disabled={busy}
               className={`${BrandStyles.quietButton} w-full`}
             >
-              Create a room
+              {busy ? "Just a sec…" : "Create a room"}
             </button>
+            {problem && (
+              <p role="alert" className="text-center text-sm text-berry">
+                {problem}
+              </p>
+            )}
           </div>
         ) : (
           <form
@@ -158,7 +178,7 @@ export function LobbyStart({
             )}
 
             <div className="flex items-center justify-between gap-3">
-              <button type="button" onClick={() => go("choose")} className={BrandStyles.ghostButton}>
+              <button type="button" onClick={onBack ?? (() => go("choose"))} className={BrandStyles.ghostButton}>
                 Back
               </button>
               <button type="submit" disabled={!canSubmit} className={BrandStyles.primaryButton}>

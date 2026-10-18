@@ -82,10 +82,15 @@ async fn enter(
     registry: &Arc<Registry>,
 ) -> Result<(RoomHandle, ConnectionId, mpsc::Receiver<ServerMessage>), RejectReason> {
     match hello {
-        ClientMessage::CreateRoom { name } => {
+        ClientMessage::CreateRoom { name, settings } => {
             clean_name(&name).ok_or(RejectReason::InvalidName)?;
             let (_, room) = registry.create()?;
             let (connection, outbox) = join(&room, name, None).await?;
+            if let Some(settings) = settings {
+                // The host's own first change, before anyone else knows the code.
+                let message = ClientMessage::UpdateSettings { settings };
+                let _ = room.commands.send(RoomCommand::Message { connection, message }).await;
+            }
             Ok((room, connection, outbox))
         }
         ClientMessage::JoinRoom {

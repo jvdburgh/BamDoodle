@@ -42,11 +42,12 @@ can change the number of rounds between rounds; when that's already been reached
 
 1. **Lobby.** The start page offers **Join a room** (most people) or **Create a room**. Joining asks for the four-letter
    room code (shown as "Join at bamdoodle.io with code …" on the host's screen) and a nickname, or skips the code when
-   you open a shared link (`/join/BKZW`; the address bar shows it once you're in). Creating asks your nickname, then
-   the host sets up the room: mode, turns per player or turn length, rounds per game, the language and the word
-   categories to play with (Efteling, Places, Very British, …, and 18+ ones if they want), in two columns on a wide
-   screen (how you play on the left, the words on the right) and one on a phone. Every change reaches the
-   room at once, and the host can open the settings again between rounds. Then everyone draws or tweaks their avatar
+   you open a shared link (`/join/BKZW`; the address bar shows it once you're in). Creating starts with setting up the
+   room: mode, turns per player or turn length, rounds per game, the language and the word categories to play with
+   (Efteling, Places, Very British, …, and 18+ ones if they want), in two columns on a wide screen (how you play on
+   the left, the words on the right) and one on a phone. Then the host's nickname (after the setup, so it's clearly
+   theirs and not the room's), and only then is the room created, with those settings. The host can open the
+   settings again between rounds; every change there reaches the room at once. Then everyone draws or tweaks their avatar
    (a random doodle face to start from, shuffle for another; a small round pad with one pen and the colours that read
    on navy; undo and clear) and goes to the room. Everyone in the room sees each other's faces; a face can change
    between rounds, not during one. The others wait on the join card until the host starts; the host's card also links

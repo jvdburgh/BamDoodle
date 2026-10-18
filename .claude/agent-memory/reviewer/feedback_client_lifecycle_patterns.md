@@ -25,3 +25,4 @@ Seen 2026-10-18 wiring views to the server (confirmed with a scratch Drawing tes
 
 Seen 2026-10-18 (release reload): a reload/redirect fired on `joined` throws away the create/join just made; GameRoute
 starts at LobbyStart (no auto-resume), so check what the user lands on and whether a seated room is orphaned.
+Seen again 2026-10-18 (setup-before-create): the pre-hello version reload also drops any pre-room client state (room plan).

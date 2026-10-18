@@ -6,7 +6,7 @@ const meta = {
   title: "Lobby/LobbyStart",
   component: LobbyStart,
   parameters: { layout: "fullscreen" },
-  args: { onEnter: fn() },
+  args: { onEnter: fn(), onCreate: fn() },
 } satisfies Meta<typeof LobbyStart>;
 
 export default meta;
@@ -22,6 +22,37 @@ export const JoinFirst: Story = {
 export const CreateARoom: Story = {
   play: async ({ args, canvas, userEvent }) => {
     await userEvent.click(canvas.getByRole("button", { name: "Create a room" }));
+    await expect(args.onCreate).toHaveBeenCalled();
+    await expect(args.onEnter).not.toHaveBeenCalled();
+  },
+};
+
+export const GettingTheRoomReady: Story = {
+  args: { busy: true, problem: undefined },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("button", { name: "Just a sec…" })).toBeDisabled();
+  },
+};
+
+export const CantCreate: Story = {
+  args: { problem: "Couldn’t reach the game. Check your connection and try again.", focusCreate: true },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("alert")).toHaveTextContent("Couldn’t reach the game.");
+    await expect(canvas.getByRole("button", { name: "Create a room" })).toHaveFocus();
+  },
+};
+
+export const BackFromTheSetup: Story = {
+  args: { focusCreate: true },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("button", { name: "Create a room" })).toHaveFocus();
+  },
+};
+
+/** After setting the room up: now your name, and Back returns to the setup. */
+export const NameYourself: Story = {
+  args: { step: "create", onBack: fn() },
+  play: async ({ args, canvas, userEvent }) => {
     await expect(canvas.getByRole("heading", { name: "And you are?" })).toBeVisible();
     const name = canvas.getByLabelText("Your name");
     await expect(name).toHaveFocus();
@@ -29,6 +60,8 @@ export const CreateARoom: Story = {
     await userEvent.type(name, "  Joris ");
     await userEvent.click(canvas.getByRole("button", { name: "Create room" }));
     await expect(args.onEnter).toHaveBeenCalledWith({ kind: "create", name: "Joris" });
+    await userEvent.click(canvas.getByRole("button", { name: "Back" }));
+    await expect(args.onBack).toHaveBeenCalled();
   },
 };
 

@@ -96,10 +96,12 @@ impl Default for RoomSettings {
 #[serde(tag = "type", rename_all = "camelCase")]
 #[ts(export)]
 pub enum ClientMessage {
-    /// First message on a new connection: start a room and join it as its host.
+    /// First message on a new connection: start a room and join it as its host, with the settings the host picked
+    /// before the room existed (checked like any later change; the defaults when missing or not allowed).
     #[serde(rename_all = "camelCase")]
     CreateRoom {
         name: String,
+        settings: Option<RoomSettings>,
     },
     /// First message on a new connection: join a room as a player. With a session token, take back your seat.
     #[serde(rename_all = "camelCase")]
@@ -307,6 +309,16 @@ pub struct RoomSnapshot {
     /// Every category the host can pick from, in every language.
     pub word_categories: Vec<WordCategory>,
     pub phase: PhaseView,
+}
+
+/// `GET /api/room-defaults`: what a new room starts with and every category, so a host can set up a room before it
+/// exists (settings first, then your name, then the room is created).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct RoomDefaults {
+    pub settings: RoomSettings,
+    pub word_categories: Vec<WordCategory>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]

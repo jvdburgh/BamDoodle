@@ -142,7 +142,11 @@ describe("RoomConnection: joining", () => {
     for (const [intent, hello] of [
       [
         { kind: "create", name: "Sam" },
-        { type: "createRoom", name: "Sam" },
+        { type: "createRoom", name: "Sam", settings: null },
+      ],
+      [
+        { kind: "create", name: "Sam", settings: room.settings },
+        { type: "createRoom", name: "Sam", settings: room.settings },
       ],
       [
         { kind: "join", code: "BKTZ", name: "sam" },
@@ -529,6 +533,14 @@ describe("RoomConnection: releases and closed rooms", () => {
     socket().open();
     expect(fetchVersion).not.toHaveBeenCalled();
     expect(socket().sent).toEqual([{ type: "watchRoom", code: "BKTZ" }]);
+  });
+
+  it("calls a release outdated only when both sides are real releases and differ", () => {
+    expect(RoomConnection.outdated("v0.1.0", "v0.2.0")).toBe(true);
+    expect(RoomConnection.outdated("v0.2.0", "v0.2.0")).toBe(false);
+    expect(RoomConnection.outdated("dev", "v0.2.0")).toBe(false);
+    expect(RoomConnection.outdated("v0.1.0", "dev")).toBe(false);
+    expect(RoomConnection.outdated("v0.1.0", null)).toBe(false);
   });
 
   it("reloads at most once per release", () => {

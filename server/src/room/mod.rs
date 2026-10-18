@@ -120,9 +120,15 @@ pub struct Room {
 }
 
 impl Room {
-    pub fn new(code: String, words: Arc<WordLibrary>, seed: u64) -> Self {
+    /// What every new room starts with: the defaults, with its language's everyday categories.
+    pub fn default_settings(words: &WordLibrary) -> RoomSettings {
         let mut settings = RoomSettings::default();
         settings.categories = words.default_categories(settings.language);
+        settings
+    }
+
+    pub fn new(code: String, words: Arc<WordLibrary>, seed: u64) -> Self {
+        let settings = Self::default_settings(&words);
         Self {
             code,
             settings,

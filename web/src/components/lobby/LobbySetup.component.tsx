@@ -12,12 +12,16 @@ import type { TurnMode } from "@/protocol/generated/TurnMode";
 import type { WordCategory } from "@/protocol/generated/WordCategory";
 
 type LobbySetupProps = {
-  roomCode: string;
+  /** None yet when the room is set up before it's created. */
+  roomCode?: string;
   settings: RoomSettings;
   /** Every category the server has, in every language. */
   wordCategories: WordCategory[];
   onChange: (settings: RoomSettings) => void;
   onDone: () => void;
+  /** What the done button says: going to the room, or on to your name when the room doesn't exist yet. */
+  doneLabel?: string;
+  onBack?: () => void;
   /** Any colour or Own colours: only where it can be tried (the lab), until the server has the setting. */
   attribution?: Attribution;
   onAttribution?: (attribution: Attribution) => void;
@@ -34,13 +38,15 @@ const colourOptions: Option<Attribution>[] = [
   { value: "shades", title: "Own colours", detail: "Each player gets a family of shades" },
 ];
 
-/** The host's room setup: turns, rounds, words. Every change goes to the room straight away. */
+/** The host's room setup: turns, rounds, words. First before the room is created, later from the room itself. */
 export function LobbySetup({
   roomCode,
   settings,
   wordCategories,
   onChange,
   onDone,
+  doneLabel = "Go to the room",
+  onBack,
   attribution,
   onAttribution,
 }: LobbySetupProps) {
@@ -64,11 +70,13 @@ export function LobbySetup({
             <BrandLogo className="size-10" />
             <p className="font-display text-2xl">BamDoodle</p>
           </div>
-          <p className="rounded-full bg-night-soft px-3 py-1 text-sm text-white/80">
-            <span className="sr-only">Room code </span>
-            <span aria-hidden="true">Room </span>
-            <span className="font-display tracking-widest">{roomCode}</span>
-          </p>
+          {roomCode && (
+            <p className="rounded-full bg-night-soft px-3 py-1 text-sm text-white/80">
+              <span className="sr-only">Room code </span>
+              <span aria-hidden="true">Room </span>
+              <span className="font-display tracking-widest">{roomCode}</span>
+            </p>
+          )}
         </header>
 
         <div className="flex flex-1 flex-col justify-center">
@@ -154,13 +162,20 @@ export function LobbySetup({
               />
             </section>
 
-            <button
-              type="submit"
-              disabled={!ready}
-              className={`${BrandStyles.primaryButton} sticky bottom-3 z-10 justify-self-end shadow-[0_6px_18px_var(--color-night-deep)] md:col-span-2`}
-            >
-              Go to the room
-            </button>
+            <div className="sticky bottom-3 z-10 flex items-center justify-end gap-3 md:col-span-2">
+              {onBack && (
+                <button type="button" onClick={onBack} className={`${BrandStyles.quietButton} mr-auto`}>
+                  Back
+                </button>
+              )}
+              <button
+                type="submit"
+                disabled={!ready}
+                className={`${BrandStyles.primaryButton} shadow-[0_6px_18px_var(--color-night-deep)]`}
+              >
+                {doneLabel}
+              </button>
+            </div>
           </form>
         </div>
       </main>

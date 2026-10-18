@@ -10,7 +10,8 @@ choices get a short record in [decisions/](decisions/).
  ┌────────────────────────┐   WebSocket /ws   ┌──────────────────────────────────┐
  │ React UI (lobby, HUD)  │ ◀──────────────▶ │ Axum                             │
  │ canvas + per-player    │   JSON messages   │  ├─ /ws  → player connection     │
- │ layers, mini-maps      │                   │  ├─ /api/health                  │
+ │ layers, mini-maps      │                   │  ├─ /api/health, /api/version    │
+ │                        │                   │  ├─ /api/room-defaults           │
  └────────────────────────┘                   │  └─ static files (web/dist)      │
                                               │ Room registry (in memory)        │
                                               │  └─ one task per room: rules,    │
@@ -66,7 +67,8 @@ The catch: a deploy or crash ends all running games. At hobby scale that's accep
   (`server/src/protocol.rs`).
 - [ts-rs](https://github.com/Aleph-Alpha/ts-rs) generates the TypeScript types into `web/src/protocol/generated/`
   (`just protocol`). The generated files are committed, and CI fails if they are stale.
-- **The first message picks the room:** `createRoom { name }` (you become host), `joinRoom { code, name,
+- **The first message picks the room:** `createRoom { name, settings? }` (you become host; the settings are checked
+  like any `updateSettings`), `joinRoom { code, name,
   sessionToken? }` or `watchRoom { code }` for a host screen. The answer is `joined` with your player id, your
   session token and a snapshot of the room as you may see it, or `rejected` with a reason.
 - **Avatars:** any player sends `setAvatar { strokes }` between rounds, which replaces their whole avatar; everyone
@@ -164,9 +166,11 @@ weight without helping freehand strokes. tldraw is out: its licence isn't open s
 
 - `/` is the start page; `/join/BKZW` opens it on joining that room. A device holds one `RoomConnection`
   (`useRoomConnection`) and, once the room is there, renders `RoomPlayerView` from its `RoomState` and sends intents
-  through `send` (`src/app/GameRoute.tsx`). The creator sets the room up first (`LobbySetup`, built from the
-  snapshot's `settings` and `wordCategories`; every change is an `updateSettings`). A connection that gives up brings
-  you back to the start page with the reason; every try gets a fresh connection.
+  through `send` (`src/app/GameRoute.tsx`). Creating a room starts with `LobbySetup` before the room exists, from
+  `GET /api/room-defaults` (the default settings and every category, `RoomDefaultsUtils`), then your name, then
+  `createRoom` with those settings. Between rounds the host reopens the setup from the snapshot's `settings` and
+  `wordCategories`; every change there is an `updateSettings`. A connection that gives up brings you back to the start
+  page with the reason; every try gets a fresh connection.
 - `/watch/BKZW` is a host screen: `watchRoom`, rendered by `RoomHostView` (`src/app/WatchRoute.tsx`).
 - `components/room/` only renders server state. What the screens need beyond the raw state (who's up next, counts,
   this round's points from the awards, standings, the table talk from comparing suspicions and votes) is worked out in

@@ -25,6 +25,12 @@ export function LabApp() {
   const [yourAvatar, setYourAvatar] = useState(() => AvatarUtils.face(Math.floor(Math.random() * 2 ** 31)));
   const [roomCode, setRoomCode] = useState(roomCodeFixture);
   const [justCreated, setJustCreated] = useState(false);
+  /** Creating a room, like the real game: set it up, then your name. */
+  const [creating, setCreating] = useState<"setup" | "name" | null>(null);
+  const goCreate = (step: "setup" | "name" | null) => {
+    setCreating(step);
+    update({ screen: step === "setup" ? "setup" : "start" });
+  };
   const setup: RoomSetup = {
     mode: settings.mode,
     turnsPerPlayer: settings.turnsPerPlayer,
@@ -51,17 +57,24 @@ export function LabApp() {
     <>
       {settings.screen === "start" ? (
         <LobbyStart
+          key={creating ?? "start"}
           defaultName={yourName}
+          step={creating === "name" ? "create" : undefined}
+          onCreate={() => goCreate("setup")}
+          onBack={creating === "name" ? () => goCreate("setup") : undefined}
           onEnter={(entry) => {
             setYourName(entry.name);
             setJustCreated(entry.kind === "create");
             setRoomCode(entry.kind === "join" ? entry.code : roomCodeFixture);
-            update({ screen: entry.kind === "create" ? "setup" : "lobby" });
+            setCreating(null);
+            update({ screen: "lobby" });
           }}
         />
       ) : settings.screen === "setup" ? (
         <LobbySetup
-          roomCode={roomCode}
+          roomCode={creating ? undefined : roomCode}
+          doneLabel={creating ? "Next" : undefined}
+          onBack={creating ? () => goCreate(null) : undefined}
           settings={setup}
           wordCategories={catalogue}
           onChange={({ mode, turnsPerPlayer, turnSeconds, rounds, language, categories }) =>
@@ -69,7 +82,7 @@ export function LabApp() {
           }
           attribution={settings.attribution}
           onAttribution={(attribution) => update({ attribution })}
-          onDone={() => update({ screen: "lobby" })}
+          onDone={() => (creating ? goCreate("name") : update({ screen: "lobby" }))}
         />
       ) : settings.screen === "lobby" ? (
         <LobbyWaiting
