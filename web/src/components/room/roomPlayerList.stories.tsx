@@ -100,7 +100,7 @@ export const MarkAsSuspicious: Story = {
     await userEvent.click(mo);
     await expect(args.action?.onChoose).toHaveBeenLastCalledWith(3);
     await expect(mo).toHaveAttribute("aria-pressed", "true");
-    await expect(mo).toHaveAttribute("aria-pressed", "true");
+    await expect(mo).toHaveAccessibleName("Mark Mo as suspicious");
     await userEvent.click(canvas.getByRole("button", { name: "Mark Pip as suspicious" }));
     await expect(args.action?.onChoose).toHaveBeenLastCalledWith(1);
     await expect(mo).toHaveAttribute("aria-pressed", "false");
@@ -110,8 +110,10 @@ export const MarkAsSuspicious: Story = {
 export const PickInTheFinalVote: Story = {
   args: { action: { kind: "vote", chosenId: null, onChoose: fn() }, votedIds: [1] },
   play: async ({ args, canvas, userEvent }) => {
-    await userEvent.click(canvas.getByRole("button", { name: "Pick Kiki" }));
+    const kiki = canvas.getByRole("button", { name: "Pick Kiki" });
+    await userEvent.click(kiki);
     await expect(args.action?.onChoose).toHaveBeenLastCalledWith(4);
+    await expect(kiki).toHaveAccessibleName("Pick Kiki");
     await expect(canvas.getByText("voted")).toBeVisible();
   },
 };

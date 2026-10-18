@@ -28,7 +28,7 @@ export const Toggles: Story = {
     await expect(button).toHaveAttribute("aria-pressed", "false");
     await userEvent.click(button);
     await expect(button).toHaveAttribute("aria-pressed", "true");
-    await expect(button).toHaveAttribute("aria-pressed", "true");
+    await expect(button).toHaveAccessibleName("Mark Juno as suspicious");
     await userEvent.click(button);
     await expect(button).toHaveAttribute("aria-pressed", "false");
   },

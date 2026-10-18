@@ -174,13 +174,13 @@ export function RoomPlayerList({
                 <button
                   type="button"
                   aria-pressed={chosen}
-                  aria-label={`${chosen ? "Picked" : "Pick"} ${player.name}`}
+                  aria-label={`Pick ${player.name}`}
                   onClick={() => action.onChoose(chosen ? null : player.id)}
                   className={`min-h-9 rounded-full px-2 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
                     rail ? "@5xl/room:col-start-1 @5xl/room:row-start-2 @5xl/room:self-end" : ""
                   } ${chosen ? "bg-berry text-night" : "bg-night text-white/90 hover:bg-night-soft"}`}
                 >
-                  {chosen ? "Picked" : "Pick"}
+                  Pick{chosen && <span aria-hidden="true"> ✓</span>}
                 </button>
               )}
             </li>

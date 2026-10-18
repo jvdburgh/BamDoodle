@@ -184,6 +184,7 @@ function LobbyChoice<T extends string | number>({
   onChange: (value: T) => void;
   firstRef?: Ref<HTMLInputElement>;
 }) {
+  const detailId = useId();
   return (
     <fieldset className="grid gap-1.5">
       <legend className="mb-1.5 text-sm text-white/70">{legend}</legend>
@@ -201,11 +202,11 @@ function LobbyChoice<T extends string | number>({
               checked={value === option.value}
               onChange={() => onChange(option.value)}
               aria-label={option.title}
-              aria-describedby={`${name}-${option.value}-detail`}
+              aria-describedby={`${detailId}-${option.value}`}
               className="sr-only"
             />
             <span className="block font-display text-lg leading-tight">{option.title}</span>
-            <span id={`${name}-${option.value}-detail`} className="mt-0.5 block text-sm text-white/70">
+            <span id={`${detailId}-${option.value}`} className="mt-0.5 block text-sm text-white/70">
               {option.detail}
             </span>
           </label>

@@ -48,13 +48,14 @@ export function LobbyCategoryPicker({ categories, selected, onChange }: LobbyCat
               checked={chosen.has(category.name)}
               onChange={() => toggle(category.name)}
               aria-label={category.adult ? `${category.name} (18+)` : category.name}
+              aria-describedby={`${hintId}-${category.name}`}
               className="sr-only"
             />
             <span className="font-display text-lg leading-none">{category.name}</span>
             {category.adult && (
               <span className="rounded-full bg-berry px-1.5 text-xs font-semibold text-night">18+</span>
             )}
-            <span className="rounded-full bg-night-soft px-2 text-xs text-white/80">
+            <span id={`${hintId}-${category.name}`} className="rounded-full bg-night-soft px-2 text-xs text-white/80">
               {category.words}
               <span className="sr-only"> words</span>
             </span>
