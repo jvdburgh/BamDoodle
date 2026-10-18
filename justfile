@@ -45,6 +45,18 @@ test:
     cd server && cargo test
     pnpm --dir web test
 
+# The web client against a real server: starts one on a spare port and runs the live tests
+test-live:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    (cd server && cargo build --quiet)
+    port=18089
+    (cd server && PORT=$port RUST_LOG=warn exec ./target/debug/bamdoodle-server) &
+    server=$!
+    trap 'kill $server' EXIT
+    curl -sf --retry 30 --retry-connrefused --retry-delay 1 "http://127.0.0.1:$port/api/health" >/dev/null
+    BAMDOODLE_SERVER_WS="ws://localhost:$port/ws" pnpm --dir web exec vitest run --project=unit src/protocol/roomConnection.live.test.ts
+
 # Regenerate web/src/protocol/generated from the Rust protocol types
 protocol:
     cd server && cargo test --quiet export_bindings

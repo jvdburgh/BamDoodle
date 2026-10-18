@@ -74,8 +74,8 @@ The catch: a deploy or crash ends all running games. At hobby scale that's accep
 - Per-device views: the server builds each view itself, so the bamboozler's device and host screens never receive
   the word before `roundFinished`, and nobody learns who the bamboozler is before `revealed`. Tests check the actual
   socket traffic for this.
-- The client should reconnect automatically with backoff (needed anyway; Scaleway Serverless Containers also cap a
-  connection at the request timeout, max 60 minutes).
+- The client reconnects automatically with backoff, see [Talking to the server](#talking-to-the-server-websrcprotocol)
+  (needed anyway; Scaleway Serverless Containers also cap a connection at the request timeout, max 60 minutes).
 
 ### Fair play, without over-engineering
 
@@ -94,6 +94,29 @@ The catch: a deploy or crash ends all running games. At hobby scale that's accep
 React + Vite + TypeScript, Tailwind 4, Storybook. React only renders the UI around the canvas; the drawing itself is
 imperative canvas code, so the framework matters little for performance. No SSR (Next.js would add a Node server
 and solve problems we don't have).
+
+### Talking to the server (`web/src/protocol/`)
+
+- `RoomConnection` (`roomConnection.ts`) is one device's connection. `start()` says hello (`createRoom`,
+  `joinRoom` with the saved session token, or `watchRoom`), `send()` sends while joined, `close()` leaves for good.
+- **Reconnects** use exponential backoff with jitter (0.5 s doubling to 10 s), and take the seat back with the
+  session token (`sessionTokens.utils.ts`: `localStorage` per room code, offered only for the same name so a second
+  tab under another name gets its own seat; without storage, the seat lasts as long as the page).
+- **Dead sockets:** a hello with no answer within 10 s, or a ping (every 15 s) with nothing coming back within 10 s,
+  means the socket is dead, which sleeping phones produce. Times use `Date.now()`, which keeps counting while a
+  phone sleeps.
+- **A create is never retried once its hello went out:** that could make a second room. The client fails instead
+  and the player taps again.
+- **It stops for good** on `replaced` (another device took the seat), on a rejection that retrying can't fix
+  (`roomNotFound`, `roomFull`, `nameTaken`, …) and on `close()`. The status says which: `connecting`, `joined`,
+  `reconnecting`, `failed`, `replaced`, `closed`.
+- **State** (`roomState.utils.ts`) is a pure reducer from server messages to a `RoomState`: the snapshot kept up to
+  date, timers as deadlines on the device's clock, the last rejection and your own vote (the server only says *that*
+  you voted). Immutable, so React can compare by reference.
+- **React:** `useRoomConnection(intent)` opens a connection for a component's lifetime and returns it with its
+  state; `useRoom(connection)` subscribes to one that exists elsewhere (`room.hook.ts`).
+- Tests: unit tests with a fake socket and fake timers, plus `just test-live` (also in CI), which starts the Rust
+  server and plays a round through the real client.
 
 ### Drawing pipeline
 
