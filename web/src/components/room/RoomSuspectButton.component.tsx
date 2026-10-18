@@ -1,8 +1,6 @@
-import { useEffect, useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { AvatarDoodle } from "@/components/avatar/AvatarDoodle.component";
 import type { AvatarStroke } from "@/components/avatar/_types/avatar.types";
-
-const LABEL_FLASH_MS = 1600;
 
 type RoomSuspectButtonProps = {
   name: string;
@@ -21,10 +19,9 @@ type RoomSuspectButtonProps = {
 };
 
 /**
- * A player's face on their card, as the way to suspect them: hover or focus shows the fedora faintly over it with
- * "Mark as suspicious", a tap puts the hat on (it drops onto their head), another tap takes it off. In the final vote
- * the same face is the vote: a tap votes for them. The label shows as a band across the card it sits in (the nearest
- * positioned ancestor), and for a moment after a tap, so touch screens see what happened.
+ * A player's face on their card, as the way to suspect them: hover or focus shows the fedora faintly over it, a tap
+ * puts the hat on (it drops onto their head), another tap takes it off. In the final vote the same face is the vote:
+ * a tap votes for them. The card's Suspect / Vote button under the name says the same in words.
  */
 export function RoomSuspectButton({
   name,
@@ -36,50 +33,26 @@ export function RoomSuspectButton({
   ring,
   className = "",
 }: RoomSuspectButtonProps) {
-  const [flash, setFlash] = useState(false);
-  useEffect(() => {
-    if (!flash) return;
-    const timer = window.setTimeout(() => setFlash(false), LABEL_FLASH_MS);
-    return () => window.clearTimeout(timer);
-  }, [flash, suspected]);
-
   return (
-    <>
-      <span className={`peer relative shrink-0 ${className}`}>
-        <button
-          type="button"
-          aria-pressed={suspected}
-          aria-label={kind === "vote" ? `Vote for ${name}` : `Mark ${name} as suspicious`}
-          onClick={() => {
-            onToggle();
-            setFlash(true);
-          }}
-          className="group grid size-full place-items-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-        >
-          <AvatarDoodle
-            strokes={avatar}
-            color={color}
-            hat={suspected ? "worn" : "preview"}
-            backdrop={false}
-            className="size-full transition-transform motion-safe:group-hover:-rotate-6 motion-safe:group-active:scale-90"
-          />
-        </button>
-        {ring}
-      </span>
-      <span
-        aria-hidden="true"
-        className={`pointer-events-none absolute inset-x-1 top-[3.75rem] z-10 rounded-lg bg-night px-2 py-1 text-center text-xs font-semibold shadow-[0_3px_0_var(--color-night-deep)] transition-opacity motion-reduce:transition-none ${
-          suspected ? "text-berry" : "text-white"
-        } ${flash ? "opacity-100" : "opacity-0 peer-hover:opacity-100 peer-has-focus-visible:opacity-100"}`}
+    <span className={`relative shrink-0 ${className}`}>
+      <button
+        type="button"
+        aria-pressed={suspected}
+        // The card's Suspect / Vote button is the one stop for the keyboard; the face is for pointers and taps.
+        tabIndex={-1}
+        aria-label={kind === "vote" ? `Vote for ${name}` : `Mark ${name} as suspicious`}
+        onClick={onToggle}
+        className="group grid size-full place-items-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
       >
-        {kind === "vote"
-          ? suspected
-            ? "Your vote"
-            : `Vote for ${name}`
-          : suspected
-            ? "Marked as suspicious"
-            : "Mark as suspicious"}
-      </span>
-    </>
+        <AvatarDoodle
+          strokes={avatar}
+          color={color}
+          hat={suspected ? "worn" : "preview"}
+          backdrop={false}
+          className="size-full transition-transform motion-safe:group-hover:-rotate-6 motion-safe:group-active:scale-90"
+        />
+      </button>
+      {ring}
+    </span>
   );
 }

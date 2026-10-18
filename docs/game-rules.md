@@ -99,11 +99,12 @@ Everyone can use every colour: there is nothing to unlock, ever. To still see wh
 colour, the default) or **Own colours** (each player gets a family of five shades, and their avatar wears it), so
 playtests can compare both. Real rooms use any colour until the setting is on the wire.
 
-**Suspecting and voting on screen:** on every player card (avatar, name, mini-map of their strokes) the face itself
-is the way to suspect: hover or focus shows the logo's fedora faintly over it with "Mark as suspicious" (also for a
-moment after a tap), a tap drops the hat onto their head, another tap takes it off; marking or changing it is public table talk ("Noor thinks Jip is sketchy") and cards show
-how many suspect that player. After the last turn the same faces are the vote: a tap votes for them (the hat drops on),
-a tap on another face changes it, next to a "Time's up! Who's sketchy?" prompt with a 30 s countdown that says whose
+**Suspecting and voting on screen:** on every player card (avatar, name, mini-map of their strokes) a "Suspect"
+button under the name, or a tap on the face itself (hovering it shows the logo's fedora faintly), drops the hat onto
+their head; the button then says "Suspected ✓" and another tap takes it off. Marking or changing it is public table
+talk ("Noor thinks Jip is sketchy") and cards say who suspects that player. After the last turn the same button says
+"Vote" and the face is the vote too: a tap votes for them (the hat drops on, "Your vote ✓"), a tap on another changes
+it, next to a "Time's up! Who's sketchy?" prompt with a 30 s countdown that says whose
 suspicion counts if you don't vote; it shows who has voted, never for whom. On a laptop everything fits one screen (cards
 in one column on the left, the canvas sized to fit with pens and colours right under it, round and turn progress
 bottom-left); on a phone the cards

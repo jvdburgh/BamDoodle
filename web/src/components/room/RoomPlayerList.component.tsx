@@ -143,7 +143,7 @@ export function RoomPlayerList({
             >
               {spotlit && <BrandSketchyFrame bold className="text-white" />}
               <div className={`min-w-0 ${rail ? "@5xl/room:col-start-1 @5xl/room:row-start-1" : ""}`}>
-                <div className="flex min-w-0 items-center gap-2">
+                <div className="peer flex min-w-0 items-center gap-2">
                   {action && !you ? (
                     <RoomSuspectButton
                       name={player.name}
@@ -186,20 +186,34 @@ export function RoomPlayerList({
                     {action.kind === "vote" ? "That’s you: vote for someone else" : "That’s you: suspect someone else"}
                   </span>
                 )}
-                {(votedIds.includes(player.id) || suspects.length > 0 || yourVoteId === player.id) && (
-                  <p className="mt-1 flex flex-wrap gap-1 text-xs">
-                    {yourVoteId === player.id && (
-                      <span className="rounded-full bg-berry px-1.5 font-semibold text-night">your vote</span>
+                {action && !you && (
+                  <button
+                    type="button"
+                    aria-pressed={chosen}
+                    onClick={() => action.onChoose(action.kind === "suspect" && chosen ? null : player.id)}
+                    className={`mt-1.5 min-h-8 rounded-full px-3 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+                      chosen ? "bg-berry text-night" : "bg-night text-white hover:bg-night-soft"
+                    }`}
+                  >
+                    {action.kind === "vote" ? (chosen ? "Your vote" : "Vote") : chosen ? "Suspected" : "Suspect"}
+                    <span className="sr-only"> {player.name}</span>
+                    {chosen && <span aria-hidden="true"> ✓</span>}
+                  </button>
+                )}
+                {(votedIds.includes(player.id) || suspects.length > 0 || (yourVoteId === player.id && !action)) && (
+                  <p className="mt-1.5 flex flex-wrap gap-1 text-xs leading-snug">
+                    {yourVoteId === player.id && !action && (
+                      <span className="rounded-lg bg-berry px-2 py-0.5 font-semibold text-night">your vote</span>
                     )}
                     {votedIds.includes(player.id) && (
-                      <span className="animate-pop-in rounded-full bg-sun px-1.5 text-night motion-reduce:animate-none">
+                      <span className="animate-pop-in rounded-lg bg-sun px-2 py-0.5 text-night motion-reduce:animate-none">
                         voted
                       </span>
                     )}
                     {suspects.length > 0 && (
                       <span
                         key={suspects.join()}
-                        className={`animate-pop-in rounded-full px-1.5 motion-reduce:animate-none ${
+                        className={`animate-pop-in rounded-lg px-2 py-0.5 motion-reduce:animate-none ${
                           youId !== null && suspects.includes(youId) ? "bg-berry text-night" : "bg-night text-white/85"
                         }`}
                       >
@@ -209,18 +223,18 @@ export function RoomPlayerList({
                   </p>
                 )}
                 {outcome && (
-                  <p className={`mt-1 flex flex-wrap gap-1 ${big ? "text-lg" : "text-xs"}`}>
+                  <p className={`mt-1.5 flex flex-wrap gap-1 leading-snug ${big ? "text-lg" : "text-xs"}`}>
                     {isBamboozler && (
                       <span
                         style={{ animationDelay: "600ms" }}
-                        className="animate-pop-in rounded-full bg-berry px-1.5 font-semibold text-night motion-reduce:animate-none"
+                        className="animate-pop-in rounded-lg bg-berry px-2 py-0.5 font-semibold text-night motion-reduce:animate-none"
                       >
                         bamboozler
                       </span>
                     )}
                     <span
                       style={{ animationDelay: `${revealDelay}ms` }}
-                      className="animate-pop-in rounded-full bg-night px-1.5 text-white/85 motion-reduce:animate-none"
+                      className="animate-pop-in rounded-lg bg-night px-2 py-0.5 text-white/85 motion-reduce:animate-none"
                     >
                       {votedFor === undefined ? (
                         "didn’t vote"

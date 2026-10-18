@@ -50,13 +50,3 @@ export const Suspected: Story = {
     );
   },
 };
-
-export const LabelAfterATap: Story = {
-  play: async ({ canvas }) => {
-    const label = canvas.getByText("Mark as suspicious");
-    await expect(label).toHaveClass("opacity-0");
-    await userEvent.click(canvas.getByRole("button", { name: "Mark Juno as suspicious" }));
-    await expect(canvas.getByText("Marked as suspicious")).toHaveClass("opacity-100");
-    await waitFor(() => expect(canvas.getByText("Marked as suspicious")).toHaveClass("opacity-0"), { timeout: 3000 });
-  },
-};

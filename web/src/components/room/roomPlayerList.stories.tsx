@@ -114,6 +114,12 @@ export const MarkAsSuspicious: Story = {
     await userEvent.click(canvas.getByRole("button", { name: "Mark Pip as suspicious" }));
     await expect(args.action?.onChoose).toHaveBeenLastCalledWith(1);
     await expect(mo).toHaveAttribute("aria-pressed", "false");
+
+    // The button under the name does the same, and says what you picked.
+    await userEvent.click(canvas.getByRole("button", { name: "Suspect Kiki" }));
+    await expect(args.action?.onChoose).toHaveBeenLastCalledWith(4);
+    await expect(canvas.getByRole("button", { name: "Suspected Kiki" })).toHaveAttribute("aria-pressed", "true");
+    await expect(canvas.queryByRole("button", { name: "Suspect Juno" })).toBeNull();
   },
 };
 
@@ -130,6 +136,9 @@ export const VoteByTappingAFace: Story = {
     await expect(args.action?.onChoose).toHaveBeenLastCalledWith(3);
     await expect(kiki).toHaveAttribute("aria-pressed", "false");
     await expect(canvas.queryByRole("button", { name: /^Pick/ })).toBeNull();
+    await userEvent.click(canvas.getByRole("button", { name: "Vote Pip" }));
+    await expect(args.action?.onChoose).toHaveBeenLastCalledWith(1);
+    await expect(canvas.getByRole("button", { name: "Your vote Pip" })).toHaveAttribute("aria-pressed", "true");
     await waitFor(() => expect(canvas.getByText("voted")).toBeVisible());
   },
 };
