@@ -1,13 +1,14 @@
 # Word lists
 
-## What we need
+## What there is
 
-- English and Dutch, simple, concrete, drawable words, grouped into categories (animals, food, objects, places,
-  actions, …). Target about 800 to 1,200 base words per language, 10 to 14 categories of 50 to 100 words.
+About 2,300 English and 2,500 Dutch words in 37 categories per language. More good words are always welcome.
+
+- **Everyday categories:** simple, concrete, drawable words (animals, food, objects, places, actions, …).
 - **Themed categories** players pick before a round: Dutch and English culture (Efteling, Sinterklaas, Typisch
-  Nederlands, Lekker Nederlands, Very British, Christmas, Fairy tales, Landmarks), Logos (Dutch and
-  international brands) and trivia (Memes, Superheroes, Board games, Famous people), more to come. Efteling has every
-  attraction and figure.
+  Nederlands, Lekker Nederlands, Very British, Christmas, Fairy tales, Landmarks), Logos (Dutch and international
+  brands), media (Films, TV shows, Cartoons and comics, Superheroes, Video games), trivia (Memes, Board games, Famous
+  people), Tech, Countries and Cities. Efteling has every attraction and figure.
 - **Famous people** may be living or controversial, and politicians of any side are fair game. Not
   mass murderers, and nobody known mainly for abuse.
 - **18+ categories** per language: about 150 to 300 suggestive but drawable words (think hangover,
@@ -19,7 +20,7 @@
 
 ## Where words come from
 
-There is no clearly licensed, ready-made Pictionary-style list in either language (checked 2026-10-18), so we
+There is no clearly licensed, ready-made drawing-game word list in either language (checked 2026-10-18), so we
 curate our own. Automation proposes candidates, a human decides.
 
 | Source | Licence | Use |
@@ -31,7 +32,7 @@ curate our own. Automation proposes candidates, a human decides.
 | [LDNOOBW](https://github.com/LDNOOBW/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words) | CC BY 4.0 | Blocklist and inspiration for the 18+ categories |
 
 Avoid: Brysbaert concreteness norms (no open licence; fine to consult privately, don't commit), google-10000-english
-(research-only), skribbl community lists (no licence).
+(research-only), community word lists from other drawing games (no licence).
 
 ## Format
 
@@ -69,7 +70,7 @@ words/
   nl/adults.toml
 ```
 
-Category names are what players see, in the pack's language. The lists are small hand-written starters; growing them
-is the next step for word lists.
+Category names are what players see, in the pack's language. To add words: pick the file and category, keep it
+sorted, run `python3 -I scripts/words/check.py`, and say in the pull request where the words came from.
 
 Our curated lists are CC BY-SA 4.0 ([decision 0004](decisions/0004-licence.md)).

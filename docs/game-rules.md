@@ -10,7 +10,7 @@ the **bamboozler**: they don't know the word and have to bluff along while the o
 
 ## Where it's played
 
-**Phone first.** Everyone plays on their own phone: join with a link, QR code or room code, and the phone shows
+**Phone first.** Everyone plays on their own phone: join with a link or the room code, and the phone shows
 everything you need (the canvas, players and mini-maps, timers, your secret, your vote). Tablets and desktops join the
 same way and get a roomier layout.
 
@@ -128,7 +128,8 @@ Split votes need no tie-break: points are per voter, not per majority.
 - English and Dutch, simple and drawable. See [words.md](words.md).
 - The host picks which **categories** are in play before starting: everyday ones (Animals, Food, Places, …) and
   themed ones (Efteling, Sinterklaas, Typisch Nederlands, Lekker Nederlands, Very British, Christmas, Fairy tales,
-  Landmarks) and Logos. A new room starts with every category of its language that isn't 18+, themed ones included; the
+  Landmarks), Logos, media (Films, TV shows, Cartoons and comics, Superheroes, Video games), trivia (Memes, Board
+  games, Famous people), Tech, Countries and Cities. A new room starts with every category of its language that isn't 18+, themed ones included; the
   host narrows it down.
 - **18+ categories** (innuendo and rude-but-drawable words) are categories like any other, marked 18+ and never in
   play unless the host picks them.

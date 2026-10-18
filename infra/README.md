@@ -14,9 +14,21 @@ inside (`Dockerfile`). Exactly one instance, always on, because rooms live in me
 Cost: the container at 140 mvCPU / 256 MB, always on, is about €5 a month before Scaleway's free tier (which is
 shared with AmputatorBot), plus cents for the registry.
 
+## Running your own copy
+
+The steps below set up bamdoodle.io, and work for a fork with a few names changed. Give it its own name and logo
+([brand/README.md](../brand/README.md)), then:
+
+- `app_name` and `project_name` in `infra/scaleway/variables.tf` (or `terraform.tfvars`): registry namespaces are
+  unique per region, so `bamdoodle` is taken.
+- `REGISTRY` in `.github/workflows/release.yml`, and the image path in the commands below
+  (`rg.nl-ams.scw.cloud/<your app_name>/...`).
+- Your own repository in the `gh secret set --repo ...` commands, and your own domain and DNS provider in step 10.
+
 ## One-time setup
 
-Everything below touches accounts or money, so it's yours to run. Run from the repository root unless it says
+This is done for bamdoodle.io; it's here for a rebuild or for running your own copy. Everything below touches
+accounts or money, so it's yours to run. Run from the repository root unless it says
 otherwise.
 
 ### 1. Tools
@@ -143,8 +155,10 @@ required reviewer to it under Settings > Environments if you want to approve eac
 
 ### 9. Release
 
+Every release is a `v*` tag on `main` (the first live one was `v0.1.1`; `v0.1.0` never deployed):
+
 ```bash
-git tag v0.1.0 && git push origin v0.1.0
+git switch main && git pull && git tag -a v0.1.2 -m "BamDoodle v0.1.2" && git push origin v0.1.2
 ```
 
 ```bash
@@ -180,5 +194,13 @@ provider too, Scaleway Domains & DNS can host the zone (about €5 a month).
 - Infra changes: edit `infra/scaleway/*.tf`, then `terraform apply` from `infra/scaleway`.
 - State: `infra/scaleway/terraform.tfstate` is local and gitignored. It holds no secrets here, but losing it means
   importing the resources again, so back it up after each apply (e.g. in Bitwarden, like AmputatorBot's).
-- Rollback: run the release workflow by hand with an older tag (Actions > release > Run workflow > tag), or
-  `scw container container update <container id> image=rg.nl-ams.scw.cloud/bamdoodle/bamdoodle:<tag>`.
+- Rollback: point the container back at an older image, which is still in the registry:
+
+  ```bash
+  scw container container update "$(terraform -chdir=infra/scaleway output -raw container_id | cut -d/ -f2)" \
+    region=nl-ams image=rg.nl-ams.scw.cloud/bamdoodle/bamdoodle:v0.1.1
+  ```
+
+  The CLI wants the container's uuid without Terraform's `nl-ams/` prefix, and the region spelled out (a profile's
+  default region may be another one). Don't use "Run workflow" with an old tag in its input for this: that builds
+  the current `main` and pushes it under the old tag.

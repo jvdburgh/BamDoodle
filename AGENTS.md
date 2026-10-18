@@ -36,7 +36,8 @@ Use `just` (it wraps cargo and pnpm the same way CI does):
 - `web/`: React 19, Vite, TypeScript 7, Tailwind 4 (tokens in `src/index.css`), Storybook 10.
   - `src/app/`: shell and routes. `src/components/<domain>/`: one home per domain with `_hooks/`, `_utils/`,
     `_types/` inside. `src/protocol/`: WebSocket client; `generated/` is ts-rs output.
-- `brand/`: logo (not AGPL, see `brand/README.md`). `words/`: word packs (planned). `infra/`: Terraform (planned).
+- `brand/`: logo (not AGPL, see `brand/README.md`). `words/`: word packs per language (`docs/words.md`).
+  `infra/`: Terraform for Scaleway and the deploy runbook (`infra/README.md`). Live at https://bamdoodle.io.
 
 ## How we work
 

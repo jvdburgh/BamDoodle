@@ -80,8 +80,8 @@ The catch: a deploy or crash ends all running games. At hobby scale that's accep
   gets its own `roundStarted` (artists with the word, the bamboozler and host screens without). The active player
   sends `beginStroke`, `extendStroke` (batches of points) and `endStroke`; everyone gets `strokeBegun`,
   `strokeExtended`, `strokeEnded` and `turnStarted` (with which turn it is). While drawing, `suspect` is announced to everyone
-  as `suspicionChanged`. After the last turn comes `votingStarted`: the final `castVote` is announced as `voteCast`
-  with only the voter. When everyone has voted or the time is up (unsubmitted suspicions count), `revealed` names
+  as `suspicionChanged`. After the last turn comes `votingStarted`: a first `castVote` is announced as `voteCast`
+  with only the voter; another `castVote` changes the vote and is confirmed to the voter alone. When everyone has voted or the time is up (unsubmitted suspicions count), `revealed` names
   the bamboozler and every vote; their `guessWord` (or the guess timer) ends the round with `roundFinished`: the word,
   the guess, the awards, the scores and whether that was the last round (`gameOver`). A snapshot during the results also
   carries the finished drawing (`phase.strokes`) for a device that joins or reconnects then.
@@ -187,8 +187,8 @@ weight without helping freehand strokes. tldraw is out: its licence isn't open s
 The game on one device with simulated players, for working on the screens without a server: `useLabRoom`
 (`components/lab/_hooks/labRoom.hook.ts`) plays the rounds with copies of the round flow and scoring
 (`components/lab/_utils/`) and hands the same views the same `RoomState` the server would, for your phone and for a
-host screen; your `send` is answered as the server would. The lab also has what isn't on the wire yet: drawing your
-own avatar and own colours per player. A "Lab" panel (bottom right on a laptop, `?panel` on a phone) switches screen,
+host screen; your `send` is answered as the server would. The lab also has what isn't on the wire yet: own colours per
+player. A "Lab" panel (bottom right on a laptop, `?panel` on a phone) switches screen,
 view (phone, host screen, both), role and player count; settings persist per viewer and in the URL. To try anything on
 a phone on the same Wi-Fi: `pnpm --dir web dev --host`.
 
@@ -212,7 +212,7 @@ Conventions (see AGENTS.md):
 - Releases: a `v*` tag runs `.github/workflows/release.yml`: build, push, redeploy, then a health check and a short game
   over a real WebSocket. The runbook, with every command, is [infra/README.md](../infra/README.md).
 - `scripts/ws-soak.mjs` (`just soak`) is the smoke and soak test for any running server.
-- Versions: the release tag (e.g. `v0.1.0`) is baked into both the server binary and the web build
+- Versions: the release tag (e.g. `v0.1.1`) is baked into both the server binary and the web build
   (`BAMDOODLE_VERSION`, `/api/version`). Before it says hello, the web app asks `/api/version`; built for another release,
   it reloads itself once (a guard per version stops loops), so it never creates or joins with old code. After a
   deploy, an open tab's reconnect does the same. New releases always reach browsers: build files
@@ -227,5 +227,6 @@ Conventions (see AGENTS.md):
 
 - Analytics, if any: EU-hosted and cookie-free (Plausible or self-hosted Umami), or nothing.
 - Error tracking: GlitchTip (open source) rather than Sentry.
-- Big-screen (TV) mode, PWA install, a native Android app (the server doesn't care what the client is).
+- PWA install, a native Android app (the server doesn't care what the client is).
+- Own colours per player on the wire (only in the lab so far), a limit on rooms per IP address.
 - A database, only when there's something worth keeping (stats, custom word packs).
