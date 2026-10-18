@@ -85,7 +85,7 @@ Split votes need no tie-break: points are per voter, not per majority.
 - English and Dutch, simple and drawable. See [words.md](words.md).
 - The host picks which **categories** are in play before starting: everyday ones (Animals, Food, Places, …) and
   themed ones (Efteling, Sinterklaas, Typisch Nederlands, Lekker Nederlands, Very British, Christmas, Fairy tales,
-  Landmarks). A new room starts with every category of its language that isn't 18+, themed ones included; the
+  Landmarks) and Logos. A new room starts with every category of its language that isn't 18+, themed ones included; the
   host narrows it down.
 - **18+ categories** (innuendo and rude-but-drawable words) are categories like any other, marked 18+ and never in
   play unless the host picks them.

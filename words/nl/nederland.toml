@@ -1,9 +1,9 @@
 # Themapakket Nederland, met de hand geschreven voor BamDoodle. CC BY-SA 4.0, zie words/NOTICE.
-# Namen van attracties en figuren zijn hier alleen woorden om te tekenen.
+# Namen van attracties en figuren zijn hier alleen woorden om te tekenen. Efteling: alle attracties en figuren.
 language = "nl"
 
 [categories]
-Efteling = ["Doornroosje", "Draak", "Holle Bolle Gijs", "Joris en de Draak", "Kabouter", "Kleine Zeemeermin", "Langnek", "Pardoes", "Roodkapje", "Spookslot", "Sprookjesboom", "Vliegende Hollander", "Vrouw Holle"]
-Sinterklaas = ["chocoladeletter", "gedicht", "marsepein", "mijter", "paard op het dak", "pepernoten", "schoen zetten", "schoorsteen", "Sint op zijn paard", "speculaas", "staf", "stoomboot", "surprise", "taai-taai", "verlanglijstje", "zak met cadeaus"]
+Efteling = ["Aquanura", "Baron 1898", "Carnaval Festival", "Danse Macabre", "De Oude Tufferbaan", "De Vliegende Hollander", "Diorama", "Doornroosje", "Draak", "Droomvlucht", "Fabula", "Fata Morgana", "Gondoletta", "Halve Maen", "Holle Bolle Gijs", "Joris en de Draak", "Kabouter", "Kinderspoor", "Kleine Zeemeermin", "Langnek", "Max & Moritz", "Pagode", "Pardoes", "Piraña", "Polka Marina", "Python", "Raveleijn", "Roodkapje", "Sirocco", "Spookslot", "Sprookjesboom", "Sprookjesbos", "Stoomcarrousel", "Stoomtrein", "Symbolica", "Villa Volta", "Vogel Rok", "Vrouw Holle"]
+Sinterklaas = ["chocoladeletter", "gedicht", "marsepein", "mijter", "paard op het dak", "pepernoten", "schoen zetten", "schoorsteen", "Sinterklaas", "speculaas", "staf", "stoomboot", "surprise", "taai-taai", "verlanglijstje", "zak met cadeaus"]
 "Typisch Nederlands" = ["bakfiets", "Deltawerken", "dijk", "Elfstedentocht", "fietsenstalling", "grachtenpand", "kaasmarkt", "klompen", "Koningsdag", "oranje kroon", "polder", "regenpak", "schaatsen", "sluis", "tulp", "verjaardagskring", "vrijmarkt", "woonboot"]
 "Lekker Nederlands" = ["appeltaart", "bitterbal", "boterletter", "drop", "erwtensoep", "frikandel", "hagelslag", "haring", "kaassoufflé", "kroket", "oliebol", "ontbijtkoek", "patatje oorlog", "poffertjes", "stamppot", "stroopwafel", "tompouce", "vla"]
