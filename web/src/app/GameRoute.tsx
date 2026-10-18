@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
+import type { AvatarStroke } from "@/components/avatar/_types/avatar.types";
+import { AvatarUtils } from "@/components/avatar/_utils/avatar.utils";
 import { LobbySetup } from "@/components/lobby/LobbySetup.component";
 import { LobbyStart, type LobbyEntry } from "@/components/lobby/LobbyStart.component";
+import { LobbyWaiting } from "@/components/lobby/LobbyWaiting.component";
 import { RoomPlayerView } from "@/components/room/RoomPlayerView.component";
 import { useRoomSounds } from "@/components/room/_hooks/roomSounds.hook";
 import type { RoomViewState } from "@/components/room/_types/room.types";
@@ -8,6 +11,7 @@ import { RoomViewUtils } from "@/components/room/_utils/roomView.utils";
 import type { ClientMessage } from "@/protocol/generated/ClientMessage";
 import type { RoomSettings } from "@/protocol/generated/RoomSettings";
 import { useRoomConnection } from "@/protocol/room.hook";
+import type { RoomConnection } from "@/protocol/roomConnection";
 
 const NAME_KEY = "bamdoodle:name";
 
@@ -51,9 +55,7 @@ function GameConnection({ entry, onEnter }: { entry: LobbyEntry; onEnter: (entry
   const gaveUp = status === "failed" || status === "replaced" || status === "closed";
 
   if (!gaveUp && connection && RoomViewUtils.inRoom(state)) {
-    return (
-      <GameRoom state={state} send={(message) => connection.send(message)} createdHere={entry.kind === "create"} />
-    );
+    return <GameRoom state={state} connection={connection} createdHere={entry.kind === "create"} />;
   }
 
   const problem = !gaveUp
@@ -77,13 +79,18 @@ function GameConnection({ entry, onEnter }: { entry: LobbyEntry; onEnter: (entry
 
 type GameRoomProps = {
   state: RoomViewState;
-  send: (message: ClientMessage) => void;
+  connection: RoomConnection;
   /** You made this room: set it up first, and play the room-created moment. */
   createdHere: boolean;
 };
 
-function GameRoom({ state, send, createdHere }: GameRoomProps) {
+function GameRoom({ state, connection, createdHere }: GameRoomProps) {
   const { room } = state;
+  const send = (message: ClientMessage) => connection.send(message);
+  const you = room.players.find((player) => player.id === state.you);
+  /** Your face: draw or tweak it in the lobby before going to the room. */
+  const [avatar, setAvatar] = useState<AvatarStroke[] | null>(null);
+  const [drawingFace, setDrawingFace] = useState(room.phase.phase === "lobby");
   const isHost = room.hostId !== null && room.hostId === state.you;
   const betweenRounds = room.phase.phase === "lobby" || room.phase.phase === "finished";
   const [settingUp, setSettingUp] = useState(createdHere);
@@ -119,6 +126,30 @@ function GameRoom({ state, send, createdHere }: GameRoomProps) {
         onDone={() => {
           setSettingUp(false);
           setDraft(null);
+        }}
+      />
+    );
+  }
+
+  if (drawingFace && you) {
+    const face =
+      avatar ??
+      (you.avatar.length > 0
+        ? AvatarUtils.fromWire(you.avatar)
+        : AvatarUtils.face(RoomViewUtils.seed(room.code, you.id)));
+    return (
+      <LobbyWaiting
+        name={you.name}
+        roomCode={room.code}
+        avatar={face}
+        onAvatarChange={(strokes) => {
+          setAvatar(strokes);
+          connection.setAvatar(AvatarUtils.toWire(strokes));
+        }}
+        onStart={() => {
+          if (avatar === null) connection.setAvatar(AvatarUtils.toWire(face));
+          connection.flushAvatar();
+          setDrawingFace(false);
         }}
       />
     );

@@ -1,3 +1,4 @@
+import { AvatarUtils } from "@/components/avatar/_utils/avatar.utils";
 import { giraffeStrokesFixture } from "@/components/canvas/_fixtures/strokes.fixture";
 import { CanvasTools } from "@/components/canvas/_utils/canvasTools.utils";
 import { playersFixture, roomCodeFixture } from "@/components/room/_fixtures/players.fixture";
@@ -65,6 +66,7 @@ export function resultFixture(patch: Partial<RoundResult> = {}): RoundResult {
       name: player.name,
       score: player.id === 1 || player.id === 4 ? 1 : 0,
       connected: true,
+      avatar: AvatarUtils.toWire(player.avatar),
     })),
     ...patch,
   };
@@ -106,6 +108,7 @@ export function roomStateFixture({ you = 2, hostId = 2, phase = { phase: "lobby"
             name: player.name,
             score: 0,
             connected: true,
+            avatar: AvatarUtils.toWire(player.avatar),
           },
       ),
       settings: {

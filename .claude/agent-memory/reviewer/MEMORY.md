@@ -1,4 +1,4 @@
-- [Client lifecycle patterns](feedback_client_lifecycle_patterns.md) — WS client bugs (heartbeat, sleep clock, votes, tokens) + stroke echo sync, stale room on failed, derived rules
+- [Client lifecycle patterns](feedback_client_lifecycle_patterns.md) — recurring WebSocket client bugs (heartbeat, perf.now, votes, tokens, send-and-forget vs phase/cooldown, stroke echo sync, stale room on failed, derived rules) to check first
 - [Server room patterns](feedback_server_room_patterns.md) — LEAD: client input fanned out to Everyone without own bound (rate, Vec length/dupes); stale Finished fields
 - [Word list patterns](feedback_word_list_patterns.md) — word equal to its category leaks to the bamboozler; themed proper names; script check
 - [Web UI patterns](feedback_web_ui_patterns.md) — pointer input copies, identity colours hiding strokes, wire caps, host-only actions

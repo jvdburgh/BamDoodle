@@ -1232,3 +1232,178 @@ mod categories {
         assert_eq!(game.round().word, "hangover");
     }
 }
+
+mod avatars {
+    use super::*;
+
+    fn line(colour: &str, points: &[Point]) -> AvatarStroke {
+        AvatarStroke {
+            colour: colour.into(),
+            pressure: false,
+            points: points.to_vec(),
+        }
+    }
+
+    fn face() -> Vec<AvatarStroke> {
+        vec![line("#ffffff", &[Point(0.2, 0.2, 0.5), Point(0.8, 0.8, 0.5)])]
+    }
+
+    fn set(strokes: Vec<AvatarStroke>) -> ClientMessage {
+        ClientMessage::SetAvatar { strokes }
+    }
+
+    fn changed(outbox: &Outbox) -> bool {
+        has(outbox, |message| matches!(message, ServerMessage::AvatarChanged { .. }))
+    }
+
+    #[test]
+    fn a_new_avatar_goes_to_everyone_and_into_the_snapshot() {
+        let mut game = Game::with_players(3);
+        let noor = game.seats[1].player_id;
+        let outbox = game.send(noor, set(face()));
+        assert_eq!(
+            outbox,
+            vec![(
+                Audience::Everyone,
+                ServerMessage::AvatarChanged {
+                    player_id: noor,
+                    strokes: face()
+                }
+            )]
+        );
+
+        let snapshot = game.room.snapshot(Viewer::Screen, game.now);
+        assert_eq!(snapshot.players[1].avatar, face());
+        assert!(snapshot.players[0].avatar.is_empty());
+    }
+
+    #[test]
+    fn it_replaces_the_whole_avatar_and_may_be_empty() {
+        let mut game = Game::with_players(3);
+        let sam = game.host();
+        game.send(sam, set(face()));
+        game.now += limits::AVATAR_COOLDOWN;
+        assert!(changed(&game.send(sam, set(Vec::new()))));
+        assert!(game.room.players[0].avatar.is_empty());
+    }
+
+    #[test]
+    fn only_between_rounds() {
+        let mut game = Game::started(3);
+        let sam = game.host();
+        assert!(game.send(sam, set(face())).is_empty());
+        assert!(game.room.players[0].avatar.is_empty());
+
+        game.finish_round();
+        assert!(changed(&game.send(sam, set(face()))));
+    }
+
+    #[test]
+    fn at_most_once_a_second() {
+        let mut game = Game::with_players(3);
+        let sam = game.host();
+        assert!(changed(&game.send(sam, set(face()))));
+        game.now += limits::AVATAR_COOLDOWN - Duration::from_millis(1);
+        assert!(game.send(sam, set(Vec::new())).is_empty());
+        assert_eq!(game.room.players[0].avatar, face());
+        game.now += Duration::from_millis(1);
+        assert!(changed(&game.send(sam, set(Vec::new()))));
+    }
+
+    #[test]
+    fn a_dropped_avatar_does_not_start_the_cooldown() {
+        let mut game = Game::with_players(3);
+        let sam = game.host();
+        assert!(
+            game.send(sam, set(vec![line("red", &[Point(0.5, 0.5, 0.5)])]))
+                .is_empty()
+        );
+        assert!(changed(&game.send(sam, set(face()))));
+    }
+
+    #[test]
+    fn at_most_the_stroke_limit() {
+        let mut game = Game::with_players(3);
+        let sam = game.host();
+        let dot = line("#ffffff", &[Point(0.5, 0.5, 0.5)]);
+        assert!(
+            game.send(sam, set(vec![dot.clone(); limits::AVATAR_STROKES + 1]))
+                .is_empty()
+        );
+        assert!(changed(&game.send(sam, set(vec![dot; limits::AVATAR_STROKES]))));
+    }
+
+    #[test]
+    fn at_most_the_point_limit_in_total() {
+        let mut game = Game::with_players(3);
+        let sam = game.host();
+        let half = vec![Point(0.5, 0.5, 0.5); limits::AVATAR_POINTS / 2];
+        let mut too_many = vec![line("#ffffff", &half), line("#ffffff", &half)];
+        too_many[1].points.push(Point(0.5, 0.5, 0.5));
+        assert!(game.send(sam, set(too_many)).is_empty());
+        assert!(changed(
+            &game.send(sam, set(vec![line("#ffffff", &half), line("#ffffff", &half)]))
+        ));
+    }
+
+    #[test]
+    fn every_stroke_has_a_point() {
+        let mut game = Game::with_players(3);
+        let mut strokes = face();
+        strokes.push(line("#ffffff", &[]));
+        assert!(game.send(game.host(), set(strokes)).is_empty());
+    }
+
+    #[test]
+    fn points_stay_on_the_square() {
+        let mut game = Game::with_players(3);
+        for point in [
+            Point(1.01, 0.5, 0.5),
+            Point(0.5, -0.01, 0.5),
+            Point(0.5, 0.5, 1.5),
+            Point(f32::NAN, 0.5, 0.5),
+            Point(0.5, f32::INFINITY, 0.5),
+        ] {
+            assert!(game.send(game.host(), set(vec![line("#ffffff", &[point])])).is_empty());
+        }
+        assert!(game.room.players[0].avatar.is_empty());
+    }
+
+    #[test]
+    fn colours_come_from_the_avatar_palette() {
+        let mut game = Game::with_players(3);
+        let sam = game.host();
+        for colour in ["#000000", "#080357", "#FFFFFF", "red", "url(#x)"] {
+            assert!(
+                game.send(sam, set(vec![line(colour, &[Point(0.5, 0.5, 0.5)])]))
+                    .is_empty()
+            );
+        }
+        let palette: Vec<AvatarStroke> = limits::AVATAR_COLOURS
+            .iter()
+            .map(|colour| line(colour, &[Point(0.5, 0.5, 0.5)]))
+            .collect();
+        assert!(changed(&game.send(sam, set(palette))));
+    }
+
+    #[test]
+    fn points_are_rounded_to_three_decimals() {
+        let mut game = Game::with_players(3);
+        game.send(
+            game.host(),
+            set(vec![line("#ffffff", &[Point(0.123_456, 0.5, 0.987_6)])]),
+        );
+        assert_eq!(game.room.players[0].avatar[0].points[0], Point(0.123, 0.5, 0.988));
+    }
+
+    #[test]
+    fn the_face_stays_with_the_seat_after_a_reconnect() {
+        let mut game = Game::with_players(3);
+        let noor = game.seats[1].clone();
+        game.send(noor.player_id, set(face()));
+        game.room.disconnect(noor.player_id, game.now);
+        game.room.join("Noor", Some(&noor.session_token)).unwrap();
+        let snapshot = game.room.snapshot(Viewer::Player(noor.player_id), game.now);
+        assert_eq!(snapshot.players[1].avatar, face());
+    }
+}

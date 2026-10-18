@@ -1,3 +1,4 @@
+import { AvatarUtils } from "@/components/avatar/_utils/avatar.utils";
 import type { Round, RoomSetup, WordCard } from "@/components/lab/_types/lab.types";
 import { RoundUtils } from "@/components/lab/_utils/round.utils";
 import { ScoreUtils } from "@/components/lab/_utils/score.utils";
@@ -99,6 +100,7 @@ function phaseView(sim: LabSnapshot, viewer: LabViewer): PhaseView {
             name: player.name,
             score: totals[player.id] ?? 0,
             connected: true,
+            avatar: AvatarUtils.toWire(player.avatar),
           })),
         },
       };
@@ -135,6 +137,7 @@ function toState(sim: LabSnapshot, viewer: LabViewer): RoomViewState {
           name: player.name,
           score: sim.totals[player.id] ?? 0,
           connected: true,
+          avatar: AvatarUtils.toWire(player.avatar),
         })),
       settings: {
         mode: setup.mode,

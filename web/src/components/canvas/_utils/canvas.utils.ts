@@ -81,4 +81,4 @@ function strokeToPath(
 /** How close points may be before `simplify` drops them: what's drawn and what's sent are thinned alike. */
 const SIMPLIFY_TOLERANCE = 0.0015;
 
-export const CanvasUtils = { SIMPLIFY_TOLERANCE, normalise, simplify, freehandPath, strokeToPath };
+export const CanvasUtils = { SIMPLIFY_TOLERANCE, round, normalise, simplify, freehandPath, strokeToPath };

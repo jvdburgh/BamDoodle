@@ -41,10 +41,11 @@ can change the number of rounds between rounds; when that's already been reached
    you open a shared link (`/join/BKZW`; the address bar shows it once you're in). Creating asks your nickname, then
    the host sets up the room: mode, turns per player or turn length, rounds per game, the language and the word
    categories to play with (Efteling, Places, Very British, …, and 18+ ones if they want). Every change reaches the
-   room at once, and the host can open the settings again between rounds. The others wait on the join card until the
-   host starts; the host's card also links to the host screen ("Show on a TV", `/watch/BKZW`). Everyone has a doodle
-   face picked for them; drawing your own (a small round pad with one pen, the colours that read on navy, shuffle, undo
-   and clear) is in the lab until avatars go over the wire.
+   room at once, and the host can open the settings again between rounds. Then everyone draws or tweaks their avatar
+   (a random doodle face to start from, shuffle for another; a small round pad with one pen and the colours that read
+   on navy; undo and clear) and goes to the room. Everyone in the room sees each other's faces; a face can change
+   between rounds, not during one. The others wait on the join card until the host starts; the host's card also links
+   to the host screen ("Show on a TV", `/watch/BKZW`).
 2. **Secret.** The server picks a word from the chosen categories and tells each player their role.
 3. **Drawing.** Players take turns on the shared canvas in a shuffled order shown on screen; each player
    gets the same number of turns. The player whose turn it is is highlighted, and their strokes appear live for everyone.

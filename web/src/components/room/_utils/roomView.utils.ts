@@ -26,7 +26,7 @@ function seed(code: string, playerId: number): number {
   return (hash * 7 + playerId * 13) % 1_000_003;
 }
 
-/** Players as the screens draw them. Faces are seeded until avatars go over the wire. */
+/** Players as the screens draw them: the face each one sent, or a seeded doodle face until they do. */
 function players(room: Pick<RoomSnapshot, "code" | "players">): RoomPlayer[] {
   return room.players.map((player) => {
     const avatarSeed = seed(room.code, player.id);
@@ -34,7 +34,7 @@ function players(room: Pick<RoomSnapshot, "code" | "players">): RoomPlayer[] {
       id: player.id,
       name: player.name,
       avatarSeed,
-      avatar: AvatarUtils.face(avatarSeed),
+      avatar: player.avatar.length > 0 ? AvatarUtils.fromWire(player.avatar) : AvatarUtils.face(avatarSeed),
       connected: player.connected,
     };
   });

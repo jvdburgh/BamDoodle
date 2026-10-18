@@ -17,9 +17,9 @@ use rand::{Rng, RngExt, SeedableRng, rngs::StdRng, seq::SliceRandom};
 use crate::{
     limits,
     protocol::{
-        Award, AwardReason, BrushSize, ClientMessage, PhaseView, PlayerId, PlayerSummary, Point, RejectReason, Reveal,
-        Role, RoomSettings, RoomSnapshot, RoundResult, RoundView, ServerMessage, StrokeId, StrokeView, Suspicion,
-        TurnMode, Vote,
+        AvatarStroke, Award, AwardReason, BrushSize, ClientMessage, PhaseView, PlayerId, PlayerSummary, Point,
+        RejectReason, Reveal, Role, RoomSettings, RoomSnapshot, RoundResult, RoundView, ServerMessage, StrokeId,
+        StrokeView, Suspicion, TurnMode, Vote,
     },
     words::WordLibrary,
 };
@@ -55,6 +55,8 @@ struct Player {
     score: u32,
     connected: bool,
     disconnected_at: Option<Instant>,
+    avatar: Vec<AvatarStroke>,
+    avatar_set_at: Option<Instant>,
 }
 
 #[derive(Debug)]
@@ -175,6 +177,8 @@ impl Room {
             score: 0,
             connected: true,
             disconnected_at: None,
+            avatar: Vec::new(),
+            avatar_set_at: None,
         };
         self.next_player_id += 1;
         let seat = Seat {
@@ -216,6 +220,7 @@ impl Room {
     pub fn handle(&mut self, player_id: PlayerId, message: ClientMessage, now: Instant) -> Outbox {
         let result = match message {
             ClientMessage::UpdateSettings { settings } => self.update_settings(player_id, settings),
+            ClientMessage::SetAvatar { strokes } => Ok(self.set_avatar(player_id, strokes, now)),
             ClientMessage::StartRound => self.start_round(player_id, now),
             ClientMessage::BeginStroke { colour, size, points } => {
                 Ok(self.begin_stroke(player_id, colour, size, points))
@@ -311,6 +316,30 @@ impl Room {
         }
         self.settings = settings.clone();
         Ok(vec![(Audience::Everyone, ServerMessage::SettingsChanged { settings })])
+    }
+
+    fn set_avatar(&mut self, player_id: PlayerId, strokes: Vec<AvatarStroke>, now: Instant) -> Outbox {
+        if self.require_between_rounds().is_err() {
+            tracing::debug!(player_id, "dropping avatar: a round is on");
+            return Vec::new();
+        }
+        let Some(strokes) = clean_avatar(strokes) else {
+            tracing::debug!(player_id, "dropping avatar: too big, off the square or an odd colour");
+            return Vec::new();
+        };
+        let Some(player) = self.player_mut(player_id) else {
+            return Vec::new();
+        };
+        if player
+            .avatar_set_at
+            .is_some_and(|at| now < at + limits::AVATAR_COOLDOWN)
+        {
+            tracing::debug!(player_id, "dropping avatar: changed too recently");
+            return Vec::new();
+        }
+        player.avatar_set_at = Some(now);
+        player.avatar = strokes.clone();
+        vec![(Audience::Everyone, ServerMessage::AvatarChanged { player_id, strokes })]
     }
 
     fn start_round(&mut self, player_id: PlayerId, now: Instant) -> Result<Outbox, RejectReason> {
@@ -863,6 +892,7 @@ fn summary(player: &Player) -> PlayerSummary {
         name: player.name.clone(),
         score: player.score,
         connected: player.connected,
+        avatar: player.avatar.clone(),
     }
 }
 
@@ -894,17 +924,43 @@ fn clean_points(points: Vec<Point>) -> Option<Vec<Point>> {
     if points.len() > limits::POINTS_PER_MESSAGE {
         return None;
     }
-    let in_range = |value: f32| value.is_finite() && (0.0..=1.0).contains(&value);
     points
         .into_iter()
-        .map(|Point(x, y, pressure)| {
-            (in_range(x) && in_range(y) && in_range(pressure)).then(|| Point(round4(x), round4(y), round4(pressure)))
+        .map(|point| is_normalised(point).then(|| rounded(point, 10_000.0)))
+        .collect()
+}
+
+/// Rejects an avatar past the limits, with an empty stroke, an odd colour or a point off its square, and rounds the
+/// rest to 3 decimals: it goes to everyone in the room, and to everyone who joins later.
+fn clean_avatar(strokes: Vec<AvatarStroke>) -> Option<Vec<AvatarStroke>> {
+    let points: usize = strokes.iter().map(|stroke| stroke.points.len()).sum();
+    if strokes.len() > limits::AVATAR_STROKES || points > limits::AVATAR_POINTS {
+        return None;
+    }
+    strokes
+        .into_iter()
+        .map(|stroke| {
+            if stroke.points.is_empty() || !limits::AVATAR_COLOURS.contains(&stroke.colour.as_str()) {
+                return None;
+            }
+            let points = stroke
+                .points
+                .into_iter()
+                .map(|point| is_normalised(point).then(|| rounded(point, 1_000.0)))
+                .collect::<Option<Vec<_>>>()?;
+            Some(AvatarStroke { points, ..stroke })
         })
         .collect()
 }
 
-fn round4(value: f32) -> f32 {
-    (value * 10_000.0).round() / 10_000.0
+fn is_normalised(Point(x, y, pressure): Point) -> bool {
+    let in_range = |value: f32| value.is_finite() && (0.0..=1.0).contains(&value);
+    in_range(x) && in_range(y) && in_range(pressure)
+}
+
+fn rounded(Point(x, y, pressure): Point, scale: f32) -> Point {
+    let round = |value: f32| (value * scale).round() / scale;
+    Point(round(x), round(y), round(pressure))
 }
 
 fn millis(duration: Duration) -> u32 {

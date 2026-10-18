@@ -47,9 +47,10 @@ All live state lives in the process ([decision 0002](decisions/0002-in-memory-st
   current time and returns the messages to send and to whom (everyone, one player, host screens). That's what the
   unit tests drive, one or more per rule in [game-rules.md](game-rules.md).
 - **Players** get a random session token when they join; the browser keeps it in `localStorage` and sends it to take
-  back the same seat (and score) after a refresh or a dropped connection. Avatars aren't on the wire
-  yet: every device seeds the same doodle face from the room code and player id. An avatar is a short list of strokes
-  in the canvas's normalised point format; drawing your own is in the lab for now.
+  back the same seat (and score) after a refresh or a dropped connection, and with it their avatar. An avatar is a
+  short list of strokes in the canvas's normalised point format, drawn in the lobby; the server keeps it with the
+  seat and every player summary carries it, so joiners and reconnects see everyone's faces. Until a player sends one,
+  every device shows the same doodle face seeded from the room code and player id.
 - **Cleanup:** a player who is gone between rounds loses their seat after 2 minutes; a room with no players
   connected closes after 5 minutes (30 seconds if nobody ever joined it). Host screens don't keep a room open.
 - **Words** come from `words/<language>/<pack>.toml`, loaded at startup (`WORDS_DIR`). Players pick categories, not
@@ -67,6 +68,10 @@ The catch: a deploy or crash ends all running games. At hobby scale that's accep
 - **The first message picks the room:** `createRoom { name }` (you become host), `joinRoom { code, name,
   sessionToken? }` or `watchRoom { code }` for a host screen. The answer is `joined` with your player id, your
   session token and a snapshot of the room as you may see it, or `rejected` with a reason.
+- **Avatars:** any player sends `setAvatar { strokes }` between rounds, which replaces their whole avatar; everyone
+  and the host screens get `avatarChanged { playerId, strokes }`. A stroke on the wire is `{ colour, pressure,
+  points }`: avatars use one pen, so there is no size (`AvatarUtils.toWire` / `fromWire` map it to the canvas's
+  stroke).
 - **A game and its rounds:** the host can `updateSettings` between rounds (mode, turns per player, seconds per turn, rounds,
   words) and sends `startRound`; the first round of a game comes with `gameStarted` (scores from zero). Each device
   gets its own `roundStarted` (artists with the word, the bamboozler and host screens without). The active player
@@ -95,6 +100,9 @@ The catch: a deploy or crash ends all running games. At hobby scale that's accep
   per round, never for yourself, only from players in the round; a suspicion counts as your vote if you don't submit
   one.
 - Only the host changes settings and starts rounds, only between rounds.
+- An avatar changes only between rounds, at most once a second: up to 48 strokes and 700 points in total, at least
+  one point per stroke, points on the square (rounded to 3 decimals) and colours from the avatar palette only. Any
+  other `setAvatar` is dropped.
 - What we don't try to stop: friends telling each other things on a voice call. That's part of a party game.
 
 ## Web (`web/`)
@@ -110,6 +118,9 @@ and solve problems we don't have).
 - **Reconnects** use exponential backoff with jitter (0.5 s doubling to 10 s), and take the seat back with the
   session token (`sessionTokens.utils.ts`: `localStorage` per room code, offered only for the same name so a second
   tab under another name gets its own seat; without storage, the seat lasts as long as the page).
+- **Your avatar:** `setAvatar()` sends it once the edits pause for a second, `flushAvatar()` right away (leaving
+  the lobby), never twice within the server's one-second cooldown (the client waits 1.25 s). One set while
+  (re)connecting goes out on joining, one set during a round after `roundFinished`.
 - **Dead sockets:** a hello with no answer within 10 s, or a ping (every 15 s) with nothing coming back within 10 s,
   means the socket is dead, which sleeping phones produce. Times use `Date.now()`, which keeps counting while a
   phone sleeps.

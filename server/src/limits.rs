@@ -42,3 +42,13 @@ pub const OUTBOX_CAPACITY: usize = 256;
 pub const ROOM_COMMAND_CAPACITY: usize = 256;
 /// How often one player can change who they suspect; every change is announced to the whole room.
 pub const SUSPICION_COOLDOWN: Duration = Duration::from_secs(1);
+
+/// One avatar: few enough strokes and points that `setAvatar` fits in `MAX_MESSAGE_BYTES` at 3 decimals.
+pub const AVATAR_STROKES: usize = 48;
+pub const AVATAR_POINTS: usize = 700;
+/// The avatar palette: the canvas colours that read on the navy circle (`AvatarUtils.colours` in the web app).
+pub const AVATAR_COLOURS: [&str; 10] = [
+    "#ffffff", "#f6c49e", "#f9a8c0", "#f13866", "#e8482c", "#fbb03b", "#ffe14d", "#7ec42e", "#2da8c3", "#af2cbe",
+];
+/// Every avatar change goes to the whole room, so one player can't flood it.
+pub const AVATAR_COOLDOWN: Duration = Duration::from_secs(1);

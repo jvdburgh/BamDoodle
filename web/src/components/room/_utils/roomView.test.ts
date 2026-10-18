@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { AvatarUtils } from "@/components/avatar/_utils/avatar.utils";
 import { RoomViewUtils } from "@/components/room/_utils/roomView.utils";
 import type { RoundResult } from "@/protocol/generated/RoundResult";
 import type { RoundView } from "@/protocol/generated/RoundView";
@@ -6,9 +7,9 @@ import type { RoundView } from "@/protocol/generated/RoundView";
 const room = {
   code: "BKZW",
   players: [
-    { id: 1, name: "Pip", score: 0, connected: true },
-    { id: 2, name: "Juno", score: 3, connected: true },
-    { id: 3, name: "Mo", score: 1, connected: false },
+    { id: 1, name: "Pip", score: 0, connected: true, avatar: [] },
+    { id: 2, name: "Juno", score: 3, connected: true, avatar: [] },
+    { id: 3, name: "Mo", score: 1, connected: false, avatar: [] },
   ],
 };
 const players = RoomViewUtils.players(room);
@@ -37,6 +38,14 @@ describe("RoomViewUtils.players", () => {
     expect(RoomViewUtils.players(room)).toEqual(players);
     expect(players[0]?.avatarSeed).not.toBe(players[1]?.avatarSeed);
     expect(players[0]?.avatar.length).toBeGreaterThan(0);
+  });
+});
+
+describe("RoomViewUtils faces", () => {
+  it("shows the face a player sent instead of the seeded one", () => {
+    const face = [{ colour: "#fbb03b", pressure: false, points: [[0.5, 0.5, 0.5]] as [number, number, number][] }];
+    const [pip] = RoomViewUtils.players({ code: "BKZW", players: [{ ...room.players[0]!, avatar: face }] });
+    expect(pip?.avatar).toEqual(AvatarUtils.fromWire(face));
   });
 });
 

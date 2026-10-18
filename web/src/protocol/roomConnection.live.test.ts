@@ -1,5 +1,6 @@
 // Plays against a real server: `just test-live` starts one and sets BAMDOODLE_SERVER_WS.
 import { afterEach, describe, expect, it } from "vitest";
+import type { AvatarStroke } from "@/protocol/generated/AvatarStroke";
 import { RoomConnection, type RoomIntent } from "@/protocol/roomConnection";
 import { type RoomState, RoomStateUtils } from "@/protocol/roomState.utils";
 import { SessionTokenUtils } from "@/protocol/sessionTokens.utils";
@@ -45,6 +46,16 @@ describe.skipIf(!url)("RoomConnection against the real server", () => {
     const screen = open({ kind: "watch", code });
     await Promise.all([noor, jip, screen].map((connection) => until(connection, (state) => state.status === "joined")));
     await until(sam, (state) => state.room?.players.length === 3);
+
+    const face = [{ colour: "#fbb03b", pressure: false, points: [[0.25, 0.5, 0.5]] }] satisfies AvatarStroke[];
+    noor.setAvatar(face);
+    noor.flushAvatar();
+    for (const connection of [sam, screen]) {
+      await until(
+        connection,
+        (state) => state.room?.players.find((player) => player.name === "Noor")?.avatar.length === 1,
+      );
+    }
 
     sam.send({
       type: "updateSettings",

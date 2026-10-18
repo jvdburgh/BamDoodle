@@ -12,6 +12,7 @@ LEAD WITH (seen twice by 2026-10-18): client input that fans out to Everyone wit
   length up to MAX_MESSAGE_BYTES are stored and rebroadcast as `settingsChanged` to every connection.
 
 Also check:
+- Count limits sized to fit MAX_MESSAGE_BYTES: compute worst case with `node -e JSON.stringify` (avatar was exactly 16384).
 - Derived state frozen in `Phase::Finished(result)` (e.g. `game_over`) while `updateSettings` is allowed in Finished.
 - Paths into a phase change that skip the follow-up check: e.g. `disconnect` -> `next_turn` -> voting.
 
