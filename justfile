@@ -68,6 +68,10 @@ storybook:
 icons:
     node scripts/brand-icons.mjs
 
+# WebSocket smoke/soak test against a running server, e.g. just soak ws://localhost:8080/ws 1 0
+soak url="ws://localhost:8080/ws" rooms="1" minutes="0":
+    node scripts/ws-soak.mjs --url {{url}} --rooms {{rooms}} --minutes {{minutes}}
+
 # Production image (linux/amd64, which is what Scaleway runs)
 image:
     docker buildx build --platform=linux/amd64 -t bamdoodle:dev --load .

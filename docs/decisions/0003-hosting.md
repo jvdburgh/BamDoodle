@@ -1,6 +1,6 @@
 # 0003: Scaleway Serverless Containers, Instance as fallback
 
-Status: accepted, to verify with a WebSocket test (2026-10-18)
+Status: accepted, set up in infra/ (2026-10-18); the WebSocket soak test runs at the first deploy (infra/README.md, step 6)
 
 ## Context
 

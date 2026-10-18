@@ -198,10 +198,13 @@ Conventions (see AGENTS.md):
 
 ## Deploy
 
-- `Dockerfile` builds web and server into one `linux/amd64` image.
-- Hosting: Scaleway Serverless Containers with `min_scale = 1`, `max_scale = 1` (in-memory rooms need exactly one
-  instance), fallback a small Scaleway Instance ([decision 0003](decisions/0003-hosting.md)).
-- Terraform in `infra/scaleway/` and a GitHub Actions release on tag, like AmputatorBot. Not set up yet.
+- `Dockerfile` builds web and server into one `linux/amd64` image with the word lists inside. CI builds it on every
+  change and plays a short game against it (`image` job).
+- Hosting: one Scaleway Serverless Container in Amsterdam, `min_scale = max_scale = 1`, request timeout 60 minutes for
+  WebSockets ([decision 0003](decisions/0003-hosting.md)). Terraform in `infra/scaleway/`.
+- Releases: a `v*` tag runs `.github/workflows/release.yml`: build, push, redeploy, then a health check and a short game
+  over a real WebSocket. The runbook, with every command, is [infra/README.md](../infra/README.md).
+- `scripts/ws-soak.mjs` (`just soak`) is the smoke and soak test for any running server.
 
 ## Not now (follow-ups)
 

@@ -18,6 +18,7 @@ jobs:
     outputs:
       server: ${{ steps.filter.outputs.server }}
       web: ${{ steps.filter.outputs.web }}
+      image: ${{ steps.filter.outputs.image }}
     steps:
       - uses: actions/checkout@v7
       - uses: dorny/paths-filter@v4
@@ -26,6 +27,15 @@ jobs:
           filters: |
             server:
               - "server/**"
+              - ".github/workflows/ci.yml"
+            image:
+              - "Dockerfile"
+              - ".dockerignore"
+              - "server/**"
+              - "web/**"
+              - "words/**"
+              - "pnpm-lock.yaml"
+              - "scripts/ws-soak.mjs"
               - ".github/workflows/ci.yml"
             web:
               - "web/**"
@@ -104,3 +114,31 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build
+
+  image:
+    needs: changes
+    if: needs.changes.outputs.image == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - name: Build the production image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          platforms: linux/amd64
+          load: true
+          tags: bamdoodle:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Run it and play a short game against it
+        run: |
+          docker run -d --name bamdoodle -p 8080:8080 bamdoodle:ci
+          curl -fsS --retry 30 --retry-connrefused --retry-delay 1 http://127.0.0.1:8080/api/health
+          curl -fsS http://127.0.0.1:8080/ | grep -q '<div id="root">'
+          node scripts/ws-soak.mjs --url ws://127.0.0.1:8080/ws --rooms 2 --minutes 0
+      - if: failure()
+        run: docker logs bamdoodle

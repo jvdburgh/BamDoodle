@@ -1,0 +1,12 @@
+# Terraform working files. The lock file is committed; state stays local (back it up, see README).
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+*.tfvars
+*.tfvars.json
