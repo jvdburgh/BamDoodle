@@ -1,0 +1,1 @@
+- [Client lifecycle patterns](feedback_client_lifecycle_patterns.md) — recurring WebSocket client bugs (throttled heartbeat, perf.now sleep, votes, tokens) to check first
