@@ -46,7 +46,7 @@ export function BrandSupportLine({ className = "" }: { className?: string }) {
   const github = <BrandLink href={REPO_URL}>Help out on GitHub</BrandLink>;
   const donate = (
     <BrandLink href={DONATE_URL}>
-      donate to our friends in Ukraine <span aria-hidden="true">{flags.ua.emoji}</span>
+      donate to our friends in <span aria-hidden="true">{flags.ua.emoji}</span> Ukraine
     </BrandLink>
   );
   return (
