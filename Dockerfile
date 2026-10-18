@@ -2,8 +2,8 @@
 # One image: the Vite build of web/ served by the Rust server.
 # Build from the repo root: `just image`.
 
-FROM node:24-slim AS web-deps
-RUN npm install -g pnpm@11.3.0
+FROM node:26-slim AS web-deps
+RUN npm install -g pnpm@12.14.0
 WORKDIR /app
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY web/package.json ./web/

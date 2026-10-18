@@ -1,6 +1,6 @@
 // Verifies that every repository path cited in the agent guidance (AGENTS.md, CLAUDE.md, .claude/**, the PR
 // template) exists, so renaming or deleting a file can't silently leave the guidance pointing at nothing.
-// Checks `backticked` paths and relative markdown links. Run with `just check-agents` (Node 24, no install needed).
+// Checks `backticked` paths and relative markdown links. Run with `just check-agents` (Node 26, no install needed).
 import { execSync } from "node:child_process";
 import { existsSync, globSync, readFileSync } from "node:fs";
 import path from "node:path";
