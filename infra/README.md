@@ -21,11 +21,18 @@ otherwise.
 
 ### 1. Tools
 
+Homebrew no longer ships Terraform itself (licence change), so install it from HashiCorp's own tap:
+
 ```bash
-brew install terraform
+brew tap hashicorp/tap
 ```
 
-`scw` is already installed. Docker Desktop must be running.
+```bash
+brew install hashicorp/tap/terraform
+```
+
+[OpenTofu](https://opentofu.org) (`brew install opentofu`, then `tofu` instead of `terraform`) is the open-source fork and
+works with the same files. `scw` is already installed. Docker Desktop must be running.
 
 ### 2. A Scaleway project
 
