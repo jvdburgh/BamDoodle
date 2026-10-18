@@ -33,7 +33,7 @@ All self-hosted through Fontsource npm packages. No Google Fonts CDN (privacy, G
 - **Body:** Work Sans (Wei Huang, SIL OFL 1.1), `@fontsource-variable/work-sans`. Already installed.
 - **Display:** **Love Ya Like A Sister** (Kimberly Geswein, SIL OFL 1.1), `@fontsource/love-ya-like-a-sister`,
   the maintainer's pick. Single weight, hand-lettered, a little scruffy. The original pitch used Chaloops, which is
-  commercial (Chank Fonts). The playground has a font switcher to compare these alternatives, all OFL on Fontsource:
+  commercial (Chank Fonts). Picked after comparing these alternatives in the playground, all OFL on Fontsource:
   - Grandstander (`@fontsource-variable/grandstander`): wonky, playful, hand-lettered
   - DynaPuff (`@fontsource-variable/dynapuff`): puffy, very characterful
   - Fredoka (`@fontsource-variable/fredoka`): soft and rounded, calmer
@@ -44,7 +44,15 @@ All self-hosted through Fontsource npm packages. No Google Fonts CDN (privacy, G
 ## Paper
 
 The drawing sheet is `paper` (`#f6f5fc`), a cool off-white: every ink colour, including black and night, shows up on
-it, and it reads as a lit sheet on the navy table. The playground can switch the sheet to night navy to compare.
+it, and it reads as a lit sheet on the navy table. (A night-navy sheet was tried and dropped: dark inks vanish.)
+
+## Sound
+
+Every sound is synthesised in the browser with the Web Audio API (`web/src/components/sound/`): short triangle and
+square-wave notes and a filtered-noise pencil scratch. No audio files, so nothing to license, credit or download.
+Cues: a start jingle, a blip per turn (brighter when it's yours), ticks in the last 3 seconds of a turn and the last 5
+of the round, a falling chime when time's up, and small sounds for picking a colour, finishing a stroke and voting.
+Quiet by default, silent until the first tap (browsers require it), and a mute toggle remembered per device.
 
 ## Feel
 

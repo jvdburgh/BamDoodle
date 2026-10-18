@@ -50,8 +50,11 @@ There is no separate investigation phase: you have to pay attention while the dr
 
 | Mode | A turn is | Notes |
 | --- | --- | --- |
-| **Classic** | one stroke (press, draw, release), with a short time limit | Tense, every stroke counts. |
-| **Timed** | about 10 seconds of free drawing, any number of strokes | More expressive. Gives the bamboozler more clues, so fewer laps. |
+| **One stroke each** (`classic`) | one stroke (press, draw, release), with a short time limit | Tense, every stroke counts. |
+| **Timed turns** (`timed`) | about 10 seconds of free drawing, any number of strokes | More expressive. Gives the bamboozler more clues, so fewer laps. |
+
+The app shows the descriptive names; `classic` and `timed` are the names in code and on the wire. Creating a room
+picks the mode, the round length and the colours (below).
 
 The server enforces the turn: strokes from someone whose turn it isn't, or after the time limit, are dropped.
 Simultaneous drawing is parked: it is hard to follow who draws what and much heavier to sync.
@@ -68,8 +71,12 @@ Everyone can use every colour: there is nothing to unlock, ever. To still see wh
   canvas while the rest fades back to grey. Click again or press Esc to show everyone. Hovering a player with a mouse
   previews their spotlight without pinning it.
 
-If playtests show this isn't enough, a fallback is one colour family per player (five shades each). We try the free
-palette first; the playground (the app's "Lab" panel) switches between both so we can compare.
+The room's creator picks **Any colour** (everyone uses every colour, the default) or **Own colours** (each player
+gets a family of five shades, and their avatar wears it) when setting up the room, so playtests can compare both.
+
+**Voting on a phone:** the "Who's sketchy?" bar stays pinned to the bottom of the screen with the drawing visible
+above. Picking a player spotlights their lines; a second tap on "Vote …" makes it final. When time's up the bar
+turns into a louder "Time's up! Who's sketchy?" prompt for whoever hasn't voted yet.
 
 ## Points (starting point, tune in playtests)
 
