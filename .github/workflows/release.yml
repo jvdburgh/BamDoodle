@@ -1,7 +1,8 @@
 name: release
 
 # Builds the image, pushes it to the Scaleway registry and points the container at it. Runs on a version tag
-# (`git tag v0.1.0 && git push origin v0.1.0`) or by hand from the Actions tab. infra/README.md has the setup.
+# (`git tag -a v0.1.2 -m "BamDoodle v0.1.2" && git push origin v0.1.2`) or by hand from the Actions tab (pick the
+# tag under "Use workflow from"). infra/README.md has the setup.
 on:
   push:
     tags: ["v*"]
@@ -94,7 +95,7 @@ jobs:
             echo "attempt $i: $status"
             case "$status" in
               ready)
-                echo "host=$(echo "$container" | jq -r .domain_name)" >> "$GITHUB_OUTPUT"
+                echo "host=$(echo "$container" | jq -r '.public_endpoint | sub("^https://"; "")')" >> "$GITHUB_OUTPUT"
                 exit 0 ;;
               error) echo "::error::the deploy failed; the previous version keeps running"; exit 1 ;;
             esac
