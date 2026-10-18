@@ -25,28 +25,36 @@ It never shows the secret word and doesn't draw. It's a bonus, never required.
 - Exactly one bamboozler per round, picked at random by the server. Nobody but the server knows who it is
   until the reveal.
 
+## A game
+
+A game is a few rounds (the host picks how many, default 5). Every round has a new word and a new bamboozler. After
+the last round comes the final scoreboard, with confetti for the winner; the host can start a new game from there. The host
+can change the number of rounds between rounds; when that's already been reached, the next start begins a new game.
+
 ## A round
 
 1. **Lobby.** Players join with a room code or link, pick a nickname and draw or tweak their avatar while they
-   wait. The host picks the mode, the word pack (and whether the adults pack is on) and starts the round.
+   wait. The host sets up the room: mode, laps or turn length, rounds per game, words (and whether the adults pack is
+   on) and colours, then starts.
 2. **Secret.** The server picks a word from the pack and tells each player their role.
-3. **Drawing.** Players take turns on the shared canvas in a fixed order shown on screen. The player whose turn it
-   is is highlighted, and their strokes appear live for everyone.
-4. **Voting runs alongside the drawing.** At any moment a player can vote for who they think the bamboozler is.
-   A vote is final (no changing it, for now).
-5. **The round ends** when everyone has voted or the round timer runs out (starting point: about one minute,
-   tuned in playtests).
-6. **Reveal.** The bamboozler is revealed. They get one chance to guess the word, even when everyone caught them.
-7. **Points** are awarded, then on to the next round with a new bamboozler.
-
-There is no separate investigation phase: you have to pay attention while the drawing happens.
+3. **Drawing.** Players take turns on the shared canvas in a shuffled order shown on screen, for a set number of
+   laps. The player whose turn it is is highlighted, and their strokes appear live for everyone.
+4. **Suspecting, while the drawing goes on.** Any time, a player can point at who they suspect, and change their mind.
+   That's public and part of the fun: everyone sees "Noor thinks Jip is sketchy".
+5. **Who's sketchy?** After the last turn, everyone makes their final choice: "Who do you think didn't know the word?"
+   Your current suspicion is pre-selected; submitting locks it. Voting ends when everyone has voted or after 30
+   seconds, and anyone who didn't submit votes for whoever they suspected last (or not at all).
+6. **Reveal.** The bamboozler and every vote are shown. The bamboozler gets one chance to guess the word, even when
+   everyone caught them.
+7. **Results.** Who was right, who was wrong, the points of this round and the scores so far. The host starts the
+   next round.
 
 ## Turn modes
 
-| Mode | A turn is | Notes |
+| Mode | A turn is | The host sets |
 | --- | --- | --- |
-| **Classic** | one stroke (press, draw, release), with a short time limit | Tense, every stroke counts. |
-| **Timed** | about 10 seconds of free drawing, any number of strokes | More expressive. Gives the bamboozler more clues, so fewer laps. |
+| **One stroke each** | one stroke (press, draw, release), with a 15 second limit | laps: 1 to 5 (default 3) |
+| **Timed turns** | free drawing, any number of strokes | seconds per turn: 10, 20 (default), 30 or 60; 2 laps |
 
 The server enforces the turn: strokes from someone whose turn it isn't, or after the time limit, are dropped.
 Simultaneous drawing is parked: it is hard to follow who draws what and much heavier to sync.
@@ -66,7 +74,7 @@ If playtests show this isn't enough, a fallback is one colour family per player.
 
 | Who | When | Points |
 | --- | --- | --- |
-| Artist | voted for the bamboozler | +1 |
+| Artist | final vote for the bamboozler | +1 |
 | Bamboozler | guessed the word | +1 |
 | Bamboozler | fewer than half of the artists voted for them | +1 |
 
@@ -82,15 +90,15 @@ Split votes need no tie-break: points are per voter, not per majority.
 These are implemented in the server (`server/src/limits.rs`) and easy to change:
 
 - **Players:** 3 to start a round, at most 8 in a room. Designed for 4 to 6.
-- **Timers:** round 60 seconds (the host can pick 30 to 300), Classic turn 15 seconds, Timed turn 10 seconds, the
-  bamboozler's guess 20 seconds.
+- **Timers:** one-stroke turns 15 seconds, timed turns as set, the final vote 30 seconds, the bamboozler's guess 20
+  seconds. There's no separate round timer: laps decide how long the drawing lasts.
 - **Turn order** is shuffled each round and the bamboozler is picked fully at random, so the same player can be it
   twice in a row (any rule about who it can't be would narrow it down). Words don't repeat until the pack runs out.
-- **Everyone votes, the bamboozler too**, so not voting doesn't give them away; their vote earns nothing. Votes stay
-  secret until the reveal; everyone sees who has voted.
+- **Everyone votes, the bamboozler too**, so not voting doesn't give them away; their vote earns nothing. Final votes
+  stay secret until the reveal; everyone sees who has voted. Suspicions during the drawing are public.
 - **The guess** is free text, forgiving about case, accents, spaces and one typo in words of five letters or more.
 - **Disconnects:** the round goes on. A drawer who drops loses their turn. A player who drops still counts for the
-  vote for 15 seconds (a locked phone shouldn't end the round); after that they no longer hold it up. A session token
+  vote for 15 seconds (a locked phone shouldn't end it); after that they no longer hold it up. A session token
   takes your seat and score back, and a second device with the same token takes over from the first. After a round,
   the seat of someone who is gone is kept for 2 minutes.
 - **Late joiners** watch the current round (no word, no vote) and play from the next one.
@@ -99,5 +107,5 @@ These are implemented in the server (`server/src/limits.rs`) and easy to change:
 ## Open questions
 
 - Does the host screen need its own controls (start the next round, kick a player), or is that the host's phone?
-- Should a round have a fixed number of laps instead of (or as well as) a timer?
+- Should timed turns also let the host pick the number of laps?
 - A computer-controlled bamboozler (the original pitch said "player or AI"): later, if ever.

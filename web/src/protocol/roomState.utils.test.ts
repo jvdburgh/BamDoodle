@@ -11,20 +11,23 @@ const lobby: RoomSnapshot = {
     { id: 1, name: "Sam", score: 0, connected: true },
     { id: 2, name: "Noor", score: 0, connected: true },
   ],
-  settings: { mode: "classic", language: "en", adults: false, roundSeconds: 60 },
+  settings: { mode: "oneStroke", laps: 3, turnSeconds: 20, rounds: 5, language: "en", adults: false },
   phase: { phase: "lobby" },
 };
 
 const round: RoundView = {
   number: 1,
+  rounds: 5,
   category: "Animals",
   word: "giraffe",
   role: "artist",
   turnOrder: [2, 1],
   activePlayerId: 2,
   turnRemainingMs: 15_000,
-  roundRemainingMs: 60_000,
+  lap: 1,
+  laps: 3,
   strokes: [],
+  suspicions: [],
   voted: [],
   yourVote: null,
 };
@@ -63,11 +66,53 @@ describe("RoomStateUtils.apply", () => {
 
   it("turns remaining times into deadlines on this device's clock", () => {
     const state = play([joined, { type: "roundStarted", round }], undefined, 5_000);
-    expect(state.timers).toEqual({ turnEndsAt: 20_000, roundEndsAt: 65_000, guessEndsAt: null });
+    expect(state.timers).toEqual({ turnEndsAt: 20_000, votingEndsAt: null, guessEndsAt: null });
 
-    const next = RoomStateUtils.apply(state, { type: "turnStarted", playerId: 1, durationMs: 15_000 }, 21_000);
+    const next = RoomStateUtils.apply(state, { type: "turnStarted", playerId: 1, durationMs: 15_000, lap: 2 }, 21_000);
     expect(next.timers.turnEndsAt).toBe(36_000);
-    expect(RoomStateUtils.round(next)?.activePlayerId).toBe(1);
+    expect(RoomStateUtils.round(next)).toMatchObject({ activePlayerId: 1, lap: 2 });
+  });
+
+  it("keeps everyone's public suspicions", () => {
+    const state = play([
+      joined,
+      { type: "roundStarted", round },
+      { type: "suspicionChanged", playerId: 1, suspectId: 2 },
+      { type: "suspicionChanged", playerId: 3, suspectId: 2 },
+      { type: "suspicionChanged", playerId: 1, suspectId: 3 },
+      { type: "suspicionChanged", playerId: 3, suspectId: null },
+    ]);
+    expect(RoomStateUtils.round(state)?.suspicions).toEqual([{ playerId: 1, suspectId: 3 }]);
+    expect(RoomStateUtils.suspicionOf(state, 1)).toBe(3);
+    expect(RoomStateUtils.suspicionOf(state, 3)).toBeNull();
+  });
+
+  it("goes to the final vote when the drawing is over", () => {
+    const state = play(
+      [joined, { type: "roundStarted", round }, { type: "votingStarted", durationMs: 30_000 }],
+      undefined,
+      2_000,
+    );
+    expect(state.room?.phase).toMatchObject({ phase: "voting", votingRemainingMs: 30_000 });
+    expect(RoomStateUtils.round(state)).toMatchObject({ activePlayerId: null, word: "giraffe" });
+    expect(state.timers).toEqual({ turnEndsAt: null, votingEndsAt: 32_000, guessEndsAt: null });
+  });
+
+  it("resets scores when a new game starts", () => {
+    const scored: ServerMessage = {
+      type: "joined",
+      you: 1,
+      sessionToken: "token",
+      room: { ...lobby, players: lobby.players.map((player) => ({ ...player, score: 4 })) },
+    };
+    const state = play([
+      scored,
+      {
+        type: "gameStarted",
+        scores: lobby.players.map((player) => ({ ...player, score: 0 })),
+      },
+    ]);
+    expect(state.room?.players.map((player) => player.score)).toEqual([0, 0]);
   });
 
   it("builds strokes as they come in", () => {
@@ -131,6 +176,7 @@ describe("RoomStateUtils.apply", () => {
       [
         joined,
         { type: "roundStarted", round },
+        { type: "votingStarted", durationMs: 30_000 },
         {
           type: "revealed",
           reveal: { bamboozlerId: 2, votes: [{ voterId: 1, suspectId: 2 }], guessRemainingMs: 20_000 },
@@ -140,7 +186,7 @@ describe("RoomStateUtils.apply", () => {
       3_000,
     );
     expect(state.room?.phase.phase).toBe("guessing");
-    expect(state.timers).toEqual({ turnEndsAt: null, roundEndsAt: null, guessEndsAt: 23_000 });
+    expect(state.timers).toEqual({ turnEndsAt: null, votingEndsAt: null, guessEndsAt: 23_000 });
 
     const finished = RoomStateUtils.apply(
       state,
@@ -148,6 +194,8 @@ describe("RoomStateUtils.apply", () => {
         type: "roundFinished",
         result: {
           number: 1,
+          rounds: 5,
+          gameOver: false,
           category: "Animals",
           word: "giraffe",
           bamboozlerId: 2,

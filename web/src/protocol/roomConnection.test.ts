@@ -44,20 +44,23 @@ const room: RoomSnapshot = {
   code: "BKTZ",
   hostId: 1,
   players: [{ id: 1, name: "Sam", score: 0, connected: true }],
-  settings: { mode: "classic", language: "en", adults: false, roundSeconds: 60 },
+  settings: { mode: "oneStroke", laps: 3, turnSeconds: 20, rounds: 5, language: "en", adults: false },
   phase: { phase: "lobby" },
 };
 
 const round: RoundView = {
   number: 1,
+  rounds: 5,
   category: "Animals",
   word: "giraffe",
   role: "artist",
   turnOrder: [1, 2, 3],
   activePlayerId: 1,
   turnRemainingMs: 15_000,
-  roundRemainingMs: 60_000,
+  lap: 1,
+  laps: 3,
   strokes: [],
+  suspicions: [],
   voted: [],
   yourVote: null,
 };
@@ -321,6 +324,7 @@ describe("RoomConnection: your vote", () => {
   function voting() {
     const opened = joinedConnection();
     opened.socket().receive({ type: "roundStarted", round });
+    opened.socket().receive({ type: "votingStarted", durationMs: 30_000 });
     return opened;
   }
   const yourVote = (connection: RoomConnection) => RoomStateUtils.round(connection.getState())?.yourVote;

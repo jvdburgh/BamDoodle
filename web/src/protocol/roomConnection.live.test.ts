@@ -1,8 +1,7 @@
 // Plays against a real server: `just test-live` starts one and sets BAMDOODLE_SERVER_WS.
 import { afterEach, describe, expect, it } from "vitest";
 import { RoomConnection, type RoomIntent } from "@/protocol/roomConnection";
-import type { RoomState } from "@/protocol/roomState.utils";
-import { RoomStateUtils } from "@/protocol/roomState.utils";
+import { type RoomState, RoomStateUtils } from "@/protocol/roomState.utils";
 import { SessionTokenUtils } from "@/protocol/sessionTokens.utils";
 
 const url = process.env.BAMDOODLE_SERVER_WS;
@@ -29,6 +28,8 @@ function until(connection: RoomConnection, check: (state: RoomState) => boolean)
   });
 }
 
+const phaseOf = (state: RoomState) => state.room?.phase.phase;
+
 afterEach(() => {
   for (const connection of opened.splice(0)) connection.close();
 });
@@ -45,6 +46,12 @@ describe.skipIf(!url)("RoomConnection against the real server", () => {
     await Promise.all([noor, jip, screen].map((connection) => until(connection, (state) => state.status === "joined")));
     await until(sam, (state) => state.room?.players.length === 3);
 
+    sam.send({
+      type: "updateSettings",
+      settings: { mode: "oneStroke", laps: 1, turnSeconds: 20, rounds: 1, language: "en", adults: false },
+    });
+    await until(screen, (state) => state.room?.settings.laps === 1);
+
     sam.send({ type: "startRound" });
     const players = [sam, noor, jip];
     const states = await Promise.all(
@@ -55,26 +62,40 @@ describe.skipIf(!url)("RoomConnection against the real server", () => {
     const screenRound = RoomStateUtils.round(await until(screen, (state) => RoomStateUtils.round(state) !== null));
     expect(screenRound?.word).toBeNull();
 
-    const activeId = RoomStateUtils.round(states[0]!)!.activePlayerId;
-    const drawer = players[states.findIndex((state) => state.you === activeId)]!;
-    drawer.send({ type: "beginStroke", colour: "#5651fb", size: "bold", points: [[0.2, 0.2, 0.5]] });
-    drawer.send({ type: "extendStroke", points: [[0.4, 0.3, 0.5]] });
-    drawer.send({ type: "endStroke" });
-    const drawn = await until(screen, (state) => RoomStateUtils.round(state)?.strokes[0]?.done === true);
-    expect(RoomStateUtils.round(drawn)?.strokes[0]?.points).toHaveLength(2);
-
     const bamboozlerIndex = roles.indexOf("bamboozler");
     const bamboozlerId = states[bamboozlerIndex]!.you!;
-    const artistId = states.find((state) => state.you !== bamboozlerId)!.you!;
+    const artistIndex = roles.indexOf("artist");
+    const artistId = states[artistIndex]!.you!;
+
+    players[artistIndex]!.send({ type: "suspect", suspectId: bamboozlerId });
+    await until(screen, (state) => RoomStateUtils.suspicionOf(state, artistId) === bamboozlerId);
+
+    for (let turn = 0; turn < 3; turn++) {
+      const activeId = RoomStateUtils.round(screen.getState())!.activePlayerId;
+      const drawer = players[states.findIndex((state) => state.you === activeId)]!;
+      drawer.send({ type: "beginStroke", colour: "#5651fb", size: "bold", points: [[0.2, 0.2, 0.5]] });
+      drawer.send({ type: "extendStroke", points: [[0.4, 0.3, 0.5]] });
+      drawer.send({ type: "endStroke" });
+      // strokeEnded and turnStarted are separate messages: wait for the turn to move on, not just the stroke.
+      await until(screen, (state) => {
+        const round = RoomStateUtils.round(state);
+        return (
+          phaseOf(state) === "voting" || (round?.activePlayerId !== activeId && round?.strokes.length === turn + 1)
+        );
+      });
+    }
+    const voting = await until(screen, (state) => phaseOf(state) === "voting");
+    expect(RoomStateUtils.round(voting)?.strokes).toHaveLength(3);
+
     players.forEach((player, index) =>
       player.send({ type: "castVote", suspectId: index === bamboozlerIndex ? artistId : bamboozlerId }),
     );
-    await until(screen, (state) => state.room?.phase.phase === "guessing");
+    await until(screen, (state) => phaseOf(state) === "guessing");
 
     players[bamboozlerIndex]!.send({ type: "guessWord", guess: "no idea" });
-    const finished = await until(sam, (state) => state.room?.phase.phase === "finished");
+    const finished = await until(sam, (state) => phaseOf(state) === "finished");
     const phase = finished.room!.phase;
-    expect(phase.phase === "finished" && phase.result.bamboozlerId).toBe(bamboozlerId);
+    expect(phase.phase === "finished" && phase.result).toMatchObject({ bamboozlerId, gameOver: true });
     expect(finished.room!.players.filter((player) => player.score === 1)).toHaveLength(2);
   });
 

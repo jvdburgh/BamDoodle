@@ -2,8 +2,20 @@
 import type { Language } from "./Language";
 import type { TurnMode } from "./TurnMode";
 
-export type RoomSettings = { mode: TurnMode, language: Language, 
+export type RoomSettings = { mode: TurnMode, 
+/**
+ * Laps around the table in one-stroke mode (timed turns always go around twice).
+ */
+laps: number, 
+/**
+ * Length of a timed turn: 10, 20, 30 or 60.
+ */
+turnSeconds: number, 
+/**
+ * Rounds in a game; after the last one comes the final scoreboard.
+ */
+rounds: number, language: Language, 
 /**
  * Mix the adults pack (18+) into the words.
  */
-adults: boolean, roundSeconds: number, };
+adults: boolean, };

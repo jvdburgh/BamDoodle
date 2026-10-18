@@ -44,11 +44,17 @@ impl Game {
     fn started(count: usize) -> Self {
         let mut game = Self::with_players(count);
         let outbox = game.send(game.host(), ClientMessage::StartRound);
-        assert!(
-            outbox
-                .iter()
-                .any(|(_, message)| matches!(message, ServerMessage::RoundStarted { .. }))
-        );
+        assert!(has(&outbox, |message| matches!(
+            message,
+            ServerMessage::RoundStarted { .. }
+        )));
+        game
+    }
+
+    /// A started round, already past the drawing and into the final vote.
+    fn voting(count: usize) -> Self {
+        let mut game = Self::started(count);
+        game.finish_drawing();
         game
     }
 
@@ -65,9 +71,27 @@ impl Game {
         self.room.tick(self.now)
     }
 
+    /// Lets every remaining turn run out.
+    fn finish_drawing(&mut self) -> Outbox {
+        let mut outbox = Vec::new();
+        while let Phase::Drawing(round) = &self.room.phase {
+            let turn = round.turn_duration;
+            outbox.extend(self.advance(turn));
+        }
+        outbox
+    }
+
+    /// Plays a round to the end: drawing and voting time out, no guess.
+    fn finish_round(&mut self) {
+        self.finish_drawing();
+        self.advance(limits::VOTE_TIME);
+        self.advance(limits::GUESS_TIME);
+        assert!(matches!(self.room.phase, Phase::Finished(_)));
+    }
+
     fn round(&self) -> &Round {
         match &self.room.phase {
-            Phase::Drawing(round) | Phase::Guessing { round, .. } => round,
+            Phase::Drawing(round) | Phase::Voting { round, .. } | Phase::Guessing { round, .. } => round,
             phase => panic!("no round in {phase:?}"),
         }
     }
@@ -145,6 +169,10 @@ fn sent_to(outbox: &Outbox, player_id: PlayerId) -> Vec<&ServerMessage> {
         .filter(|(audience, _)| matches!(audience, Audience::Everyone) || *audience == Audience::Player(player_id))
         .map(|(_, message)| message)
         .collect()
+}
+
+fn other_than(order: &[PlayerId], voter: PlayerId) -> PlayerId {
+    *order.iter().find(|id| **id != voter).unwrap()
 }
 
 mod seats {
@@ -225,9 +253,8 @@ mod seats {
         let mut game = Game::started(4);
         let gone = game.round().turn_order[3];
         game.room.disconnect(gone, game.now);
-        game.advance(Duration::from_secs(60));
-        game.advance(limits::GUESS_TIME);
-        assert!(matches!(game.room.phase, Phase::Finished(_)));
+        game.advance(Duration::from_secs(600));
+        game.finish_round();
         assert!(
             game.room.players.iter().any(|player| player.id == gone),
             "still seated right after the round"
@@ -262,9 +289,11 @@ mod settings {
         let mut game = Game::with_players(3);
         let settings = RoomSettings {
             mode: TurnMode::Timed,
+            laps: 2,
+            turn_seconds: 30,
+            rounds: 3,
             language: Language::Nl,
             adults: false,
-            round_seconds: 90,
         };
         let noor = game.seats[1].player_id;
         let outbox = game.send(
@@ -291,12 +320,31 @@ mod settings {
     #[test]
     fn settings_are_checked() {
         let mut game = Game::with_players(3);
-        let too_short = RoomSettings {
-            round_seconds: 5,
-            ..RoomSettings::default()
-        };
-        let outbox = game.send(game.host(), ClientMessage::UpdateSettings { settings: too_short });
-        assert_eq!(rejected(&outbox), Some(RejectReason::InvalidSettings));
+        for settings in [
+            RoomSettings {
+                laps: 0,
+                ..RoomSettings::default()
+            },
+            RoomSettings {
+                laps: 6,
+                ..RoomSettings::default()
+            },
+            RoomSettings {
+                turn_seconds: 15,
+                ..RoomSettings::default()
+            },
+            RoomSettings {
+                rounds: 0,
+                ..RoomSettings::default()
+            },
+            RoomSettings {
+                rounds: 11,
+                ..RoomSettings::default()
+            },
+        ] {
+            let outbox = game.send(game.host(), ClientMessage::UpdateSettings { settings });
+            assert_eq!(rejected(&outbox), Some(RejectReason::InvalidSettings));
+        }
     }
 
     #[test]
@@ -360,6 +408,8 @@ mod starting {
                 Audience::Everyone => panic!("the round start is never broadcast"),
             }
             assert_eq!(view.category, "Things");
+            assert_eq!((view.number, view.rounds, view.lap, view.laps), (1, 5, 1, 3));
+            assert_eq!(view.active_player_id, Some(view.turn_order[0]));
         }
     }
 
@@ -370,9 +420,11 @@ mod starting {
         let bamboozler = game.bamboozler();
         let word = game.round().word.clone();
         outbox.extend(game.draw_a_stroke());
+        outbox.extend(game.finish_drawing());
+        let order = game.round().turn_order.clone();
         outbox.extend(game.everyone_votes_for(|voter| {
             if voter == bamboozler {
-                game_first_other(voter)
+                other_than(&order, voter)
             } else {
                 bamboozler
             }
@@ -388,21 +440,54 @@ mod starting {
         assert!(!screen.contains(&word), "a host screen saw the word");
     }
 
-    fn game_first_other(voter: PlayerId) -> PlayerId {
-        if voter == 1 { 2 } else { 1 }
-    }
-
     #[test]
     fn the_next_round_picks_a_new_word() {
         let mut game = Game::started(3);
         let first = game.round().word.clone();
-        game.advance(Duration::from_secs(60));
-        game.advance(limits::GUESS_TIME);
-        assert!(matches!(game.room.phase, Phase::Finished(_)));
+        game.finish_round();
 
         game.send(game.host(), ClientMessage::StartRound);
         assert_ne!(game.round().word, first);
         assert_eq!(game.round().number, 2);
+    }
+}
+
+mod game {
+    use super::*;
+
+    #[test]
+    fn a_game_ends_after_its_rounds_and_the_next_start_begins_a_new_one() {
+        let mut game = Game::with_players(3);
+        game.room.settings.rounds = 2;
+        let outbox = game.send(game.host(), ClientMessage::StartRound);
+        assert!(has(&outbox, |message| matches!(
+            message,
+            ServerMessage::GameStarted { .. }
+        )));
+        game.finish_round();
+        let Phase::Finished(result) = &game.room.phase else {
+            panic!()
+        };
+        assert_eq!((result.number, result.rounds, result.game_over), (1, 2, false));
+
+        let outbox = game.send(game.host(), ClientMessage::StartRound);
+        assert!(!has(&outbox, |message| matches!(
+            message,
+            ServerMessage::GameStarted { .. }
+        )));
+        game.room.players[0].score = 3;
+        game.finish_round();
+        let Phase::Finished(result) = &game.room.phase else {
+            panic!()
+        };
+        assert!(result.game_over);
+
+        let outbox = game.send(game.host(), ClientMessage::StartRound);
+        assert!(has(&outbox, |message| matches!(
+            message,
+            ServerMessage::GameStarted { scores } if scores.iter().all(|player| player.score == 0)
+        )));
+        assert_eq!(game.round().number, 1);
     }
 }
 
@@ -441,21 +526,47 @@ mod drawing {
     }
 
     #[test]
-    fn classic_turns_end_after_one_stroke() {
+    fn one_stroke_turns_end_after_one_stroke() {
         let mut game = Game::started(3);
         let first = game.active();
         let outbox = game.draw_a_stroke();
         assert_ne!(game.active(), first);
-        assert!(has(
-            &outbox,
-            |message| matches!(message, ServerMessage::TurnStarted { player_id, .. } if *player_id == game.active())
-        ));
+        assert!(has(&outbox, |message| matches!(
+            message,
+            ServerMessage::TurnStarted { player_id, lap: 1, .. } if *player_id == game.active()
+        )));
     }
 
     #[test]
-    fn timed_turns_allow_several_strokes_until_the_time_is_up() {
+    fn the_drawing_lasts_the_chosen_laps_then_everyone_votes() {
+        let mut game = Game::with_players(3);
+        game.room.settings.laps = 2;
+        game.send(game.host(), ClientMessage::StartRound);
+        let mut laps_seen = Vec::new();
+        for _ in 0..5 {
+            let outbox = game.draw_a_stroke();
+            laps_seen.extend(outbox.iter().filter_map(|(_, message)| match message {
+                ServerMessage::TurnStarted { lap, .. } => Some(*lap),
+                _ => None,
+            }));
+        }
+        assert_eq!(laps_seen, vec![1, 1, 2, 2, 2]);
+        assert!(matches!(game.room.phase, Phase::Drawing(_)));
+
+        let outbox = game.draw_a_stroke();
+        assert!(has(&outbox, |message| matches!(
+            message,
+            ServerMessage::VotingStarted { duration_ms: 30_000 }
+        )));
+        assert!(matches!(game.room.phase, Phase::Voting { .. }));
+        assert_eq!(game.round().strokes.len(), 6);
+    }
+
+    #[test]
+    fn timed_turns_last_the_chosen_seconds_for_two_laps() {
         let mut game = Game::with_players(3);
         game.room.settings.mode = TurnMode::Timed;
+        game.room.settings.turn_seconds = 30;
         game.send(game.host(), ClientMessage::StartRound);
         let first = game.active();
         game.draw_a_stroke();
@@ -463,15 +574,23 @@ mod drawing {
         assert_eq!(game.active(), first);
         assert_eq!(game.round().strokes.len(), 2);
 
-        let outbox = game.advance(limits::TIMED_TURN);
+        assert!(game.advance(Duration::from_secs(29)).is_empty());
+        let outbox = game.advance(Duration::from_secs(1));
         assert_ne!(game.active(), first);
         assert!(has(&outbox, |message| matches!(
             message,
             ServerMessage::TurnStarted {
-                duration_ms: 10_000,
+                duration_ms: 30_000,
                 ..
             }
         )));
+
+        for _ in 0..4 {
+            game.advance(Duration::from_secs(30));
+        }
+        assert!(matches!(game.room.phase, Phase::Drawing(_)));
+        game.advance(Duration::from_secs(30));
+        assert!(matches!(game.room.phase, Phase::Voting { .. }));
     }
 
     #[test]
@@ -479,9 +598,12 @@ mod drawing {
         let mut game = Game::started(3);
         let first = game.active();
         game.send(first, begin(&[Point(0.5, 0.5, 0.5)]));
-        assert_eq!(game.room.next_deadline(game.now), Some(game.now + limits::CLASSIC_TURN));
+        assert_eq!(
+            game.room.next_deadline(game.now),
+            Some(game.now + limits::ONE_STROKE_TURN)
+        );
 
-        let outbox = game.advance(limits::CLASSIC_TURN);
+        let outbox = game.advance(limits::ONE_STROKE_TURN);
         assert_ne!(game.active(), first);
         assert!(game.round().strokes[0].done);
         assert!(has(&outbox, |message| matches!(
@@ -547,18 +669,96 @@ mod drawing {
     }
 
     #[test]
-    fn a_disconnected_drawer_loses_their_turn_and_is_skipped() {
-        let mut game = Game::started(4);
-        let first = game.active();
+    fn a_disconnected_player_is_skipped_and_their_turn_still_counts() {
+        let mut game = Game::with_players(3);
+        game.room.settings.laps = 1;
+        game.send(game.host(), ClientMessage::StartRound);
         let second = game.round().turn_order[1];
         game.room.disconnect(second, game.now);
         game.draw_a_stroke();
-        assert_ne!(game.active(), second);
-        assert_ne!(game.active(), first);
+        assert_eq!(game.active(), game.round().turn_order[2]);
 
-        let third = game.active();
-        game.room.disconnect(third, game.now);
-        assert_ne!(game.active(), third);
+        let outbox = game.draw_a_stroke();
+        assert!(has(&outbox, |message| matches!(
+            message,
+            ServerMessage::VotingStarted { .. }
+        )));
+    }
+
+    #[test]
+    fn a_disconnected_drawer_loses_their_turn() {
+        let mut game = Game::started(4);
+        let first = game.active();
+        game.room.disconnect(first, game.now);
+        assert_ne!(game.active(), first);
+    }
+}
+
+mod suspecting {
+    use super::*;
+
+    #[test]
+    fn suspicions_are_public_and_can_change() {
+        let mut game = Game::started(4);
+        let [sam, noor, jip, ..] = game.round().turn_order[..] else {
+            panic!()
+        };
+
+        let outbox = game.send(sam, ClientMessage::Suspect { suspect_id: Some(noor) });
+        assert_eq!(
+            outbox,
+            vec![(
+                Audience::Everyone,
+                ServerMessage::SuspicionChanged {
+                    player_id: sam,
+                    suspect_id: Some(noor)
+                }
+            )]
+        );
+        game.now += limits::SUSPICION_COOLDOWN;
+        game.send(sam, ClientMessage::Suspect { suspect_id: Some(jip) });
+        assert!(
+            game.send(sam, ClientMessage::Suspect { suspect_id: Some(jip) })
+                .is_empty(),
+            "no news, no message"
+        );
+        assert_eq!(
+            game.round().suspicions,
+            vec![Suspicion {
+                player_id: sam,
+                suspect_id: jip
+            }]
+        );
+
+        let view = game.room.snapshot(Viewer::Screen, game.now);
+        let PhaseView::Drawing { round } = view.phase else {
+            panic!()
+        };
+        assert_eq!(round.suspicions.len(), 1, "everyone, screens too, sees suspicions");
+
+        game.now += limits::SUSPICION_COOLDOWN;
+        game.send(sam, ClientMessage::Suspect { suspect_id: None });
+        assert!(game.round().suspicions.is_empty());
+    }
+
+    #[test]
+    fn you_cant_suspect_yourself_or_outsiders() {
+        let mut game = Game::started(3);
+        let sam = game.round().turn_order[0];
+        let outbox = game.send(sam, ClientMessage::Suspect { suspect_id: Some(sam) });
+        assert_eq!(rejected(&outbox), Some(RejectReason::InvalidVote));
+        let outbox = game.send(sam, ClientMessage::Suspect { suspect_id: Some(99) });
+        assert_eq!(rejected(&outbox), Some(RejectReason::InvalidVote));
+    }
+
+    #[test]
+    fn suspecting_is_for_while_the_drawing_goes_on() {
+        let mut game = Game::voting(3);
+        let [sam, noor, ..] = game.round().turn_order[..] else {
+            panic!()
+        };
+        let outbox = game.send(sam, ClientMessage::Suspect { suspect_id: Some(noor) });
+        assert_eq!(rejected(&outbox), Some(RejectReason::WrongPhase));
     }
 }
 
@@ -566,8 +766,18 @@ mod voting {
     use super::*;
 
     #[test]
+    fn the_final_vote_only_happens_after_the_drawing() {
+        let mut game = Game::started(3);
+        let [sam, noor, ..] = game.round().turn_order[..] else {
+            panic!()
+        };
+        let outbox = game.send(sam, ClientMessage::CastVote { suspect_id: noor });
+        assert_eq!(rejected(&outbox), Some(RejectReason::WrongPhase));
+    }
+
+    #[test]
     fn a_vote_is_once_for_someone_else_and_stays_secret() {
-        let mut game = Game::started(4);
+        let mut game = Game::voting(4);
         let [sam, noor, ..] = game.round().turn_order[..] else {
             panic!()
         };
@@ -591,18 +801,24 @@ mod voting {
         );
 
         let view = game.room.snapshot(Viewer::Player(noor), game.now);
-        let PhaseView::Drawing { round } = view.phase else {
+        let PhaseView::Voting {
+            round,
+            voting_remaining_ms,
+        } = view.phase
+        else {
             panic!()
         };
         assert_eq!(round.voted, vec![sam]);
         assert_eq!(round.your_vote, None);
+        assert_eq!(round.active_player_id, None);
+        assert_eq!(voting_remaining_ms, 30_000);
     }
 
     #[test]
-    fn the_round_ends_once_everyone_has_voted() {
-        let mut game = Game::started(3);
+    fn the_vote_ends_once_everyone_has_voted() {
+        let mut game = Game::voting(3);
         let order = game.round().turn_order.clone();
-        let outbox = game.everyone_votes_for(|voter| *order.iter().find(|id| **id != voter).unwrap());
+        let outbox = game.everyone_votes_for(|voter| other_than(&order, voter));
         assert!(has(&outbox, |message| matches!(
             message,
             ServerMessage::Revealed { .. }
@@ -611,16 +827,55 @@ mod voting {
     }
 
     #[test]
+    fn when_time_is_up_your_last_suspicion_is_your_vote() {
+        let mut game = Game::started(3);
+        let [sam, noor, jip] = game.round().turn_order[..] else {
+            panic!()
+        };
+        game.send(sam, ClientMessage::Suspect { suspect_id: Some(jip) });
+        game.send(noor, ClientMessage::Suspect { suspect_id: Some(sam) });
+        game.finish_drawing();
+        game.send(noor, ClientMessage::CastVote { suspect_id: jip });
+
+        let outbox = game.advance(limits::VOTE_TIME);
+        let reveal = outbox
+            .iter()
+            .find_map(|(_, message)| match message {
+                ServerMessage::Revealed { reveal } => Some(reveal),
+                _ => None,
+            })
+            .unwrap();
+        assert_eq!(
+            reveal.votes,
+            vec![
+                Vote {
+                    voter_id: noor,
+                    suspect_id: jip
+                },
+                Vote {
+                    voter_id: sam,
+                    suspect_id: jip
+                },
+            ],
+            "Noor's submitted vote stands, Sam's suspicion counts, Jip suspected nobody"
+        );
+    }
+
+    #[test]
     fn players_who_are_gone_stop_holding_up_the_vote_after_a_grace() {
-        let mut game = Game::started(4);
+        let mut game = Game::voting(4);
         let order = game.round().turn_order.clone();
         game.room.disconnect(order[3], game.now);
         for voter in &order[..3] {
-            let suspect = *order.iter().find(|id| *id != voter).unwrap();
-            game.send(*voter, ClientMessage::CastVote { suspect_id: suspect });
+            game.send(
+                *voter,
+                ClientMessage::CastVote {
+                    suspect_id: other_than(&order, *voter),
+                },
+            );
         }
         assert!(
-            matches!(game.room.phase, Phase::Drawing(_)),
+            matches!(game.room.phase, Phase::Voting { .. }),
             "a dropped phone gets a moment to come back"
         );
         assert_eq!(game.room.next_deadline(game.now), Some(game.now + limits::VOTE_GRACE));
@@ -634,35 +889,26 @@ mod voting {
 
     #[test]
     fn a_player_who_comes_back_within_the_grace_still_votes() {
-        let mut game = Game::started(3);
+        let mut game = Game::voting(3);
         let order = game.round().turn_order.clone();
-        let sessions: Vec<String> = game.seats.iter().map(|seat| seat.session_token.clone()).collect();
         let returning = order[2];
+        let token = game
+            .seats
+            .iter()
+            .find(|seat| seat.player_id == returning)
+            .unwrap()
+            .session_token
+            .clone();
         game.room.disconnect(returning, game.now);
         game.send(order[0], ClientMessage::CastVote { suspect_id: order[1] });
         game.send(order[1], ClientMessage::CastVote { suspect_id: order[0] });
         game.advance(limits::VOTE_GRACE / 2);
 
-        let token = &sessions[game.seats.iter().position(|seat| seat.player_id == returning).unwrap()];
-        game.room.join("whoever", Some(token)).unwrap();
+        game.room.join("whoever", Some(&token)).unwrap();
         game.advance(limits::VOTE_GRACE);
-        assert!(matches!(game.room.phase, Phase::Drawing(_)));
+        assert!(matches!(game.room.phase, Phase::Voting { .. }));
         game.send(returning, ClientMessage::CastVote { suspect_id: order[0] });
         assert!(matches!(game.room.phase, Phase::Guessing { .. }));
-    }
-
-    #[test]
-    fn the_round_ends_when_the_timer_runs_out() {
-        let mut game = Game::started(3);
-        let outbox = game.advance(Duration::from_secs(60));
-        assert!(has(&outbox, |message| matches!(
-            message,
-            ServerMessage::Revealed { .. }
-        )));
-        assert_eq!(
-            rejected(&game.send(game.host(), ClientMessage::CastVote { suspect_id: 2 })),
-            Some(RejectReason::WrongPhase)
-        );
     }
 
     #[test]
@@ -675,6 +921,16 @@ mod voting {
         assert_eq!((round.role, round.word), (None, None));
         let suspect = game.round().turn_order[0];
         assert_eq!(
+            rejected(&game.send(
+                late.player_id,
+                ClientMessage::Suspect {
+                    suspect_id: Some(suspect)
+                }
+            )),
+            Some(RejectReason::InvalidVote)
+        );
+        game.finish_drawing();
+        assert_eq!(
             rejected(&game.send(late.player_id, ClientMessage::CastVote { suspect_id: suspect })),
             Some(RejectReason::InvalidVote)
         );
@@ -685,7 +941,7 @@ mod reveal_and_points {
     use super::*;
 
     fn caught_game(players: usize) -> Game {
-        let mut game = Game::started(players);
+        let mut game = Game::voting(players);
         let bamboozler = game.bamboozler();
         let artists = game.artists();
         game.everyone_votes_for(|voter| if voter == bamboozler { artists[0] } else { bamboozler });
@@ -710,7 +966,7 @@ mod reveal_and_points {
 
     #[test]
     fn only_the_bamboozler_guesses_and_only_after_the_reveal() {
-        let mut game = Game::started(3);
+        let mut game = Game::voting(3);
         let bamboozler = game.bamboozler();
         let guess = ClientMessage::GuessWord { guess: "x".into() };
         assert_eq!(
@@ -744,7 +1000,7 @@ mod reveal_and_points {
 
     #[test]
     fn stayed_hidden_and_guessed_wrong() {
-        let mut game = Game::started(4);
+        let mut game = Game::voting(4);
         let bamboozler = game.bamboozler();
         let artists = game.artists();
         // One of three artists votes for the bamboozler: fewer than half.
@@ -767,7 +1023,7 @@ mod reveal_and_points {
 
     #[test]
     fn exactly_half_is_not_hidden() {
-        let mut game = Game::started(3);
+        let mut game = Game::voting(3);
         let bamboozler = game.bamboozler();
         let artists = game.artists();
         game.send(artists[0], ClientMessage::CastVote { suspect_id: bamboozler });
@@ -798,5 +1054,90 @@ mod reveal_and_points {
         assert_eq!(reveal.bamboozler_id, game.bamboozler());
         assert_eq!(reveal.votes.len(), 3);
         assert_eq!(reveal.guess_remaining_ms, 20_000);
+    }
+}
+
+mod edge_cases {
+    use super::*;
+
+    #[test]
+    fn a_player_can_change_their_suspicion_at_most_once_a_second() {
+        let mut game = Game::started(3);
+        let [sam, noor, jip] = game.round().turn_order[..] else {
+            panic!()
+        };
+        assert!(
+            !game
+                .send(sam, ClientMessage::Suspect { suspect_id: Some(noor) })
+                .is_empty()
+        );
+        assert!(
+            game.send(sam, ClientMessage::Suspect { suspect_id: Some(jip) })
+                .is_empty(),
+            "too soon: dropped"
+        );
+        assert!(
+            !game
+                .send(noor, ClientMessage::Suspect { suspect_id: Some(jip) })
+                .is_empty(),
+            "everyone has their own cooldown"
+        );
+
+        game.now += limits::SUSPICION_COOLDOWN;
+        assert!(
+            !game
+                .send(sam, ClientMessage::Suspect { suspect_id: Some(jip) })
+                .is_empty()
+        );
+        assert_eq!(
+            game.round().suspicions,
+            vec![
+                Suspicion {
+                    player_id: noor,
+                    suspect_id: jip
+                },
+                Suspicion {
+                    player_id: sam,
+                    suspect_id: jip
+                },
+            ]
+        );
+    }
+
+    #[test]
+    fn lowering_the_rounds_below_what_was_played_ends_the_game() {
+        let mut game = Game::started(3);
+        game.finish_round();
+        game.send(game.host(), ClientMessage::StartRound);
+        game.finish_round();
+
+        let settings = RoomSettings {
+            rounds: 1,
+            ..RoomSettings::default()
+        };
+        game.send(game.host(), ClientMessage::UpdateSettings { settings });
+        let outbox = game.send(game.host(), ClientMessage::StartRound);
+        assert!(has(&outbox, |message| matches!(
+            message,
+            ServerMessage::GameStarted { .. }
+        )));
+        assert_eq!(game.round().number, 1);
+    }
+
+    #[test]
+    fn a_drawer_dropping_on_the_last_turn_starts_the_vote() {
+        let mut game = Game::with_players(3);
+        game.room.settings.laps = 1;
+        game.send(game.host(), ClientMessage::StartRound);
+        game.draw_a_stroke();
+        game.draw_a_stroke();
+        let last = game.active();
+
+        let outbox = game.room.disconnect(last, game.now);
+        assert!(has(&outbox, |message| matches!(
+            message,
+            ServerMessage::VotingStarted { .. }
+        )));
+        assert!(matches!(game.room.phase, Phase::Voting { .. }));
     }
 }

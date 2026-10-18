@@ -64,12 +64,15 @@ The catch: a deploy or crash ends all running games. At hobby scale that's accep
 - **The first message picks the room:** `createRoom { name }` (you become host), `joinRoom { code, name,
   sessionToken? }` or `watchRoom { code }` for a host screen. The answer is `joined` with your player id, your
   session token and a snapshot of the room as you may see it, or `rejected` with a reason.
-- **A round:** the host sends `startRound`; each device gets its own `roundStarted` (artists with the word, the
-  bamboozler and host screens without). The active player sends `beginStroke`, `extendStroke` (batches of points)
-  and `endStroke`; everyone gets `strokeBegun`, `strokeExtended`, `strokeEnded` and `turnStarted`. Votes
-  (`castVote`) are announced as `voteCast` with only the voter. When everyone has voted or the time is up,
-  `revealed` names the bamboozler and every vote; their `guessWord` (or the guess timer) ends the round with
-  `roundFinished`: the word, the guess, the awards and the scores.
+- **A game and its rounds:** the host can `updateSettings` between rounds (mode, laps, seconds per turn, rounds,
+  words) and sends `startRound`; the first round of a game comes with `gameStarted` (scores from zero). Each device
+  gets its own `roundStarted` (artists with the word, the bamboozler and host screens without). The active player
+  sends `beginStroke`, `extendStroke` (batches of points) and `endStroke`; everyone gets `strokeBegun`,
+  `strokeExtended`, `strokeEnded` and `turnStarted` (with the lap). While drawing, `suspect` is announced to everyone
+  as `suspicionChanged`. After the last lap comes `votingStarted`: the final `castVote` is announced as `voteCast`
+  with only the voter. When everyone has voted or the time is up (unsubmitted suspicions count), `revealed` names
+  the bamboozler and every vote; their `guessWord` (or the guess timer) ends the round with `roundFinished`: the word,
+  the guess, the awards, the scores and whether that was the last round (`gameOver`).
 - Times are sent as milliseconds remaining, never as clock times, so device clocks don't matter.
 - Per-device views: the server builds each view itself, so the bamboozler's device and host screens never receive
   the word before `roundFinished`, and nobody learns who the bamboozler is before `revealed`. Tests check the actual
@@ -81,11 +84,13 @@ The catch: a deploy or crash ends all running games. At hobby scale that's accep
 
 - Secrets never leave the server early (above).
 - Turns are enforced on the server: strokes from the wrong player, after the turn, off the canvas, with an odd
-  colour or too many points are dropped. Classic turns allow one stroke, timed turns up to 40.
+  colour or too many points are dropped. One-stroke turns allow one stroke, timed turns up to 40.
 - Limits: 16 KiB per message, 128 points per message, 2,048 per stroke, 60,000 per round, 60 messages per second
   per connection, 10 seconds to say which room you want, 4 host screens per room, 500 rooms. A name is checked
   before a room is created. Not yet: a limit on rooms per IP address.
-- A vote counts once per round, never for yourself, only from players in the round.
+- A suspicion can change at most once a second (every change is announced to everyone). The final vote counts once
+  per round, never for yourself, only from players in the round; a suspicion counts as your vote if you don't submit
+  one.
 - Only the host changes settings and starts rounds, only between rounds.
 - What we don't try to stop: friends telling each other things on a voice call. That's part of a party game.
 

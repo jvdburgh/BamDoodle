@@ -7,16 +7,16 @@ import type { StrokeView } from "@/protocol/generated/StrokeView";
 
 export type ConnectionStatus = "connecting" | "joined" | "reconnecting" | "failed" | "replaced" | "closed";
 
-/** Deadlines on this device's clock (`performance.now()`-style milliseconds), worked out from the server's "ms remaining". */
+/** Deadlines on this device's clock (`Date.now()` milliseconds), worked out from the server's "ms remaining". */
 export type RoomTimers = {
   turnEndsAt: number | null;
-  roundEndsAt: number | null;
+  votingEndsAt: number | null;
   guessEndsAt: number | null;
 };
 
 export type RoomState = {
   status: ConnectionStatus;
-  /** Why the connection gave up, when `status` is `failed`. */
+  /** Why the connection gave up, when `status` is `failed`; `null` there means the server couldn't be reached. */
   failure: RejectReason | null;
   /** Absent for a host screen. */
   you: number | null;
@@ -24,14 +24,14 @@ export type RoomState = {
   timers: RoomTimers;
   /** The last thing the server turned down, for a short message in the UI. */
   rejection: { reason: RejectReason; at: number } | null;
-  /** A vote sent but not yet confirmed; the server only says *that* you voted. */
+  /** A final vote sent but not yet confirmed; the server only says *that* you voted. */
   pendingVote: number | null;
 };
 
 /** What the server answers a vote it didn't count; the pending vote is void then. */
 const voteRejections: ReadonlySet<RejectReason> = new Set(["alreadyVoted", "invalidVote", "wrongPhase"]);
 
-const noTimers: RoomTimers = { turnEndsAt: null, roundEndsAt: null, guessEndsAt: null };
+const noTimers: RoomTimers = { turnEndsAt: null, votingEndsAt: null, guessEndsAt: null };
 
 export const RoomStateUtils = {
   initial(): RoomState {
@@ -46,10 +46,17 @@ export const RoomStateUtils = {
     };
   },
 
-  /** The round being drawn or guessed, if any. */
+  /** The round being drawn, voted on or guessed, if any. */
   round(state: RoomState): RoundView | null {
     const phase = state.room?.phase;
-    return phase?.phase === "drawing" || phase?.phase === "guessing" ? phase.round : null;
+    return phase && "round" in phase ? phase.round : null;
+  },
+
+  /** Who `playerId` suspects right now, during the drawing. */
+  suspicionOf(state: RoomState, playerId: number): number | null {
+    return (
+      RoomStateUtils.round(state)?.suspicions.find((suspicion) => suspicion.playerId === playerId)?.suspectId ?? null
+    );
   },
 
   apply(state: RoomState, message: ServerMessage, now: number): RoomState {
@@ -92,6 +99,8 @@ export const RoomStateUtils = {
         return withRoom(state, { ...room, hostId: message.hostId });
       case "settingsChanged":
         return withRoom(state, { ...room, settings: message.settings });
+      case "gameStarted":
+        return withRoom(state, { ...room, players: withScores(room.players, message.scores) });
       case "roundStarted": {
         const phase: PhaseView = { phase: "drawing", round: message.round };
         return { ...withRoom(state, { ...room, phase }), timers: timersFor(phase, now), pendingVote: null };
@@ -102,6 +111,7 @@ export const RoomStateUtils = {
             ...round,
             activePlayerId: message.playerId,
             turnRemainingMs: message.durationMs,
+            lap: message.lap,
           })),
           timers: { ...state.timers, turnEndsAt: now + message.durationMs },
         };
@@ -117,6 +127,23 @@ export const RoomStateUtils = {
         }));
       case "strokeEnded":
         return updateStroke(state, message.strokeId, (stroke) => ({ ...stroke, done: true }));
+      case "suspicionChanged":
+        return updateRound(state, (round) => ({
+          ...round,
+          suspicions: [
+            ...round.suspicions.filter((suspicion) => suspicion.playerId !== message.playerId),
+            ...(message.suspectId === null ? [] : [{ playerId: message.playerId, suspectId: message.suspectId }]),
+          ],
+        }));
+      case "votingStarted": {
+        if (room.phase.phase !== "drawing") return state;
+        const phase: PhaseView = {
+          phase: "voting",
+          round: { ...room.phase.round, activePlayerId: null, turnRemainingMs: 0 },
+          votingRemainingMs: message.durationMs,
+        };
+        return { ...withRoom(state, { ...room, phase }), timers: timersFor(phase, now) };
+      }
       case "voteCast": {
         const mine = message.voterId === state.you && state.pendingVote !== null;
         const next = updateRound(state, (round) => ({
@@ -127,22 +154,20 @@ export const RoomStateUtils = {
         return mine ? { ...next, pendingVote: null } : next;
       }
       case "revealed": {
-        if (room.phase.phase !== "drawing") return state;
+        if (room.phase.phase !== "voting") return state;
         const phase: PhaseView = { phase: "guessing", round: room.phase.round, reveal: message.reveal };
         return { ...withRoom(state, { ...room, phase }), timers: timersFor(phase, now), pendingVote: null };
       }
-      case "roundFinished": {
-        const scores = new Map(message.result.scores.map((player) => [player.id, player.score]));
+      case "roundFinished":
         return {
           ...withRoom(state, {
             ...room,
             phase: { phase: "finished", result: message.result },
-            players: room.players.map((player) => ({ ...player, score: scores.get(player.id) ?? player.score })),
+            players: withScores(room.players, message.result.scores),
           }),
           timers: noTimers,
           pendingVote: null,
         };
-      }
       case "pong":
         return state;
     }
@@ -162,9 +187,14 @@ function withRoom(state: RoomState, room: RoomSnapshot): RoomState {
   return { ...state, room };
 }
 
+function withScores(players: RoomSnapshot["players"], scores: RoomSnapshot["players"]): RoomSnapshot["players"] {
+  const byId = new Map(scores.map((player) => [player.id, player.score]));
+  return players.map((player) => ({ ...player, score: byId.get(player.id) ?? player.score }));
+}
+
 function updateRound(state: RoomState, update: (round: RoundView) => RoundView): RoomState {
   const room = state.room;
-  if (!room || (room.phase.phase !== "drawing" && room.phase.phase !== "guessing")) return state;
+  if (!room || !("round" in room.phase)) return state;
   return withRoom(state, { ...room, phase: { ...room.phase, round: update(room.phase.round) } });
 }
 
@@ -178,14 +208,13 @@ function updateStroke(state: RoomState, strokeId: number, update: (stroke: Strok
 function timersFor(phase: PhaseView, now: number): RoomTimers {
   switch (phase.phase) {
     case "drawing":
-      return {
-        turnEndsAt: now + phase.round.turnRemainingMs,
-        roundEndsAt: now + phase.round.roundRemainingMs,
-        guessEndsAt: null,
-      };
+      return { ...noTimers, turnEndsAt: now + phase.round.turnRemainingMs };
+    case "voting":
+      return { ...noTimers, votingEndsAt: now + phase.votingRemainingMs };
     case "guessing":
       return { ...noTimers, guessEndsAt: now + phase.reveal.guessRemainingMs };
-    default:
+    case "lobby":
+    case "finished":
       return noTimers;
   }
 }

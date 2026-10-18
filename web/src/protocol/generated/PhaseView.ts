@@ -3,4 +3,4 @@ import type { Reveal } from "./Reveal";
 import type { RoundResult } from "./RoundResult";
 import type { RoundView } from "./RoundView";
 
-export type PhaseView = { "phase": "lobby" } | { "phase": "drawing", round: RoundView, } | { "phase": "guessing", round: RoundView, reveal: Reveal, } | { "phase": "finished", result: RoundResult, };
+export type PhaseView = { "phase": "lobby" } | { "phase": "drawing", round: RoundView, } | { "phase": "voting", round: RoundView, votingRemainingMs: number, } | { "phase": "guessing", round: RoundView, reveal: Reveal, } | { "phase": "finished", result: RoundResult, };
