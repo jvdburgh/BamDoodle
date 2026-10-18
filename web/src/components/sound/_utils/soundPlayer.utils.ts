@@ -127,6 +127,63 @@ function scratch(audio: AudioContext, output: AudioNode) {
   source.start(start);
 }
 
+/**
+ * The pencil on paper while anyone draws: one looping bed of grainy, band-passed noise whose level and brightness
+ * follow the pen's speed, fading out by itself when points stop coming. Soft on purpose; it's texture, not a cue.
+ */
+const PENCIL_GAIN = 0.5;
+const PENCIL_FADE_S = 0.09;
+let pencil: { gain: GainNode; filter: BiquadFilterNode } | null = null;
+
+function pencilBed(audio: AudioContext) {
+  const seconds = 2;
+  const buffer = audio.createBuffer(1, audio.sampleRate * seconds, audio.sampleRate);
+  const data = buffer.getChannelData(0);
+  let grain = 0;
+  for (let i = 0; i < data.length; i++) {
+    if (i % 64 === 0) grain = 0.35 + Math.random() * 0.65;
+    data[i] = (Math.random() * 2 - 1) * grain;
+  }
+  const source = audio.createBufferSource();
+  source.buffer = buffer;
+  source.loop = true;
+  const filter = audio.createBiquadFilter();
+  filter.type = "bandpass";
+  filter.Q.value = 0.7;
+  filter.frequency.value = 2800;
+  const soften = audio.createBiquadFilter();
+  soften.type = "highshelf";
+  soften.frequency.value = 6000;
+  soften.gain.value = -12;
+  const gain = audio.createGain();
+  gain.gain.value = 0;
+  const master = audio.createGain();
+  master.gain.value = MASTER_GAIN;
+  source.connect(filter).connect(soften).connect(gain).connect(master).connect(audio.destination);
+  source.start();
+  return { gain, filter };
+}
+
+/** Points came in at this speed (canvas widths per second); call it for every batch, from any player's pen. */
+function pencilMove(speed: number) {
+  if (muted || !context || context.state !== "running") return;
+  pencil ??= pencilBed(context);
+  const level = Math.min(1, 0.25 + speed * 0.6);
+  const now = context.currentTime;
+  pencil.gain.gain.cancelScheduledValues(now);
+  pencil.gain.gain.setTargetAtTime(PENCIL_GAIN * level, now, 0.015);
+  pencil.gain.gain.setTargetAtTime(0, now + PENCIL_FADE_S, 0.04);
+  pencil.filter.frequency.setTargetAtTime(2200 + level * 1600, now, 0.03);
+}
+
+/** The pen lifted: fade out now instead of waiting for the next silence. */
+function pencilStop() {
+  if (!pencil || !context) return;
+  const now = context.currentTime;
+  pencil.gain.gain.cancelScheduledValues(now);
+  pencil.gain.gain.setTargetAtTime(0, now, 0.03);
+}
+
 function play(cue: SoundCue) {
   if (muted || !context || context.state !== "running") return;
   const master = context.createGain();
@@ -138,6 +195,7 @@ function play(cue: SoundCue) {
 
 function setMuted(next: boolean) {
   muted = next;
+  if (muted) pencilStop();
   try {
     window.localStorage.setItem(STORAGE_KEY, next ? "1" : "0");
   } catch {
@@ -153,4 +211,4 @@ function subscribe(listener: () => void) {
   };
 }
 
-export const SoundPlayer = { play, isMuted: () => muted, setMuted, subscribe };
+export const SoundPlayer = { play, pencilMove, pencilStop, isMuted: () => muted, setMuted, subscribe };
