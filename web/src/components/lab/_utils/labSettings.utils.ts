@@ -1,52 +1,58 @@
-import type { Attribution, Seats, TurnMode } from "@/components/room/_types/room.types";
+import type { Attribution, TurnMode, WordLanguage } from "@/components/room/_types/room.types";
+import { RoundUtils } from "@/components/room/_utils/round.utils";
 import type { Role } from "@/protocol/generated/Role";
 
 export type LabView = "player" | "host" | "both";
 
 /**
  * What the playground remembers per viewer; the non-default values also go in the URL so a link reproduces them.
- * Mode, attribution and round length are room settings, chosen when creating a room; the rest are testing switches
- * in the Lab panel.
+ * The room settings (mode, laps, turn length, rounds, colours, language, adults pack) are chosen when creating a
+ * room; the rest are testing switches in the Lab panel.
  */
 export type LabSettings = {
   /** The create-or-join start page, or straight into the room. */
   screen: "start" | "room";
   mode: TurnMode;
+  laps: number;
+  turnSeconds: number;
+  rounds: number;
   attribution: Attribution;
-  roundSeconds: number;
+  language: WordLanguage;
+  adults: boolean;
   view: LabView;
   role: Role;
-  seats: Seats;
   players: number;
 };
 
 const defaults: LabSettings = {
   screen: "start",
-  mode: "classic",
-  attribution: "free",
-  roundSeconds: 60,
+  ...RoundUtils.DEFAULT_SETUP,
   view: "player",
   role: "artist",
-  seats: "simulated",
   players: 6,
 };
 
 const choices: { [K in keyof LabSettings]: readonly LabSettings[K][] } = {
   screen: ["start", "room"],
   mode: ["classic", "timed"],
+  laps: RoundUtils.LAP_CHOICES,
+  turnSeconds: RoundUtils.TURN_SECOND_CHOICES,
+  rounds: RoundUtils.ROUND_CHOICES,
   attribution: ["free", "shades"],
-  roundSeconds: [60, 90, 120],
+  language: ["en", "nl"],
+  adults: [false, true],
   view: ["player", "host", "both"],
   role: ["artist", "bamboozler"],
-  seats: ["simulated", "shared"],
   players: [3, 4, 5, 6],
 };
 
 const keys = Object.keys(defaults) as (keyof LabSettings)[];
-const numeric = new Set<keyof LabSettings>(["players", "roundSeconds"]);
+const numeric = new Set<keyof LabSettings>(["players", "laps", "turnSeconds", "rounds"]);
 
 function pick<K extends keyof LabSettings>(key: K, raw: unknown): LabSettings[K] | undefined {
-  const value = numeric.has(key) && typeof raw === "string" ? Number(raw) : raw;
+  let value = raw;
+  if (typeof raw === "string" && numeric.has(key)) value = Number(raw);
+  if (typeof raw === "string" && key === "adults") value = raw === "true";
   return (choices[key] as readonly unknown[]).includes(value) ? (value as LabSettings[K]) : undefined;
 }
 

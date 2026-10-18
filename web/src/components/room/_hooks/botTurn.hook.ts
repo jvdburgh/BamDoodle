@@ -4,7 +4,6 @@ import type { CanvasColour } from "@/components/canvas/_utils/canvasTools.utils"
 import type { Drawing } from "@/components/canvas/_utils/drawing.utils";
 import type { Round } from "@/components/room/_types/room.types";
 import { BotUtils } from "@/components/room/_utils/bot.utils";
-import { RoundUtils } from "@/components/room/_utils/round.utils";
 
 const POINT_MS = 22;
 const SAFETY_MS = 400;
@@ -27,12 +26,12 @@ export function useBotTurn(
     strokeEnd.current = onStrokeEnd;
   });
 
-  const { phase, mode, turnCount, turnStartedAt } = round;
+  const { phase, mode, turnCount, turnStartedAt, turnMs } = round;
 
   useEffect(() => {
     if (phase !== "drawing" || !botId) return;
     const rand = ScribbleUtils.random(turnStartedAt + turnCount);
-    const turnEndsAt = turnStartedAt + RoundUtils.turnLength(mode);
+    const turnEndsAt = turnStartedAt + turnMs;
     let timer = 0;
     let strokes = 0;
 
@@ -61,5 +60,5 @@ export function useBotTurn(
       window.clearInterval(timer);
       if (drawing.live()?.playerId === botId) drawing.end();
     };
-  }, [drawing, phase, mode, turnCount, turnStartedAt, botId, family]);
+  }, [drawing, phase, mode, turnCount, turnStartedAt, turnMs, botId, family]);
 }

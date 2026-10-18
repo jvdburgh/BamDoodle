@@ -2,15 +2,14 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { RoomHostView } from "./RoomHostView.component";
 import { useRoomSimulation } from "./_hooks/roomSimulation.hook";
-import { playersFixture, roomCodeFixture, wordsFixture } from "./_fixtures/players.fixture";
+import { playersFixture, roomCodeFixture, setupFixture, wordsFixture } from "./_fixtures/players.fixture";
 
 function HostWithSimulation() {
   const sim = useRoomSimulation({
     players: playersFixture,
     youId: null,
     words: wordsFixture,
-    mode: "timed",
-    attribution: "free",
+    setup: { ...setupFixture, mode: "timed", attribution: "free" },
   });
   return <RoomHostView sim={sim} roomCode={roomCodeFixture} />;
 }

@@ -4,7 +4,13 @@ import { LabPanel } from "@/components/lab/LabPanel.component";
 import { LabPlayground } from "@/components/lab/LabPlayground.component";
 import { useLabSettings } from "@/components/lab/_hooks/labSettings.hook";
 import { LobbyStart } from "@/components/lobby/LobbyStart.component";
-import { playersFixture, roomCodeFixture, wordsFixture } from "@/components/room/_fixtures/players.fixture";
+import {
+  dutchWordsFixture,
+  playersFixture,
+  roomCodeFixture,
+  wordsFixture,
+} from "@/components/room/_fixtures/players.fixture";
+import type { RoomSetup } from "@/components/room/_types/room.types";
 
 const YOU = "juno";
 
@@ -15,6 +21,15 @@ export function App() {
   const [yourName, setYourName] = useState("Juno");
   const [roomCode, setRoomCode] = useState(roomCodeFixture);
   const [justCreated, setJustCreated] = useState(false);
+  const setup: RoomSetup = {
+    mode: settings.mode,
+    laps: settings.laps,
+    turnSeconds: settings.turnSeconds,
+    rounds: settings.rounds,
+    attribution: settings.attribution,
+    language: settings.language,
+    adults: settings.adults,
+  };
   const players = useMemo(
     () =>
       playersFixture
@@ -30,13 +45,14 @@ export function App() {
       {settings.screen === "start" ? (
         <LobbyStart
           defaultName={yourName}
+          expectedPlayers={settings.players}
           onEnter={(entry) => {
             setYourName(entry.name);
             if (entry.kind === "create") {
-              const { mode, roundSeconds, attribution } = entry;
+              const { kind: _kind, name: _name, ...chosen } = entry;
               setRoomCode(roomCodeFixture);
               setJustCreated(true);
-              update({ screen: "room", mode, roundSeconds, attribution });
+              update({ screen: "room", ...chosen });
             } else {
               setRoomCode(entry.code);
               setJustCreated(false);
@@ -46,19 +62,16 @@ export function App() {
         />
       ) : (
         <LabPlayground
-          key={`${settings.mode}-${settings.attribution}-${settings.roundSeconds}-${settings.seats}-${settings.players}-${resets}`}
+          key={`${JSON.stringify(setup)}-${settings.players}-${settings.role}-${resets}`}
           players={players}
           youId={YOU}
-          words={wordsFixture}
+          words={settings.language === "nl" ? dutchWordsFixture : wordsFixture}
           roomCode={roomCode}
+          setup={setup}
           revealCode={justCreated}
           onRoundStart={() => setJustCreated(false)}
           view={settings.view}
           role={settings.role}
-          mode={settings.mode}
-          attribution={settings.attribution}
-          roundSeconds={settings.roundSeconds}
-          seats={settings.seats}
         />
       )}
       <LabPanel

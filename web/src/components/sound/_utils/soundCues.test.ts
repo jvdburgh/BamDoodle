@@ -6,24 +6,26 @@ const moment = (patch: Partial<SoundMoment> = {}): SoundMoment => ({
   turnCount: 0,
   yourTurn: false,
   turnSeconds: 10,
-  roundSeconds: 50,
+  voteSeconds: 0,
   ...patch,
 });
 
 const { between } = SoundCuesUtils;
 
 describe("SoundCuesUtils.between", () => {
-  it("plays the start jingle when the round starts", () => {
+  it("plays a jingle when drawing starts, also in later rounds", () => {
     expect(between(moment({ phase: "waiting" }), moment())).toEqual(["start"]);
+    expect(between(moment({ phase: "results" }), moment())).toEqual(["start"]);
   });
 
-  it("chimes when time's up", () => {
-    expect(between(moment(), moment({ phase: "over" }))).toEqual(["timeUp"]);
+  it("sounds time's up when the final vote opens, and a reveal after it", () => {
+    expect(between(moment(), moment({ phase: "voting", voteSeconds: 30 }))).toEqual(["timeUp"]);
+    expect(between(moment({ phase: "voting" }), moment({ phase: "reveal" }))).toEqual(["reveal"]);
   });
 
   it("stays quiet when nothing changed", () => {
     expect(between(moment(), moment())).toEqual([]);
-    expect(between(moment({ phase: "over" }), moment({ phase: "over" }))).toEqual([]);
+    expect(between(moment({ phase: "results" }), moment({ phase: "results" }))).toEqual([]);
   });
 
   it("blips on a new turn, brighter when it's yours", () => {
@@ -41,15 +43,9 @@ describe("SoundCuesUtils.between", () => {
     expect(between(moment({ turnSeconds: 1 }), moment({ turnCount: 1, turnSeconds: 10 }))).toEqual(["turn"]);
   });
 
-  it("ticks the round's last five seconds instead of the turn's", () => {
-    expect(between(moment({ roundSeconds: 6, turnSeconds: 3 }), moment({ roundSeconds: 5, turnSeconds: 2 }))).toEqual([
-      "roundTick",
-    ]);
-  });
-
-  it("never ticks the turn in the round's last seconds, even out of step", () => {
-    expect(between(moment({ roundSeconds: 4, turnSeconds: 3 }), moment({ roundSeconds: 4, turnSeconds: 2 }))).toEqual(
-      [],
-    );
+  it("ticks the vote's last five seconds", () => {
+    const voting = (voteSeconds: number) => moment({ phase: "voting", voteSeconds });
+    expect(between(voting(7), voting(6))).toEqual([]);
+    expect(between(voting(6), voting(5))).toEqual(["voteTick"]);
   });
 });

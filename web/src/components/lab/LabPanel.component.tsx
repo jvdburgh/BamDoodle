@@ -13,7 +13,7 @@ type LabPanelProps = {
 };
 
 /** Testing switches only; mode, colours and round length are chosen when creating a room. */
-type LabKey = "screen" | "view" | "role" | "players" | "seats";
+type LabKey = "screen" | "view" | "role" | "players";
 
 type Choice<K extends LabKey> = { value: LabSettings[K]; label: string };
 
@@ -43,13 +43,6 @@ const labels: { [K in LabKey]: { legend: string; options: Choice<K>[] } } = {
   players: {
     legend: "Players",
     options: LabSettingsUtils.choices.players.map((value) => ({ value, label: String(value) })),
-  },
-  seats: {
-    legend: "Others",
-    options: [
-      { value: "simulated", label: "Simulated" },
-      { value: "shared", label: "Pass one device" },
-    ],
   },
 };
 

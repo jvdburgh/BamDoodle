@@ -23,9 +23,28 @@ const notes: Record<Exclude<SoundCue, "scribble">, Note[]> = {
     { frequency: 880, at: 0.1, length: 0.18 },
   ],
   tick: [{ frequency: 1250, at: 0, length: 0.03, type: "square", gain: 0.25 }],
-  roundTick: [
+  voteTick: [
     { frequency: 950, at: 0, length: 0.04, type: "square", gain: 0.35 },
     { frequency: 1900, at: 0.045, length: 0.03, type: "square", gain: 0.2 },
+  ],
+  reveal: [
+    { frequency: 196, at: 0, length: 0.08, type: "square", gain: 0.3 },
+    { frequency: 220, at: 0.09, length: 0.08, type: "square", gain: 0.3 },
+    { frequency: 247, at: 0.18, length: 0.08, type: "square", gain: 0.35 },
+    { frequency: 262, at: 0.27, length: 0.08, type: "square", gain: 0.4 },
+    { frequency: 784, at: 0.4, length: 0.5 },
+  ],
+  fanfare: [
+    { frequency: 523, at: 0, length: 0.12 },
+    { frequency: 659, at: 0.12, length: 0.12 },
+    { frequency: 784, at: 0.24, length: 0.12 },
+    { frequency: 1047, at: 0.36, length: 0.3 },
+    { frequency: 784, at: 0.62, length: 0.1 },
+    { frequency: 1047, at: 0.74, length: 0.6 },
+  ],
+  suspect: [
+    { frequency: 880, at: 0, length: 0.05, type: "sine", gain: 0.3 },
+    { frequency: 660, at: 0.05, length: 0.07, type: "sine", gain: 0.25 },
   ],
   timeUp: [
     { frequency: 784, at: 0, length: 0.14 },

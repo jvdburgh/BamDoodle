@@ -20,14 +20,22 @@ export const JoinFirst: Story = {
 };
 
 export const CreateARoom: Story = {
+  args: { expectedPlayers: 4 },
   play: async ({ args, canvas, userEvent }) => {
     await userEvent.click(canvas.getByRole("button", { name: "Create a room" }));
     await expect(canvas.getByRole("heading", { name: "Set up your room" })).toBeVisible();
     await expect(canvas.getByRole("radio", { name: /One stroke each/ })).toHaveFocus();
+    await expect(canvas.getByRole("group", { name: "Laps" })).toBeVisible();
+    await expect(canvas.getByText("2 min")).toBeVisible();
 
     await userEvent.click(canvas.getByText("Timed turns"));
-    await userEvent.click(canvas.getByText("1½ minutes"));
+    await expect(canvas.queryByRole("group", { name: "Laps" })).toBeNull();
+    await userEvent.click(canvas.getByText("30 s"));
+    await userEvent.click(canvas.getByText("10"));
     await userEvent.click(canvas.getByText("Own colours"));
+    await userEvent.click(canvas.getByText("Nederlands"));
+    await userEvent.click(canvas.getByLabelText("Adults pack (18+)"));
+    await expect(canvas.getByText("5 min")).toBeVisible();
     await userEvent.click(canvas.getByRole("button", { name: "Next" }));
 
     const name = canvas.getByLabelText("Your name");
@@ -40,8 +48,12 @@ export const CreateARoom: Story = {
       kind: "create",
       name: "Joris",
       mode: "timed",
-      roundSeconds: 90,
+      laps: 3,
+      turnSeconds: 30,
+      rounds: 10,
       attribution: "shades",
+      language: "nl",
+      adults: true,
     });
   },
 };

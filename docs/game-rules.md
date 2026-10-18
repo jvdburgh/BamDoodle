@@ -33,16 +33,19 @@ goal for now.
 1. **Lobby.** The start page offers two things: **Create a room** or **Join a room**. Creating asks for a nickname
    and the room settings; joining asks for the four-letter room code (shown as "Join at bamdoodle.io with code …" on
    the host's screen) and a nickname, or skips the code when you open a shared link. Players draw or tweak their
-   avatar while they wait. The host picks the mode, the word pack (and whether the adults pack is on) and starts the round.
+   avatar while they wait. The host starts the first round.
 2. **Secret.** The server picks a word from the pack and tells each player their role.
-3. **Drawing.** Players take turns on the shared canvas in a fixed order shown on screen. The player whose turn it
-   is is highlighted, and their strokes appear live for everyone.
-4. **Voting runs alongside the drawing.** At any moment a player can vote for who they think the bamboozler is.
-   A vote is final (no changing it, for now).
-5. **The round ends** when everyone has voted or the round timer runs out (starting point: about one minute,
-   tuned in playtests).
-6. **Reveal.** The bamboozler is revealed. They get one chance to guess the word, even when everyone caught them.
-7. **Points** are awarded, then on to the next round with a new bamboozler.
+3. **Drawing.** Players take turns on the shared canvas in a fixed order shown on screen, for the chosen number of
+   laps. The player whose turn it is is highlighted, and their strokes appear live for everyone.
+4. **Suspecting runs alongside the drawing.** At any moment a player can mark who they suspect, and change it. It's
+   public: every screen shows it ("Noor thinks Jip is sketchy").
+5. **Final vote.** After the last turn: "Time's up! Who's sketchy?" for 30 seconds, with your suspicion pre-selected.
+   Locking in a vote is final; if you don't, your last suspicion counts. Everyone sees who has voted, not for whom.
+6. **Reveal.** The bamboozler and everyone's votes are revealed. The bamboozler then gets one chance to guess the
+   word, even when everyone caught them.
+7. **Results.** Per player: right or wrong, this round's points and the running scores. The host starts the next
+   round with a new bamboozler. After the last round: a final scoreboard with a podium; the host can start a new
+   game, which resets the scores.
 
 There is no separate investigation phase: you have to pay attention while the drawing happens.
 
@@ -54,7 +57,8 @@ There is no separate investigation phase: you have to pay attention while the dr
 | **Timed turns** (`timed`) | about 10 seconds of free drawing, any number of strokes | More expressive. Gives the bamboozler more clues, so fewer laps. |
 
 The app shows the descriptive names; `classic` and `timed` are the names in code and on the wire. Creating a room
-picks the mode, the round length and the colours (below).
+picks the mode with its laps or turn length, the number of rounds, the colours (below), the language and
+whether the adults pack is on. The setup shows an estimated duration per round.
 
 The server enforces the turn: strokes from someone whose turn it isn't, or after the time limit, are dropped.
 Simultaneous drawing is parked: it is hard to follow who draws what and much heavier to sync.
@@ -74,9 +78,13 @@ Everyone can use every colour: there is nothing to unlock, ever. To still see wh
 The room's creator picks **Any colour** (everyone uses every colour, the default) or **Own colours** (each player
 gets a family of five shades, and their avatar wears it) when setting up the room, so playtests can compare both.
 
-**Voting on a phone:** the "Who's sketchy?" bar stays pinned to the bottom of the screen with the drawing visible
-above. Picking a player spotlights their lines; a second tap on "Vote …" makes it final. When time's up the bar
-turns into a louder "Time's up! Who's sketchy?" prompt for whoever hasn't voted yet.
+**Suspecting and voting on a phone** (the playground's take on the agreed flow): while drawing, a "Who's sketchy?"
+bar is pinned to the bottom of the screen with player chips (mini-map, avatar, name); a tap marks or changes who you
+suspect, everyone sees it as table talk ("Noor thinks Jip is sketchy") and the host screen counts suspicions per
+player. After the last turn the bar becomes "Time's up! Who's sketchy? Who do you think didn't know the word?" with
+a 30 s countdown, your suspicion pre-selected and a "Lock in my vote" button; it shows who has voted, never for whom.
+Then the reveal, the bamboozler's guess, the round's points with the running totals, and a podium after the last
+round.
 
 ## Points (starting point, tune in playtests)
 

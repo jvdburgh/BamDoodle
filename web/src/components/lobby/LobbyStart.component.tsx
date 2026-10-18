@@ -3,15 +3,16 @@ import { BrandLogo } from "@/components/brand/BrandLogo.component";
 import { BrandSketchyFrame } from "@/components/brand/BrandSketchyFrame.component";
 import { BrandTagline } from "@/components/brand/BrandTagline.component";
 import { BrandStyles } from "@/components/brand/_utils/brandStyles.utils";
-import type { Attribution, TurnMode } from "@/components/room/_types/room.types";
-
-export type RoomSetup = { mode: TurnMode; roundSeconds: number; attribution: Attribution };
+import type { Attribution, RoomSetup, TurnMode, WordLanguage } from "@/components/room/_types/room.types";
+import { RoundUtils } from "@/components/room/_utils/round.utils";
 
 export type LobbyEntry = { name: string } & (({ kind: "create" } & RoomSetup) | { kind: "join"; code: string });
 
 type LobbyStartProps = {
   onEnter: (entry: LobbyEntry) => void;
   defaultName?: string;
+  /** For the duration estimate; the real count is only known once people join. */
+  expectedPlayers?: number;
 };
 
 type Step = "choose" | "join" | "setup" | "name";
@@ -30,22 +31,20 @@ const turnOptions: Option<TurnMode>[] = [
   { value: "classic", title: "One stroke each", detail: "Draw one line, pass it on" },
   { value: "timed", title: "Timed turns", detail: "A few seconds to draw freely" },
 ];
-const lengthOptions: Option<number>[] = [
-  { value: 60, title: "1 minute", detail: "Quick" },
-  { value: 90, title: "1½ minutes", detail: "Relaxed" },
-  { value: 120, title: "2 minutes", detail: "Big drawings" },
-];
 const colourOptions: Option<Attribution>[] = [
   { value: "free", title: "Any colour", detail: "Everyone uses every colour" },
   { value: "shades", title: "Own colours", detail: "Each player gets a family of shades" },
 ];
 
 /** The first page: join a room (most people) or create one. Creating sets the room up first, then asks your name. */
-export function LobbyStart({ onEnter, defaultName = "" }: LobbyStartProps) {
+
+export function LobbyStart({ onEnter, defaultName = "", expectedPlayers = 4 }: LobbyStartProps) {
   const [step, setStep] = useState<Step>("choose");
   const [name, setName] = useState(defaultName);
   const [code, setCode] = useState("");
-  const [setup, setSetup] = useState<RoomSetup>({ mode: "classic", roundSeconds: 60, attribution: "free" });
+  const [setup, setSetup] = useState<RoomSetup>(RoundUtils.DEFAULT_SETUP);
+  const change = (patch: Partial<RoomSetup>) => setSetup((current) => ({ ...current, ...patch }));
+  const minutes = RoundUtils.estimateRoundMinutes(setup, expectedPlayers);
   const nameId = useId();
   const codeId = useId();
   const firstField = useRef<HTMLElement | null>(null);
@@ -162,23 +161,65 @@ export function LobbyStart({ onEnter, defaultName = "" }: LobbyStartProps) {
                 name="lobby-mode"
                 options={turnOptions}
                 value={setup.mode}
-                onChange={(mode) => setSetup((current) => ({ ...current, mode }))}
+                onChange={(mode) => change({ mode })}
                 firstRef={first}
               />
-              <LobbyChoice
-                legend="Round length"
-                name="lobby-length"
-                options={lengthOptions}
-                value={setup.roundSeconds}
-                onChange={(roundSeconds) => setSetup((current) => ({ ...current, roundSeconds }))}
+              {setup.mode === "classic" ? (
+                <LobbyPills
+                  legend="Laps"
+                  name="lobby-laps"
+                  options={RoundUtils.LAP_CHOICES.map((laps) => ({ value: laps, label: String(laps) }))}
+                  value={setup.laps}
+                  onChange={(laps) => change({ laps })}
+                />
+              ) : (
+                <LobbyPills
+                  legend="Seconds per turn"
+                  name="lobby-seconds"
+                  options={RoundUtils.TURN_SECOND_CHOICES.map((seconds) => ({ value: seconds, label: `${seconds} s` }))}
+                  value={setup.turnSeconds}
+                  onChange={(turnSeconds) => change({ turnSeconds })}
+                />
+              )}
+              <LobbyPills
+                legend="Rounds"
+                name="lobby-rounds"
+                options={RoundUtils.ROUND_CHOICES.map((rounds) => ({ value: rounds, label: String(rounds) }))}
+                value={setup.rounds}
+                onChange={(rounds) => change({ rounds })}
               />
               <LobbyChoice
                 legend="Colours"
                 name="lobby-colours"
                 options={colourOptions}
                 value={setup.attribution}
-                onChange={(attribution) => setSetup((current) => ({ ...current, attribution }))}
+                onChange={(attribution) => change({ attribution })}
               />
+              <div className="flex flex-wrap items-end justify-between gap-3">
+                <LobbyPills<WordLanguage>
+                  legend="Words"
+                  name="lobby-language"
+                  options={[
+                    { value: "en", label: "English" },
+                    { value: "nl", label: "Nederlands" },
+                  ]}
+                  value={setup.language}
+                  onChange={(language) => change({ language })}
+                />
+                <label className="flex min-h-11 cursor-pointer items-center gap-2 text-white/85">
+                  <input
+                    type="checkbox"
+                    checked={setup.adults}
+                    onChange={(event) => change({ adults: event.target.checked })}
+                    className="size-5 accent-sun"
+                  />
+                  Adults pack (18+)
+                </label>
+              </div>
+              <p className="text-sm text-white/70" aria-live="polite">
+                About <span className="font-semibold text-white">{minutes} min</span> a round with {expectedPlayers}{" "}
+                players, {setup.rounds} rounds.
+              </p>
             </>
           )}
 
@@ -237,6 +278,44 @@ function LobbyChoice<T extends string | number>({
             />
             <span className="block font-display text-lg leading-tight">{option.title}</span>
             <span className="mt-0.5 block text-sm text-white/70">{option.detail}</span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
+
+function LobbyPills<T extends string | number>({
+  legend,
+  name,
+  options,
+  value,
+  onChange,
+}: {
+  legend: string;
+  name: string;
+  options: { value: T; label: string }[];
+  value: T;
+  onChange: (value: T) => void;
+}) {
+  return (
+    <fieldset>
+      <legend className="mb-1.5 text-sm text-white/70">{legend}</legend>
+      <div className="flex flex-wrap gap-2">
+        {options.map((option) => (
+          <label
+            key={option.value}
+            className="grid min-h-11 min-w-11 cursor-pointer place-items-center rounded-full bg-night-deep px-4 font-display text-lg ring-2 ring-transparent has-checked:text-sun has-checked:ring-sun has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-white"
+          >
+            <input
+              type="radio"
+              name={name}
+              value={option.value}
+              checked={value === option.value}
+              onChange={() => onChange(option.value)}
+              className="sr-only"
+            />
+            {option.label}
           </label>
         ))}
       </div>

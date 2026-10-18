@@ -1,7 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { LabPlayground } from "./LabPlayground.component";
-import { playersFixture, roomCodeFixture, wordsFixture } from "@/components/room/_fixtures/players.fixture";
+import {
+  playersFixture,
+  roomCodeFixture,
+  setupFixture,
+  wordsFixture,
+} from "@/components/room/_fixtures/players.fixture";
 
 const meta = {
   title: "Lab/LabPlayground",
@@ -14,10 +19,7 @@ const meta = {
     roomCode: roomCodeFixture,
     view: "player",
     role: "artist",
-    mode: "classic",
-    attribution: "free",
-    roundSeconds: 60,
-    seats: "simulated",
+    setup: setupFixture,
   },
 } satisfies Meta<typeof LabPlayground>;
 
@@ -51,18 +53,8 @@ export const Bamboozler: Story = {
   },
 };
 
-export const OneDevice: Story = {
-  args: { seats: "shared" },
-  play: async ({ canvas, userEvent }) => {
-    await userEvent.click(canvas.getByRole("button", { name: "Start round" }));
-    await expect(canvas.getByRole("img", { name: "Shared drawing. Pip is drawing." })).toBeVisible();
-    await userEvent.click(canvas.getByRole("button", { name: "End turn" }));
-    await expect(canvas.getByRole("img", { name: "Shared drawing. Juno is drawing." })).toBeVisible();
-  },
-};
-
 export const PhoneAndHost: Story = {
-  args: { view: "both", attribution: "shades", players: playersFixture },
+  args: { view: "both", setup: { ...setupFixture, attribution: "shades" }, players: playersFixture },
   play: async ({ canvas, userEvent }) => {
     await expect(canvas.getByRole("region", { name: "Juno’s phone" })).toBeVisible();
     await expect(canvas.getByRole("region", { name: "Host screen" })).toBeVisible();

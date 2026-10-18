@@ -3,19 +3,18 @@ import { expect } from "storybook/test";
 import { RoomPlayerView } from "./RoomPlayerView.component";
 import { useRoomSimulation } from "./_hooks/roomSimulation.hook";
 import type { Attribution } from "./_types/room.types";
-import { playersFixture, roomCodeFixture, wordsFixture } from "./_fixtures/players.fixture";
+import { playersFixture, roomCodeFixture, setupFixture, wordsFixture } from "./_fixtures/players.fixture";
 
 function PlayerWithSimulation({ attribution, width }: { attribution: Attribution; width: string }) {
   const sim = useRoomSimulation({
     players: playersFixture,
     youId: "juno",
     words: wordsFixture,
-    mode: "classic",
-    attribution,
+    setup: { ...setupFixture, mode: "classic", attribution },
   });
   return (
     <div style={{ width }}>
-      <RoomPlayerView sim={sim} youId="juno" role="artist" roomCode={roomCodeFixture} />
+      <RoomPlayerView sim={sim} youId="juno" roomCode={roomCodeFixture} />
     </div>
   );
 }

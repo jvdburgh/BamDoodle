@@ -17,6 +17,10 @@ type RoomPlayerListProps = {
   onPeek: (playerId: string | null) => void;
   /** Identity colour per player, when players have one (shade families). */
   colours?: Record<string, string>;
+  /** How many players suspect each player right now (public while drawing). */
+  suspectedBy?: Record<string, number>;
+  /** Who has locked a final vote (not for whom). */
+  votedIds?: string[];
   /**
    * "auto": one row in narrow `room` containers (phones), a rail beside the canvas in wide ones.
    * "row": always one row, for the host screen.
@@ -47,6 +51,8 @@ export function RoomPlayerList({
   onSpotlight,
   onPeek,
   colours,
+  suspectedBy = {},
+  votedIds = [],
   layout = "auto",
 }: RoomPlayerListProps) {
   const rail = layout === "auto";
@@ -118,6 +124,18 @@ export function RoomPlayerList({
                       </span>
                     )}
                   </span>
+                  {(votedIds.includes(player.id) || (suspectedBy[player.id] ?? 0) > 0) && (
+                    <span className="mt-0.5 flex flex-wrap gap-1 text-xs">
+                      {votedIds.includes(player.id) && (
+                        <span className="rounded-full bg-sun px-1.5 text-night">voted</span>
+                      )}
+                      {(suspectedBy[player.id] ?? 0) > 0 && (
+                        <span className="rounded-full bg-berry/80 px-1.5 text-white">
+                          {suspectedBy[player.id]} suspect{suspectedBy[player.id] === 1 ? "s" : ""}
+                        </span>
+                      )}
+                    </span>
+                  )}
                   <span
                     className={`sr-only text-sm text-white/65 ${rail ? "@4xl/room:not-sr-only @4xl/room:block @4xl/room:h-5" : ""}`}
                   >
