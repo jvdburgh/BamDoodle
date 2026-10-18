@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { expect, fn, waitFor } from "storybook/test";
 import { RoomPlayerView } from "./RoomPlayerView.component";
-import { resultFixture, roomStateFixture, roundFixture } from "./_fixtures/roomState.fixture";
+import { resultFixture, roomStateFixture, roundFixture, strokeViewsFixture } from "./_fixtures/roomState.fixture";
 import type { Attribution } from "./_types/room.types";
 import type { ClientMessage } from "@/protocol/generated/ClientMessage";
 import type { PhaseView } from "@/protocol/generated/PhaseView";
@@ -160,7 +160,7 @@ export const YourGuess: Story = {
 };
 
 export const ResultsForTheHost: Story = {
-  args: { phase: { phase: "finished", result: resultFixture() } },
+  args: { phase: { phase: "finished", result: resultFixture(), strokes: strokeViewsFixture } },
   play: async ({ args, canvas, userEvent }) => {
     await expect(canvas.getByText("Round 1 of 5. The word was")).toBeVisible();
     await userEvent.click(canvas.getByRole("button", { name: "Next round" }));
@@ -169,7 +169,7 @@ export const ResultsForTheHost: Story = {
 };
 
 export const ResultsForEveryoneElse: Story = {
-  args: { phase: { phase: "finished", result: resultFixture() }, you: 4 },
+  args: { phase: { phase: "finished", result: resultFixture(), strokes: strokeViewsFixture }, you: 4 },
   play: async ({ canvas }) => {
     await expect(canvas.queryByRole("button", { name: "Next round" })).toBeNull();
     await expect(canvas.getByText("Waiting for Juno to start the next round…")).toBeVisible();
@@ -177,7 +177,10 @@ export const ResultsForEveryoneElse: Story = {
 };
 
 export const GameOver: Story = {
-  args: { phase: { phase: "finished", result: resultFixture({ number: 5, gameOver: true }) }, you: 4 },
+  args: {
+    phase: { phase: "finished", result: resultFixture({ number: 5, gameOver: true }), strokes: strokeViewsFixture },
+    you: 4,
+  },
   play: async ({ canvas, userEvent }) => {
     await userEvent.click(canvas.getByRole("button", { name: "See the final scores" }));
     await expect(canvas.getByRole("list", { name: "Podium" })).toBeVisible();

@@ -176,7 +176,7 @@ export const RoomStateUtils = {
         return {
           ...withRoom(state, {
             ...room,
-            phase: { phase: "finished", result: message.result },
+            phase: { phase: "finished", result: message.result, strokes: RoomStateUtils.round(state)?.strokes ?? [] },
             players: withScores(room.players, message.result.scores),
           }),
           timers: noTimers,

@@ -335,9 +335,12 @@ pub enum PhaseView {
         round: RoundView,
         reveal: Reveal,
     },
+    /// `strokes` is the finished drawing, for a device that joins or reconnects during the results (the others
+    /// already have it, so `roundFinished` doesn't repeat it).
     #[serde(rename_all = "camelCase")]
     Finished {
         result: RoundResult,
+        strokes: Vec<StrokeView>,
     },
 }
 

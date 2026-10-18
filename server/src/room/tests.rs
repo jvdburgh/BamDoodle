@@ -36,7 +36,7 @@ impl Game {
         let names = ["Sam", "Noor", "Jip", "Max", "Ada", "Bo", "Cas", "Dex"];
         let seats = names[..count]
             .iter()
-            .map(|name| room.join(name, None).unwrap().0)
+            .map(|name| room.join(name, None, Instant::now()).unwrap().0)
             .collect();
         Self {
             room,
@@ -185,13 +185,13 @@ mod seats {
     #[test]
     fn first_player_hosts_and_everyone_hears_about_joins() {
         let mut room = Room::new("BKTZ".into(), library(), 1);
-        let (sam, outbox) = room.join("Sam", None).unwrap();
+        let (sam, outbox) = room.join("Sam", None, Instant::now()).unwrap();
         assert!(has(
             &outbox,
             |message| matches!(message, ServerMessage::HostChanged { host_id } if *host_id == sam.player_id)
         ));
 
-        let (_, outbox) = room.join("Noor", None).unwrap();
+        let (_, outbox) = room.join("Noor", None, Instant::now()).unwrap();
         assert!(has(
             &outbox,
             |message| matches!(message, ServerMessage::PlayerJoined { player } if player.name == "Noor")
@@ -202,20 +202,32 @@ mod seats {
     #[test]
     fn names_are_tidied_unique_and_short() {
         let mut room = Room::new("BKTZ".into(), library(), 1);
-        let (seat, _) = room.join("  Sam \n  van   Dam ", None).unwrap();
+        let (seat, _) = room.join("  Sam \n  van   Dam ", None, Instant::now()).unwrap();
         assert_eq!(room.players[0].name, "Sam van Dam");
         assert_eq!(seat.session_token.len(), 32);
 
-        assert_eq!(room.join("sam VAN dam", None).unwrap_err(), RejectReason::NameTaken);
-        assert_eq!(room.join("   ", None).unwrap_err(), RejectReason::InvalidName);
-        assert_eq!(room.join(&"x".repeat(21), None).unwrap_err(), RejectReason::InvalidName);
-        assert!(room.join(&"x".repeat(20), None).is_ok());
+        assert_eq!(
+            room.join("sam VAN dam", None, Instant::now()).unwrap_err(),
+            RejectReason::NameTaken
+        );
+        assert_eq!(
+            room.join("   ", None, Instant::now()).unwrap_err(),
+            RejectReason::InvalidName
+        );
+        assert_eq!(
+            room.join(&"x".repeat(21), None, Instant::now()).unwrap_err(),
+            RejectReason::InvalidName
+        );
+        assert!(room.join(&"x".repeat(20), None, Instant::now()).is_ok());
     }
 
     #[test]
     fn the_room_is_full_at_eight() {
         let mut game = Game::with_players(8);
-        assert_eq!(game.room.join("Eve", None).unwrap_err(), RejectReason::RoomFull);
+        assert_eq!(
+            game.room.join("Eve", None, game.now).unwrap_err(),
+            RejectReason::RoomFull
+        );
     }
 
     #[test]
@@ -225,7 +237,10 @@ mod seats {
         game.room.players[1].score = 4;
         game.room.disconnect(noor.player_id, game.now);
 
-        let (seat, outbox) = game.room.join("someone else", Some(&noor.session_token)).unwrap();
+        let (seat, outbox) = game
+            .room
+            .join("someone else", Some(&noor.session_token), game.now)
+            .unwrap();
         assert_eq!(seat, noor);
         assert_eq!(game.room.players[1].score, 4);
         assert!(has(&outbox, |message| matches!(
@@ -237,19 +252,82 @@ mod seats {
     #[test]
     fn an_unknown_session_token_just_joins_as_new() {
         let mut room = Room::new("BKTZ".into(), library(), 1);
-        let (seat, _) = room.join("Sam", Some("not-a-token")).unwrap();
+        let (seat, _) = room.join("Sam", Some("not-a-token"), Instant::now()).unwrap();
         assert_ne!(seat.session_token, "not-a-token");
     }
 
     #[test]
-    fn the_host_role_moves_on_when_the_host_leaves() {
+    fn the_host_role_moves_on_when_the_host_stays_away() {
         let mut game = Game::with_players(3);
-        let outbox = game.room.disconnect(game.host(), game.now);
+        let host = game.host();
+        let outbox = game.room.disconnect(host, game.now);
+        assert!(!has(&outbox, |message| matches!(
+            message,
+            ServerMessage::HostChanged { .. }
+        )));
+        assert_eq!(game.room.next_deadline(game.now), Some(game.now + limits::HOST_GRACE));
+
+        let outbox = game.advance(limits::HOST_GRACE);
         let noor = game.seats[1].player_id;
         assert!(has(
             &outbox,
             |message| matches!(message, ServerMessage::HostChanged { host_id } if *host_id == noor)
         ));
+    }
+
+    #[test]
+    fn the_host_grace_doesnt_restart_when_a_round_ends() {
+        let mut game = Game::started(3);
+        let host = game.host();
+        game.finish_drawing();
+        game.advance(limits::VOTE_TIME);
+        game.room.disconnect(host, game.now);
+        game.advance(limits::HOST_GRACE - Duration::from_secs(5));
+        game.advance(limits::GUESS_TIME);
+        assert!(matches!(game.room.phase, Phase::Finished(_)));
+        assert_ne!(
+            game.room.host_id,
+            Some(host),
+            "the grace counts from the drop, not from the round's end"
+        );
+    }
+
+    #[test]
+    fn a_host_who_refreshes_keeps_the_role() {
+        let mut game = Game::with_players(3);
+        let host = game.seats[0].clone();
+        game.room.disconnect(host.player_id, game.now);
+        game.advance(limits::HOST_GRACE / 2);
+        let (_, outbox) = game.room.join("Sam", Some(&host.session_token), game.now).unwrap();
+        assert!(!has(&outbox, |message| matches!(
+            message,
+            ServerMessage::HostChanged { .. }
+        )));
+
+        let outbox = game.advance(limits::HOST_GRACE);
+        assert!(!has(&outbox, |message| matches!(
+            message,
+            ServerMessage::HostChanged { .. }
+        )));
+        assert_eq!(game.room.host_id, Some(host.player_id));
+    }
+
+    #[test]
+    fn a_room_whose_host_is_long_gone_gets_a_new_host_when_someone_comes_back() {
+        let mut game = Game::with_players(3);
+        let tokens: Vec<Seat> = game.seats.clone();
+        for seat in &tokens {
+            game.room.disconnect(seat.player_id, game.now);
+        }
+        game.advance(limits::HOST_GRACE * 2);
+        let (_, outbox) = game
+            .room
+            .join("Noor", Some(&tokens[1].session_token), game.now)
+            .unwrap();
+        assert!(has(&outbox, |message| matches!(
+            message,
+            ServerMessage::HostChanged { host_id } if *host_id == tokens[1].player_id
+        )));
     }
 
     #[test]
@@ -923,7 +1001,7 @@ mod voting {
         game.send(order[1], ClientMessage::CastVote { suspect_id: order[0] });
         game.advance(limits::VOTE_GRACE / 2);
 
-        game.room.join("whoever", Some(&token)).unwrap();
+        game.room.join("whoever", Some(&token), game.now).unwrap();
         game.advance(limits::VOTE_GRACE);
         assert!(matches!(game.room.phase, Phase::Voting { .. }));
         game.send(returning, ClientMessage::CastVote { suspect_id: order[0] });
@@ -933,7 +1011,7 @@ mod voting {
     #[test]
     fn a_player_who_joins_mid_round_watches_and_cannot_vote() {
         let mut game = Game::started(3);
-        let (late, _) = game.room.join("Late", None).unwrap();
+        let (late, _) = game.room.join("Late", None, game.now).unwrap();
         let PhaseView::Drawing { round } = game.room.snapshot(Viewer::Player(late.player_id), game.now).phase else {
             panic!()
         };
@@ -1050,6 +1128,19 @@ mod reveal_and_points {
         game.send(bamboozler, ClientMessage::CastVote { suspect_id: artists[0] });
         game.advance(limits::GUESS_TIME);
         assert_eq!(points_of(&game, bamboozler), 0);
+    }
+
+    #[test]
+    fn the_result_keeps_the_drawing_for_anyone_who_rejoins() {
+        let mut game = Game::started(3);
+        game.draw_a_stroke();
+        game.draw_a_stroke();
+        game.finish_round();
+        let PhaseView::Finished { strokes, .. } = game.room.snapshot(Viewer::Screen, game.now).phase else {
+            panic!()
+        };
+        assert_eq!(strokes.len(), 2);
+        assert!(strokes.iter().all(|stroke| stroke.done && stroke.points.len() == 2));
     }
 
     #[test]
@@ -1402,7 +1493,7 @@ mod avatars {
         let noor = game.seats[1].clone();
         game.send(noor.player_id, set(face()));
         game.room.disconnect(noor.player_id, game.now);
-        game.room.join("Noor", Some(&noor.session_token)).unwrap();
+        game.room.join("Noor", Some(&noor.session_token), game.now).unwrap();
         let snapshot = game.room.snapshot(Viewer::Player(noor.player_id), game.now);
         assert_eq!(snapshot.players[1].avatar, face());
     }

@@ -25,7 +25,8 @@ export function useRoomView(state: RoomViewState, colours: Attribution) {
   const players = useMemo(() => RoomViewUtils.players({ code, players: seats }), [code, seats]);
   const families = useMemo(() => RoomViewUtils.families(players, colours), [players, colours]);
   const identities = useMemo(() => RoomViewUtils.identities(families), [families]);
-  const drawing = useRoomDrawing(round);
+  const finishedStrokes = room.phase.phase === "finished" ? room.phase.strokes : undefined;
+  const drawing = useRoomDrawing(round?.number ?? result?.number ?? null, round?.strokes ?? finishedStrokes);
   const feed = useRoomFeed(round, now);
 
   return {

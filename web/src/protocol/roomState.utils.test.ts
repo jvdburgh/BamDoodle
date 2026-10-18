@@ -231,6 +231,44 @@ describe("RoomStateUtils.apply", () => {
     expect(finished.timers.guess).toBeNull();
   });
 
+  it("keeps the finished drawing for the results, also for a device that joins then", () => {
+    const stroke = { id: 1, playerId: 2, colour: "#f13866", size: "medium" as const, points: [], done: true };
+    const playing = play([
+      joined,
+      { type: "roundStarted", round },
+      { type: "strokeBegun", stroke },
+      { type: "votingStarted", durationMs: 30_000 },
+      { type: "revealed", reveal: { bamboozlerId: 2, votes: [], guessRemainingMs: 20_000 } },
+    ]);
+    const result = {
+      number: 1,
+      rounds: 5,
+      gameOver: false,
+      category: "Animals",
+      word: "giraffe",
+      bamboozlerId: 2,
+      guess: null,
+      guessCorrect: false,
+      votes: [],
+      awards: [],
+      scores: [],
+    };
+    const finished = RoomStateUtils.apply(playing, { type: "roundFinished", result }, 1_000);
+    expect(finished.room?.phase).toEqual({ phase: "finished", result, strokes: [stroke] });
+
+    const late = RoomStateUtils.apply(
+      RoomStateUtils.initial(),
+      {
+        type: "joined",
+        you: 3,
+        sessionToken: "t",
+        room: { ...lobby, phase: { phase: "finished", result, strokes: [stroke] } },
+      },
+      1_000,
+    );
+    expect(late.room?.phase.phase === "finished" && late.room.phase.strokes).toEqual([stroke]);
+  });
+
   it("remembers the last rejection", () => {
     const state = RoomStateUtils.apply(play([joined]), { type: "rejected", reason: "notHost" }, 7_000);
     expect(state.rejection).toEqual({ reason: "notHost", at: 7_000 });

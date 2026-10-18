@@ -2,19 +2,17 @@ import { useLayoutEffect, useRef, useState } from "react";
 import type { Stroke } from "@/components/canvas/_types/stroke.types";
 import { DrawingUtils } from "@/components/canvas/_utils/drawing.utils";
 import { StrokeWireUtils } from "@/components/room/_utils/strokeWire.utils";
-import type { RoundView } from "@/protocol/generated/RoundView";
 import type { StrokeView } from "@/protocol/generated/StrokeView";
 
 /**
- * The shared picture of the round being played, kept in step with the server's strokes. Without a round (between
- * rounds) it keeps the last picture; a new round starts a clean sheet.
+ * The shared picture of a round, kept in step with the server's strokes: the round being played, or during the results
+ * the finished one (also for a device that only just joined). Without strokes it keeps the last picture; a new round
+ * number starts a clean sheet.
  */
-export function useRoomDrawing(round: RoundView | null) {
+export function useRoomDrawing(number: number | null, strokes: StrokeView[] | undefined) {
   const [drawing] = useState(DrawingUtils.createDrawing);
   const converted = useRef(new WeakMap<StrokeView, Stroke>());
   const roundNumber = useRef<number | null>(null);
-  const number = round?.number ?? null;
-  const strokes = round?.strokes;
 
   useLayoutEffect(() => {
     if (!strokes) return;

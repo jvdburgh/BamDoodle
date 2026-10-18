@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { expect } from "storybook/test";
 import { RoomHostView } from "./RoomHostView.component";
-import { hostRound, resultFixture, roomStateFixture } from "./_fixtures/roomState.fixture";
+import { hostRound, resultFixture, roomStateFixture, strokeViewsFixture } from "./_fixtures/roomState.fixture";
 import type { PhaseView } from "@/protocol/generated/PhaseView";
 
 /** A host screen's state (`watchRoom`): made at render time, so the countdowns start when the story does. */
@@ -66,7 +66,7 @@ export const RevealAndGuess: Story = {
 };
 
 export const Results: Story = {
-  args: { phase: { phase: "finished", result: resultFixture() } },
+  args: { phase: { phase: "finished", result: resultFixture(), strokes: strokeViewsFixture } },
   play: async ({ canvas }) => {
     await expect(canvas.getByText("Giraffe")).toBeVisible();
     await expect(canvas.queryByRole("button", { name: "Next round" })).toBeNull();

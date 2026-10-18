@@ -92,7 +92,7 @@ async fn run(mut room: Room, mut commands: mpsc::Receiver<RoomCommand>, registry
                 name,
                 session_token,
                 reply,
-            }) => match room.join(&name, session_token.as_deref()) {
+            }) => match room.join(&name, session_token.as_deref(), now.into_std()) {
                 Ok((seat, outbox)) => {
                     let viewer = Viewer::Player(seat.player_id);
                     replace_connection_of(&mut connections, viewer);
@@ -338,8 +338,8 @@ mod tests {
     #[tokio::test]
     async fn a_connection_that_cant_keep_up_is_dropped_and_its_player_disconnected() {
         let mut room = Room::new("BKTZ".into(), Arc::new(WordLibrary::default()), 1);
-        let (sam, _) = room.join("Sam", None).unwrap();
-        let (noor, _) = room.join("Noor", None).unwrap();
+        let (sam, _) = room.join("Sam", None, std::time::Instant::now()).unwrap();
+        let (noor, _) = room.join("Noor", None, std::time::Instant::now()).unwrap();
         let (slow, _slow_outbox) = mpsc::channel(1);
         let (fast, mut fast_outbox) = mpsc::channel(16);
         let mut connections = HashMap::from([

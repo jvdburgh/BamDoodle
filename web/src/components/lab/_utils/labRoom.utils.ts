@@ -84,6 +84,7 @@ function phaseView(sim: LabSnapshot, viewer: LabViewer): PhaseView {
       const totals = ScoreUtils.add(sim.totals, awards);
       return {
         phase: "finished",
+        strokes: sim.strokes,
         result: {
           number: sim.roundNumber,
           rounds: sim.setup.rounds,

@@ -80,7 +80,8 @@ The catch: a deploy or crash ends all running games. At hobby scale that's accep
   as `suspicionChanged`. After the last turn comes `votingStarted`: the final `castVote` is announced as `voteCast`
   with only the voter. When everyone has voted or the time is up (unsubmitted suspicions count), `revealed` names
   the bamboozler and every vote; their `guessWord` (or the guess timer) ends the round with `roundFinished`: the word,
-  the guess, the awards, the scores and whether that was the last round (`gameOver`).
+  the guess, the awards, the scores and whether that was the last round (`gameOver`). A snapshot during the results also
+  carries the finished drawing (`phase.strokes`) for a device that joins or reconnects then.
 - Times are sent as milliseconds remaining, never as clock times, so device clocks don't matter.
 - Per-device views: the server builds each view itself, so the bamboozler's device and host screens never receive
   the word before `roundFinished`, and nobody learns who the bamboozler is before `revealed`. Tests check the actual
@@ -205,6 +206,11 @@ Conventions (see AGENTS.md):
 - Releases: a `v*` tag runs `.github/workflows/release.yml`: build, push, redeploy, then a health check and a short game
   over a real WebSocket. The runbook, with every command, is [infra/README.md](../infra/README.md).
 - `scripts/ws-soak.mjs` (`just soak`) is the smoke and soak test for any running server.
+- HTTP: every response carries HSTS, a Content Security Policy (scripts, sockets, fonts, images and sounds from our
+  own origin only; inline styles allowed for React's `style`), `X-Frame-Options: DENY`, `nosniff` and a referrer and
+  permissions policy (`server/src/lib.rs`). Hashed build files in `/assets/` are cached for a year, everything else is
+  revalidated. Only the web app's own routes get `index.html`; anything that looks like a file, and unknown `/api/`
+  or `/assets/` paths, is a 404.
 
 ## Not now (follow-ups)
 

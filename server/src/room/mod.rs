@@ -109,6 +109,11 @@ pub struct Room {
     phase: Phase,
     /// Rounds played in the current game.
     rounds_played: u32,
+    /// The drawing of the round that just finished, for snapshots during the results.
+    last_strokes: Vec<StrokeView>,
+    /// Since when the host has been gone; the role waits `HOST_GRACE` for them. Kept apart from the seat grace, which
+    /// restarts when a round ends.
+    host_away_since: Option<Instant>,
     used_words: HashSet<String>,
     words: Arc<WordLibrary>,
     rng: StdRng,
@@ -126,6 +131,8 @@ impl Room {
             next_player_id: 1,
             phase: Phase::Lobby,
             rounds_played: 0,
+            last_strokes: Vec::new(),
+            host_away_since: None,
             used_words: HashSet::new(),
             words,
             rng: StdRng::seed_from_u64(seed),
@@ -137,7 +144,12 @@ impl Room {
     }
 
     /// Takes a seat: back in your old one with a matching session token, otherwise a new one if the name is free.
-    pub fn join(&mut self, name: &str, session_token: Option<&str>) -> Result<(Seat, Outbox), RejectReason> {
+    pub fn join(
+        &mut self,
+        name: &str,
+        session_token: Option<&str>,
+        now: Instant,
+    ) -> Result<(Seat, Outbox), RejectReason> {
         if let Some(player) =
             session_token.and_then(|token| self.players.iter_mut().find(|player| player.session_token == token))
         {
@@ -154,7 +166,7 @@ impl Room {
                     connected: true,
                 },
             )];
-            self.ensure_host(&mut outbox);
+            self.ensure_host(&mut outbox, now);
             return Ok((seat, outbox));
         }
 
@@ -189,7 +201,7 @@ impl Room {
         self.players.push(player);
 
         let mut outbox = vec![(Audience::Everyone, ServerMessage::PlayerJoined { player: summary })];
-        self.ensure_host(&mut outbox);
+        self.ensure_host(&mut outbox, now);
         Ok((seat, outbox))
     }
 
@@ -207,7 +219,7 @@ impl Room {
                 connected: false,
             },
         )];
-        self.ensure_host(&mut outbox);
+        self.ensure_host(&mut outbox, now);
 
         if let Phase::Drawing(round) = &self.phase
             && round.turn_order.get(round.turn_index) == Some(&player_id)
@@ -251,11 +263,24 @@ impl Room {
             Phase::Drawing(_) | Phase::Voting { .. } | Phase::Guessing { .. } => {}
         }
         outbox.extend(self.reveal_if_everyone_voted(now));
+        self.ensure_host(&mut outbox, now);
         outbox
     }
 
     /// When `tick` next has something to do, at or after `now`.
     pub fn next_deadline(&self, now: Instant) -> Option<Instant> {
+        let host_grace_ends = self
+            .host_away_since
+            .map(|since| since + limits::HOST_GRACE)
+            .filter(|ends| *ends > now);
+        let phase_deadline = self.phase_deadline(now);
+        match (phase_deadline, host_grace_ends) {
+            (Some(a), Some(b)) => Some(a.min(b)),
+            (a, b) => a.or(b),
+        }
+    }
+
+    fn phase_deadline(&self, now: Instant) -> Option<Instant> {
         match &self.phase {
             Phase::Drawing(round) => Some(round.turn_deadline),
             Phase::Voting { round, voting_deadline } => {
@@ -292,7 +317,10 @@ impl Room {
                 round: self.round_view(round, viewer, now),
                 reveal: reveal_of(round, *guess_deadline, now),
             },
-            Phase::Finished(result) => PhaseView::Finished { result: result.clone() },
+            Phase::Finished(result) => PhaseView::Finished {
+                result: result.clone(),
+                strokes: self.last_strokes.clone(),
+            },
         };
         RoomSnapshot {
             code: self.code.clone(),
@@ -714,6 +742,7 @@ impl Room {
             awards,
             scores: self.players.iter().map(summary).collect(),
         };
+        self.last_strokes = round.strokes.iter().map(stroke_view).collect();
         // The seat grace starts when the round ends, not when they dropped out during it.
         for player in &mut self.players {
             if player.disconnected_at.is_some() {
@@ -740,22 +769,32 @@ impl Room {
             .into_iter()
             .map(|player_id| (Audience::Everyone, ServerMessage::PlayerRemoved { player_id }))
             .collect();
-        self.ensure_host(&mut outbox);
+        self.ensure_host(&mut outbox, now);
         outbox
     }
 
-    /// The host is the earliest-joined connected player; it moves on when the host drops out.
-    fn ensure_host(&mut self, outbox: &mut Outbox) {
-        let host_is_here = self.host_id.is_some_and(|host_id| {
-            self.players
-                .iter()
-                .any(|player| player.id == host_id && player.connected)
-        });
-        if host_is_here {
-            return;
+    /// The host is the earliest-joined connected player. When the host drops out, the role waits `HOST_GRACE` for
+    /// them (a refresh or a locked phone), then moves on.
+    fn ensure_host(&mut self, outbox: &mut Outbox, now: Instant) {
+        let host = self
+            .host_id
+            .and_then(|host_id| self.players.iter().find(|player| player.id == host_id));
+        match host {
+            Some(host) if host.connected => {
+                self.host_away_since = None;
+                return;
+            }
+            Some(_) => {
+                let since = *self.host_away_since.get_or_insert(now);
+                if now < since + limits::HOST_GRACE {
+                    return;
+                }
+            }
+            None => {}
         }
         if let Some(player) = self.players.iter().find(|player| player.connected) {
             self.host_id = Some(player.id);
+            self.host_away_since = None;
             outbox.push((Audience::Everyone, ServerMessage::HostChanged { host_id: player.id }));
         }
     }

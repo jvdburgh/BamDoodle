@@ -142,7 +142,8 @@ These are implemented in the server (`server/src/limits.rs`) and easy to change:
   takes your seat and score back, and a second device with the same token takes over from the first. After a round,
   the seat of someone who is gone is kept for 2 minutes.
 - **Late joiners** watch the current round (no word, no vote) and play from the next one.
-- **The host** is whoever created the room; when they drop out, the next player who joined takes over.
+- **The host** is whoever created the room; when they drop out, the role waits 15 seconds for them (a refresh or a locked phone)
+  and then goes to the next player who joined.
 
 ## Open questions
 

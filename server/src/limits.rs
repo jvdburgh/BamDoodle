@@ -52,3 +52,5 @@ pub const AVATAR_COLOURS: [&str; 10] = [
 ];
 /// Every avatar change goes to the whole room, so one player can't flood it.
 pub const AVATAR_COOLDOWN: Duration = Duration::from_secs(1);
+/// A host who drops out keeps the role this long (a refresh, a locked phone) before it moves to the next player.
+pub const HOST_GRACE: Duration = Duration::from_secs(15);
