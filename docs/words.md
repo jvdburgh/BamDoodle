@@ -24,15 +24,29 @@ curate our own. Automation proposes candidates, a human decides.
 Avoid: Brysbaert concreteness norms (no open licence; fine to consult privately, don't commit), google-10000-english
 (research-only), skribbl community lists (no licence).
 
-## Format (planned)
+## Format
+
+One TOML file per language and pack, loaded by the server at startup:
+
+```toml
+# words/en/base.toml
+language = "en"
+
+[categories]
+Animals = ["cat", "dog", "giraffe"]
+"Around the house" = ["chair", "lamp"]
+```
 
 ```
 words/
-  NOTICE                 credits for every source above
-  en/base.yaml           categories: { animals: [...], food: [...] }
-  en/adults.yaml         adult: true
-  nl/base.yaml
-  nl/adults.yaml
+  NOTICE          licence and credits for every source
+  en/base.toml    starter pack, about 90 words in 8 categories
+  en/adults.toml  adult = true, only used when the host switches the adults pack on
+  nl/base.toml
+  nl/adults.toml
 ```
+
+Category names are what players see, in the pack's language. The current packs are small hand-written starters;
+growing them to the target size is the next step for word lists.
 
 Our curated lists are CC BY-SA 4.0 ([decision 0004](decisions/0004-licence.md)).

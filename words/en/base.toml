@@ -1,0 +1,13 @@
+# Starter pack, hand-written for BamDoodle. CC BY-SA 4.0, see words/NOTICE.
+# Simple, concrete and drawable in a few strokes. One file per language and pack; categories as players see them.
+language = "en"
+
+[categories]
+Animals = ["cat", "dog", "giraffe", "elephant", "snail", "octopus", "penguin", "spider", "rabbit", "shark", "owl", "snake"]
+Food = ["pizza", "banana", "ice cream", "pancake", "carrot", "cheese", "egg", "cupcake", "pear", "sandwich", "popcorn", "watermelon"]
+"Around the house" = ["chair", "lamp", "toothbrush", "bathtub", "clock", "key", "umbrella", "toilet", "scissors", "candle", "mirror", "sofa"]
+Places = ["lighthouse", "castle", "beach", "volcano", "island", "bridge", "tent", "windmill", "igloo", "pyramid", "playground", "zoo"]
+"On the move" = ["bicycle", "rocket", "sailboat", "train", "helicopter", "skateboard", "submarine", "hot air balloon", "tractor", "canoe"]
+Actions = ["swimming", "sleeping", "dancing", "fishing", "juggling", "sneezing", "skiing", "climbing", "painting", "crying"]
+Nature = ["rainbow", "tree", "flower", "mountain", "cloud", "moon", "lightning", "cactus", "mushroom", "snowman", "waterfall"]
+"Things people wear" = ["glasses", "crown", "sock", "hat", "scarf", "boot", "necklace", "mask", "backpack", "tie"]

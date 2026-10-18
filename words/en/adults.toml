@@ -1,0 +1,8 @@
+# Starter adults pack (18+), hand-written for BamDoodle. CC BY-SA 4.0, see words/NOTICE.
+# Rude or suggestive is fine, hateful never.
+language = "en"
+adult = true
+
+[categories]
+"After dark" = ["hangover", "handcuffs", "bikini", "skinny dipping", "walk of shame", "love bite", "strip poker", "beer belly", "booty call", "speed dating"]
+"Bodily matters" = ["fart", "burp", "pimple", "toilet paper", "hairy back", "belly button", "underpants", "bra", "wedgie", "sweaty armpit"]
