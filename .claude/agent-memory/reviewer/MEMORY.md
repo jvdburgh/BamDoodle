@@ -1,1 +1,2 @@
 - [Client lifecycle patterns](feedback_client_lifecycle_patterns.md) — recurring WebSocket client bugs (throttled heartbeat, perf.now sleep, votes, tokens) to check first
+- [Server room patterns](feedback_server_room_patterns.md) — new broadcast msgs without own rate limit, Finished-result fields stale after settings change
