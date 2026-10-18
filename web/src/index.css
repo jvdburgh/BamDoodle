@@ -1,0 +1,34 @@
+@import "tailwindcss";
+@import "@fontsource-variable/work-sans";
+
+/* Brand tokens, taken from brand/logo.svg. The display font is still open (see docs/brand.md). */
+@theme {
+  --font-body: "Work Sans Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Work Sans Variable", ui-sans-serif, system-ui, sans-serif;
+
+  --color-night: #080357;
+  --color-night-deep: #050238;
+  --color-night-soft: #14107a;
+
+  --color-berry: #f13866;
+  --color-violet: #af2cbe;
+  --color-plum: #9753a0;
+  --color-iris: #5651fb;
+  --color-denim: #3d56a5;
+  --color-lagoon: #2da8c3;
+  --color-forest: #239447;
+  --color-moss: #1c7d3c;
+  --color-lime: #7ec42e;
+  --color-sun: #fbb03b;
+  --color-amber: #f7a33a;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-night font-body text-white antialiased;
+  }
+}
