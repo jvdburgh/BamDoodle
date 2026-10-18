@@ -44,10 +44,14 @@ export function BrandFlag({ country }: { country: keyof typeof flags }) {
 /** What we ask, the same words in the start page's footer and after the last round. */
 export function BrandSupportLine({ className = "" }: { className?: string }) {
   const github = <BrandLink href={REPO_URL}>Help out on GitHub</BrandLink>;
-  const donate = <BrandLink href={DONATE_URL}>donate to our friends in Ukraine</BrandLink>;
+  const donate = (
+    <BrandLink href={DONATE_URL}>
+      donate to our friends in Ukraine <span aria-hidden="true">{flags.ua.emoji}</span>
+    </BrandLink>
+  );
   return (
     <p className={className}>
-      Enjoying BamDoodle? {github}, and please {donate} <BrandFlag country="ua" />
+      Enjoying BamDoodle? {github}, and please {donate}
     </p>
   );
 }

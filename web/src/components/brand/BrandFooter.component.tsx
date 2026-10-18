@@ -33,7 +33,7 @@ const makerAvatar = [
 
 /** Which build this is: a link to its release notes for a tagged release. */
 function Version() {
-  if (APP_VERSION === "dev") return <>Development build</>;
+  if (APP_VERSION === "dev") return <>Development build {import.meta.env.VITE_BAMDOODLE_COMMIT ?? ""}</>;
   if (!APP_VERSION.startsWith("v")) return <>Version {APP_VERSION}</>;
   return <BrandLink href={RELEASE_URL + APP_VERSION}>Version {APP_VERSION}</BrandLink>;
 }
@@ -41,7 +41,7 @@ function Version() {
 /** The start page's small print: who made it, where it runs, the one thing we ask, and the version. */
 export function BrandFooter() {
   return (
-    <footer className="flex flex-col items-center gap-2 px-4 pt-2 pb-5 text-center leading-relaxed text-white/70">
+    <footer className="flex flex-col items-center gap-2 px-4 pt-2 pb-5 text-center text-sm leading-relaxed text-white/75">
       <p className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1">
         <span>Made by</span>
         <BrandLink href={MAKER_URL} className="group inline-flex items-center gap-1.5">
@@ -63,7 +63,7 @@ export function BrandFooter() {
         </span>
       </p>
       <BrandSupportLine />
-      <p className="text-sm text-white/50">
+      <p className="text-xs text-white/60">
         <Version />
       </p>
     </footer>

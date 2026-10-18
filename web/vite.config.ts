@@ -1,4 +1,5 @@
 /// <reference types="vitest/config" />
+import { execSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { storybookTest } from "@storybook/addon-vitest/vitest-plugin";
@@ -9,6 +10,16 @@ import { defineConfig } from "vite";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const serverUrl = process.env.BAMDOODLE_SERVER_URL ?? "http://localhost:8080";
+
+// Which commit a development build is (nearest tag plus commits, or the bare hash), for the footer; release builds
+// show their tag instead (VITE_BAMDOODLE_VERSION).
+try {
+  process.env.VITE_BAMDOODLE_COMMIT ??= execSync("git describe --tags --always --dirty", { stdio: "pipe" })
+    .toString()
+    .trim();
+} catch {
+  // No git here (a container build): the footer says "Development build" alone.
+}
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],

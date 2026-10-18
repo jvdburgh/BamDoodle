@@ -24,7 +24,7 @@ export const Default: Story = {
     await expect(donate).toHaveAttribute("href", "https://u24.gov.ua/");
     await expect(donate).toHaveAttribute("target", "_blank");
     await expect(donate).toHaveAttribute("rel", "noopener noreferrer");
-    for (const flag of ["Dutch flag", "EU flag", "Ukrainian flag"]) {
+    for (const flag of ["Dutch flag", "EU flag"]) {
       await expect(canvas.getByRole("img", { name: flag })).toBeVisible();
     }
   },

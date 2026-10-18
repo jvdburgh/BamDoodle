@@ -212,7 +212,7 @@ Conventions (see AGENTS.md):
   (`BAMDOODLE_VERSION`, `/api/version`). Before it says hello, the web app asks `/api/version`; built for another release,
   it reloads itself once (a guard per version stops loops), so it never creates or joins with old code. After a
   deploy, an open tab's reconnect does the same. New releases always reach browsers: build files
-  have hashed names and everything else is revalidated. The start page footer shows the version.
+  have hashed names and everything else is revalidated. The start page footer shows the version; a development build shows its commit instead (`VITE_BAMDOODLE_COMMIT`, from `git describe` in `web/vite.config.ts`).
 - HTTP: every response carries HSTS, a Content Security Policy (scripts, sockets, fonts, images and sounds from our
   own origin only; inline styles allowed for React's `style`), `X-Frame-Options: DENY`, `nosniff` and a referrer and
   permissions policy (`server/src/lib.rs`). Hashed build files in `/assets/` are cached for a year, everything else is
