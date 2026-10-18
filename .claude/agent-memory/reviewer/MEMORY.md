@@ -2,3 +2,4 @@
 - [Server room patterns](feedback_server_room_patterns.md) — LEAD: client input fanned out to Everyone without own bound (rate, Vec length/dupes); stale Finished fields
 - [Word list patterns](feedback_word_list_patterns.md) — LEAD: guess containment vs rivals that contain the word / typo-rivals; maintainer allowances
 - [Web UI patterns](feedback_web_ui_patterns.md) — pointer input copies, identity colours, wire caps, host-only actions, alt="" beside responsively hidden text
+- [Link previews](link-previews.md) — robots.txt vs preview bots on /join/ links; stale public-file examples in lib.rs tests
