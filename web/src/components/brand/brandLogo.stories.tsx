@@ -61,3 +61,11 @@ export const SlyHomeLink: Story = {
     await expect(canvas.getByRole("link", { name: "BamDoodle" })).toHaveAttribute("href", "/?screen=start");
   },
 };
+
+export const SwirlOnHover: Story = {
+  args: { swirlOnHover: true, className: "size-32" },
+  play: async ({ canvas, canvasElement }) => {
+    await waitFor(() => expect(canvasElement.querySelector(".logo-hover-swirl svg")).not.toBeNull());
+    await expect(canvas.getByRole("img", { name: "BamDoodle" })).toBeVisible();
+  },
+};

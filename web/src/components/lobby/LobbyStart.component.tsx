@@ -107,7 +107,7 @@ export function LobbyStart({
     <div className="flex min-h-svh flex-col">
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-8 px-5 py-10">
         <div className="flex flex-col items-center gap-2 text-center">
-          <BrandLogo className="size-28 hover:animate-wiggle motion-reduce:hover:animate-none" />
+          <BrandLogo swirlOnHover className="size-28" />
           <h2 className="font-display text-5xl">BamDoodle</h2>
           <BrandTagline />
         </div>

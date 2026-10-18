@@ -18,6 +18,8 @@ type BrandLogoProps = {
    * round), a quiet static badge with reduced motion. The logo is inlined for that (it's an `<img>` otherwise), so its parts can move.
    */
   sly?: boolean;
+  /** The start page: hovering turns the hat's colours one round, leaving turns them back (not with reduced motion). */
+  swirlOnHover?: boolean;
 };
 
 let logoMarkup: Promise<string> | undefined;
@@ -40,9 +42,16 @@ function useLogoMarkup(enabled: boolean, idPrefix: string) {
   return markup;
 }
 
-export function BrandLogo({ className, href, sly = false, named = false, nameClassName = "text-sm" }: BrandLogoProps) {
+export function BrandLogo({
+  className,
+  href,
+  sly = false,
+  swirlOnHover = false,
+  named = false,
+  nameClassName = "text-sm",
+}: BrandLogoProps) {
   const idPrefix = useId();
-  const markup = useLogoMarkup(sly, idPrefix);
+  const markup = useLogoMarkup(sly || swirlOnHover, idPrefix);
   // Beside the written name the picture adds nothing for a screen reader.
   const alt = named ? "" : "BamDoodle";
   const image = <img src="/logo.svg" alt={alt} className={sly ? "size-full" : `shrink-0 ${className ?? ""}`} />;
@@ -69,6 +78,14 @@ export function BrandLogo({ className, href, sly = false, named = false, nameCla
         ?
       </span>
     </span>
+  ) : swirlOnHover && markup ? (
+    <span
+      role={named ? undefined : "img"}
+      aria-label={named ? undefined : "BamDoodle"}
+      aria-hidden={named || undefined}
+      className={`logo-hover-swirl block shrink-0 [&>svg]:size-full ${className ?? ""}`}
+      dangerouslySetInnerHTML={{ __html: markup }}
+    />
   ) : (
     image
   );

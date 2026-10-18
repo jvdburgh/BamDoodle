@@ -1,9 +1,10 @@
-import { useEffect, useId, useRef, type FormEvent, type Ref } from "react";
+import { useEffect, useId, useRef, type FormEvent, type ReactNode, type Ref } from "react";
 import { BrandFooter } from "@/components/brand/BrandFooter.component";
 import { BrandLogo } from "@/components/brand/BrandLogo.component";
 import { BrandSketchyFrame } from "@/components/brand/BrandSketchyFrame.component";
 import { BrandStyles } from "@/components/brand/_utils/brandStyles.utils";
 import { LobbyCategoryPicker } from "@/components/lobby/LobbyCategoryPicker.component";
+import { LobbySetupSketch, type LobbySetupSketchKind } from "@/components/lobby/LobbySetupSketch.component";
 import { LobbySetupUtils } from "@/components/lobby/_utils/lobbySetup.utils";
 import type { Attribution } from "@/components/room/_types/room.types";
 import type { Language } from "@/protocol/generated/Language";
@@ -29,15 +30,20 @@ type LobbySetupProps = {
   onAttribution?: (attribution: Attribution) => void;
 };
 
-type Option<T> = { value: T; title: string; detail: string };
+type Option<T> = { value: T; title: string; detail: string; sketch: LobbySetupSketchKind };
 
 const turnOptions: Option<TurnMode>[] = [
-  { value: "oneStroke", title: "One stroke each", detail: "Draw one line, pass it on" },
-  { value: "timed", title: "Timed turns", detail: "A few seconds to draw freely" },
+  { value: "oneStroke", title: "One stroke each", detail: "Draw one line, pass it on", sketch: { kind: "oneStroke" } },
+  { value: "timed", title: "Timed turns", detail: "A few seconds to draw freely", sketch: { kind: "timed" } },
 ];
 const colourOptions: Option<Attribution>[] = [
-  { value: "free", title: "Any colour", detail: "Everyone uses every colour" },
-  { value: "shades", title: "Own colours", detail: "Each player gets a family of shades" },
+  { value: "free", title: "Any colour", detail: "Everyone uses every colour", sketch: { kind: "anyColour" } },
+  {
+    value: "shades",
+    title: "Own colours",
+    detail: "Each player gets a family of shades",
+    sketch: { kind: "ownColours" },
+  },
 ];
 
 /** The host's room setup: turns, rounds, words. First before the room is created, later from the room itself. */
@@ -55,6 +61,8 @@ export function LobbySetup({
 }: LobbySetupProps) {
   const first = useRef<HTMLInputElement>(null);
   const wordsHeading = useId();
+  const roundHeading = useId();
+  const gameHeading = useId();
   const change = (patch: Partial<RoomSettings>) => onChange({ ...settings, ...patch });
   const ready = settings.categories.length > 0;
 
@@ -82,67 +90,86 @@ export function LobbySetup({
         <div className="flex flex-1 flex-col justify-center">
           <form
             onSubmit={submit}
-            className="relative grid w-full gap-5 rounded-[18px_24px_20px_16px] bg-night-soft/50 p-5 md:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] md:gap-x-8 md:gap-y-4"
+            className="relative grid w-full gap-5 rounded-[18px_24px_20px_16px] bg-night-soft/50 p-5 md:grid-cols-[minmax(0,1.15fr)_minmax(0,1.25fr)] md:gap-x-10 md:gap-y-5 md:p-6"
           >
             <BrandSketchyFrame className="text-white/25" />
             <h2 className="font-display text-2xl md:col-span-2">Set up your room</h2>
-            <div className="grid content-start gap-5 md:gap-4">
-              <LobbyChoice
-                legend="Turns"
-                name="lobby-mode"
-                options={turnOptions}
-                value={settings.mode}
-                onChange={(mode) => change({ mode })}
-                firstRef={first}
-              />
-              {settings.mode === "oneStroke" ? (
-                <LobbyPills
-                  legend="Each player draws"
-                  name="lobby-turns"
-                  options={LobbySetupUtils.choices.turnsPerPlayer.map((turns) => ({
-                    value: turns,
-                    label: turns === 1 ? "once" : `${turns} times`,
-                  }))}
-                  value={settings.turnsPerPlayer}
-                  onChange={(turnsPerPlayer) => change({ turnsPerPlayer })}
-                />
-              ) : (
-                <LobbyPills
-                  legend="Seconds per turn"
-                  name="lobby-seconds"
-                  options={LobbySetupUtils.choices.turnSeconds.map((seconds) => ({
-                    value: seconds,
-                    label: `${seconds} s`,
-                  }))}
-                  value={settings.turnSeconds}
-                  onChange={(turnSeconds) => change({ turnSeconds })}
-                />
-              )}
-              <LobbyPills
-                legend="Rounds"
-                name="lobby-rounds"
-                options={LobbySetupUtils.choices.rounds.map((rounds) => ({ value: rounds, label: String(rounds) }))}
-                value={settings.rounds}
-                onChange={(rounds) => change({ rounds })}
-              />
-              {attribution && onAttribution && (
+            <div className="grid content-start gap-6">
+              <section aria-labelledby={roundHeading} className="grid content-start gap-5">
+                <h3 id={roundHeading} className="font-display text-xl">
+                  Each round
+                </h3>
                 <LobbyChoice
-                  legend="Colours"
-                  name="lobby-colours"
-                  options={colourOptions}
-                  value={attribution}
-                  onChange={onAttribution}
+                  legend="Turns"
+                  name="lobby-mode"
+                  options={turnOptions}
+                  value={settings.mode}
+                  onChange={(mode) => change({ mode })}
+                  firstRef={first}
                 />
-              )}
+                {settings.mode === "oneStroke" ? (
+                  <LobbyPills
+                    legend="Each player draws"
+                    sketch={{ kind: "turns", count: settings.turnsPerPlayer }}
+                    name="lobby-turns"
+                    options={LobbySetupUtils.choices.turnsPerPlayer.map((turns) => ({
+                      value: turns,
+                      label: turns === 1 ? "once" : `${turns} times`,
+                    }))}
+                    value={settings.turnsPerPlayer}
+                    onChange={(turnsPerPlayer) => change({ turnsPerPlayer })}
+                  />
+                ) : (
+                  <LobbyPills
+                    legend="Seconds per turn"
+                    sketch={{ kind: "seconds", seconds: settings.turnSeconds }}
+                    name="lobby-seconds"
+                    options={LobbySetupUtils.choices.turnSeconds.map((seconds) => ({
+                      value: seconds,
+                      label: `${seconds} s`,
+                    }))}
+                    value={settings.turnSeconds}
+                    onChange={(turnSeconds) => change({ turnSeconds })}
+                  />
+                )}
+                {attribution && onAttribution && (
+                  <LobbyChoice
+                    legend="Colours"
+                    name="lobby-colours"
+                    options={colourOptions}
+                    value={attribution}
+                    onChange={onAttribution}
+                  />
+                )}
+              </section>
+              <section
+                aria-labelledby={gameHeading}
+                className="grid content-start gap-5 border-t-2 border-white/10 pt-6"
+              >
+                <h3 id={gameHeading} className="font-display text-xl">
+                  The game
+                </h3>
+                <LobbyPills
+                  legend="Rounds per game"
+                  sketch={{ kind: "rounds", count: settings.rounds }}
+                  name="lobby-rounds"
+                  options={LobbySetupUtils.choices.rounds.map((rounds) => ({ value: rounds, label: String(rounds) }))}
+                  value={settings.rounds}
+                  onChange={(rounds) => change({ rounds })}
+                />
+              </section>
             </div>
 
             <section
               aria-labelledby={wordsHeading}
-              className="grid content-start gap-5 border-t-2 md:gap-4 border-white/10 pt-5 md:border-t-0 md:border-l-2 md:pt-0 md:pl-8"
+              className="grid content-start gap-5 border-t-2 border-white/10 pt-6 md:border-t-0 md:border-l-2 md:pt-0 md:pl-10"
             >
-              <h3 id={wordsHeading} className="font-display text-xl">
-                Words
-              </h3>
+              <div className="flex items-center justify-between gap-3">
+                <h3 id={wordsHeading} className="font-display text-xl">
+                  Words
+                </h3>
+                <LobbySetupSketch sketch={{ kind: "words" }} className="h-9 w-12 shrink-0" />
+              </div>
               <LobbyPills<Language>
                 legend="Language"
                 name="lobby-language"
@@ -184,6 +211,25 @@ export function LobbySetup({
   );
 }
 
+/** A labelled group of choices, with an optional sketch beside its label. */
+function LobbyField({
+  legend,
+  sketch,
+  children,
+}: {
+  legend: string;
+  sketch?: LobbySetupSketchKind;
+  children: ReactNode;
+}) {
+  return (
+    <fieldset className="relative">
+      <legend className="mb-2 text-sm text-white/70">{legend}</legend>
+      {sketch && <LobbySetupSketch sketch={sketch} className="absolute -top-2 right-0 h-8 w-11" />}
+      {children}
+    </fieldset>
+  );
+}
+
 function LobbyChoice<T extends string | number>({
   legend,
   name,
@@ -201,13 +247,12 @@ function LobbyChoice<T extends string | number>({
 }) {
   const detailId = useId();
   return (
-    <fieldset className="grid gap-1.5">
-      <legend className="mb-1.5 text-sm text-white/70">{legend}</legend>
-      <div className={`grid gap-2 ${options.length > 2 ? "grid-cols-3" : "grid-cols-2"}`}>
+    <LobbyField legend={legend}>
+      <div className="grid gap-2 sm:grid-cols-2">
         {options.map((option) => (
           <label
             key={option.value}
-            className="cursor-pointer rounded-[12px_16px_14px_10px] bg-night-deep p-3 ring-2 ring-transparent has-checked:ring-sun has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-white"
+            className="relative cursor-pointer rounded-[12px_16px_14px_10px] bg-night-deep p-3 ring-2 ring-transparent has-checked:ring-sun has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-white"
           >
             <input
               ref={value === option.value ? firstRef : undefined}
@@ -220,33 +265,35 @@ function LobbyChoice<T extends string | number>({
               aria-describedby={`${detailId}-${option.value}`}
               className="sr-only"
             />
-            <span className="block font-display text-lg leading-tight">{option.title}</span>
+            <LobbySetupSketch sketch={option.sketch} className="absolute top-2 right-2 h-7 w-10" />
+            <span className="block pr-10 font-display text-lg leading-tight">{option.title}</span>
             <span id={`${detailId}-${option.value}`} className="mt-0.5 block text-sm text-white/70">
               {option.detail}
             </span>
           </label>
         ))}
       </div>
-    </fieldset>
+    </LobbyField>
   );
 }
 
 function LobbyPills<T extends string | number>({
   legend,
+  sketch,
   name,
   options,
   value,
   onChange,
 }: {
   legend: string;
+  sketch?: LobbySetupSketchKind;
   name: string;
   options: { value: T; label: string }[];
   value: T;
   onChange: (value: T) => void;
 }) {
   return (
-    <fieldset>
-      <legend className="mb-1.5 text-sm text-white/70">{legend}</legend>
+    <LobbyField legend={legend} sketch={sketch}>
       <div className="flex flex-wrap gap-2">
         {options.map((option) => (
           <label
@@ -266,6 +313,6 @@ function LobbyPills<T extends string | number>({
           </label>
         ))}
       </div>
-    </fieldset>
+    </LobbyField>
   );
 }

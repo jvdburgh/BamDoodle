@@ -44,8 +44,9 @@ can change the number of rounds between rounds; when that's already been reached
    room code (shown as "Join at bamdoodle.io with code …" on the host's screen) and a nickname, or skips the code when
    you open a shared link (`/join/BKZW`; the address bar shows it once you're in). Creating starts with setting up the
    room: mode, turns per player or turn length, rounds per game, the language and the word categories to play with
-   (Efteling, Places, Very British, …, and 18+ ones if they want), in two columns on a wide screen (how you play on
-   the left, the words on the right) and one on a phone. Then the host's nickname (after the setup, so it's clearly
+   (Efteling, Places, Very British, …, and 18+ ones if they want), in two columns on a wide screen ("Each round"
+   and "The game" on the left, the words on the right) and one on a phone, with a small sketch beside each
+   choice and as little text as possible. Then the host's nickname (after the setup, so it's clearly
    theirs and not the room's), and only then is the room created, with those settings. The host can open the
    settings again between rounds; every change there reaches the room at once. Then everyone draws or tweaks their avatar
    (a random doodle face to start from, shuffle for another; a small round pad with one pen and the colours that read
@@ -73,7 +74,7 @@ can change the number of rounds between rounds; when that's already been reached
 | **Timed turns** | free drawing, any number of strokes | seconds per turn: 10, 20 (default), 30 or 60; 2 turns each |
 
 In the app these are named "One stroke each" and "Timed turns" ("Each player draws: once / 2 / 3 … times"); in code
-and on the wire they're `oneStroke` and `timed`. The categories are picked as chips with their word count, every
+and on the wire they're `oneStroke` and `timed`. The categories are picked as small chips, every
 non-18+ category of the room's language ticked by default, 18+ ones marked and only in play when ticked.
 
 The server enforces the turn: strokes from someone whose turn it isn't, or after the time limit, are dropped.

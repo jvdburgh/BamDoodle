@@ -8,7 +8,7 @@ type LobbyCategoryPickerProps = {
   onChange: (names: string[]) => void;
 };
 
-/** Which word categories are in play, as chips with their word count. 18+ ones are marked and never pre-ticked. */
+/** Which word categories are in play, as chips. 18+ ones are marked and never pre-ticked. */
 export function LobbyCategoryPicker({ categories, selected, onChange }: LobbyCategoryPickerProps) {
   const hintId = useId();
   const chosen = new Set(selected);
@@ -37,28 +37,24 @@ export function LobbyCategoryPicker({ categories, selected, onChange }: LobbyCat
           </button>
         </span>
       </div>
-      <div className="flex flex-wrap gap-2">
+      {/* On a laptop the list scrolls in place, so the setup fits one screen whatever the number of categories. */}
+      <div className="relative -m-1 flex flex-wrap gap-1.5 p-1 md:max-h-[max(8rem,min(19rem,calc(100svh-26rem)))] md:overflow-y-auto">
         {categories.map((category) => (
           <label
             key={category.name}
-            className="flex min-h-11 cursor-pointer items-center gap-2 rounded-full bg-night-deep py-1 pr-2 pl-3.5 ring-2 ring-transparent has-checked:bg-night has-checked:ring-sun has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-white"
+            className="flex min-h-8 cursor-pointer items-center gap-1.5 rounded-full bg-night-deep px-2.5 py-0.5 text-sm ring-2 ring-transparent has-checked:bg-night has-checked:ring-sun has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-white"
           >
             <input
               type="checkbox"
               checked={chosen.has(category.name)}
               onChange={() => toggle(category.name)}
               aria-label={category.adult ? `${category.name} (18+)` : category.name}
-              aria-describedby={`${hintId}-${category.name}`}
               className="sr-only"
             />
-            <span className="font-display text-lg leading-none">{category.name}</span>
+            <span className="font-display leading-none">{category.name}</span>
             {category.adult && (
               <span className="rounded-full bg-berry px-1.5 text-xs font-semibold text-night">18+</span>
             )}
-            <span id={`${hintId}-${category.name}`} className="rounded-full bg-night-soft px-2 text-xs text-white/80">
-              {category.words}
-              <span className="sr-only"> words</span>
-            </span>
           </label>
         ))}
       </div>
