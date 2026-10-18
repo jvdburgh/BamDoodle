@@ -1,3 +1,4 @@
+const MAKER_URL = "https://github.com/jvdburgh";
 const REPO_URL = "https://github.com/jvdburgh/BamDoodle";
 const DONATE_URL = "https://u24.gov.ua/";
 
@@ -9,7 +10,11 @@ export function LobbyFooter() {
   return (
     <footer className="flex flex-col items-center gap-1 px-4 pb-4 text-center text-xs leading-relaxed text-white/60">
       <p>
-        Made by Joris in the Netherlands{" "}
+        Made by{" "}
+        <a href={MAKER_URL} target="_blank" rel="noopener noreferrer" className={link}>
+          Joris
+        </a>{" "}
+        in the Netherlands{" "}
         <span role="img" aria-label="Dutch flag">
           🇳🇱
         </span>{" "}
