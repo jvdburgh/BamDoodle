@@ -88,10 +88,12 @@ Everyone can use every colour: there is nothing to unlock, ever. To still see wh
   order, their name in the turn bar, and a name tag that follows their pen tip on the canvas.
 - **Mini-maps:** next to each player's name, a small canvas shows only *their* strokes. Always visible, on phones too.
 - **Pen tag:** a small chip with the drawer's avatar and name rides on their pen tip on every screen.
-- **Magnifying glass (spotlight):** click a player (or their mini-map) to highlight their strokes on the main
-  canvas while the rest fades back to grey; the sheet and their card get a bold, wobbly hand-drawn frame. Click them
-  again (or press Esc) to show everyone. Hovering a player with a mouse
-  previews their spotlight without pinning it.
+- **Magnifying glass (spotlight):** tap a player's mini-map to highlight their strokes on the main canvas while the
+  rest fades back to grey; the sheet and their card get a bold, wobbly hand-drawn frame, and a "Noor's lines · Show
+  everyone ✕" chip on the canvas says why and is the way back (so is tapping the mini-map again, or Esc). Hovering a
+  player with a mouse previews their spotlight without pinning it. Suspecting or voting never spotlights anyone.
+- **Your own card** stands out (an iris outline and a "you" badge), and your face says "That's you" instead of being a
+  button. Cards say who suspects whom by name ("suspected by you and Noor"), in berry when you're one of them.
 
 **In the lab only** (`/lab`, not a server setting yet): the room's creator picks **Any colour** (everyone uses every
 colour, the default) or **Own colours** (each player gets a family of five shades, and their avatar wears it), so
@@ -111,7 +113,8 @@ pops its points and total. Under the canvas only the headline: who the bamboozle
 seconds start at the reveal), then the word and the host's "Next round". After the last round
 "The End": the podium with everyone's final score (on a phone when you tap "See the final scores", on the host
 screen ten seconds after the results), then what's next (the host plays again in the same room, everyone can create
-or join another room) and our one ask: if you enjoyed it, support our friends in Ukraine.
+or join another room), our one ask (if you enjoyed it, support our friends in Ukraine) and the footer with who made
+it.
 
 ## Points (starting point, tune in playtests)
 

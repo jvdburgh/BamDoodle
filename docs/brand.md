@@ -91,4 +91,5 @@ Modern, a bit mysterious, colourful. It should feel like a hand-made little game
   the setup ("Made by Joris van der Burgh in the Netherlands / Hosted in the European Union", and "Enjoying
   BamDoodle? Help out on GitHub, and please donate to our friends in Ukraine"), and on "The End" screen after the
   last round one small card: "Did you enjoy the game?", that it's free with no ads or accounts, a "Donate through
-  United24" link (Ukraine's official fundraising platform) and "help out on GitHub". No banner, nothing during a game.
+  United24" link (Ukraine's official fundraising platform) and "help out on GitHub", with the footer under it
+  (without its own ask, so it isn't said twice). No banner, nothing during a game.

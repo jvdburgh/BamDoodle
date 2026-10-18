@@ -34,8 +34,8 @@ type RoomPlayerListProps = {
   colours?: Record<number, string>;
   /** On the bamboozler's own screen, their face wears the fedora. */
   youWearTheHat?: boolean;
-  /** How many players suspect each player right now (public while drawing). */
-  suspectedBy?: Record<number, number>;
+  /** Who suspects each player right now (public while drawing): suspect → the players who marked them. */
+  suspectedBy?: Record<number, number[]>;
   /** Who has voted (not for whom). */
   votedIds?: number[];
   /** After the vote: the bamboozler in the hat, who voted for whom, then the round's points and the totals. */
@@ -84,6 +84,12 @@ export function RoomPlayerList({
   /** The host screen is read from across the room: the results on its cards are bigger. */
   const big = layout === "row";
   const nameOf = (id: number) => (id === youId ? "you" : (players.find((player) => player.id === id)?.name ?? "?"));
+  /** "you", "you and Noor", "Noor, Jip and 2 more": you first, then in the order they marked them. */
+  const names = (ids: number[]) => {
+    const all = [...ids].sort((a, b) => Number(b === youId) - Number(a === youId)).map(nameOf);
+    if (all.length <= 2) return all.join(" and ");
+    return `${all.slice(0, 2).join(", ")} and ${all.length - 2} more`;
+  };
   return (
     <div className="@container/players">
       <ol
@@ -97,7 +103,7 @@ export function RoomPlayerList({
           const chosen = action?.chosenId === player.id;
           const status = active ? "Drawing now" : player.id === nextId ? "Up next" : null;
           const colour = colours?.[player.id];
-          const suspects = suspectedBy[player.id] ?? 0;
+          const suspects = suspectedBy[player.id] ?? [];
           const isBamboozler = outcome?.bamboozlerId === player.id;
           const votedFor = outcome?.votes[player.id];
           const score = outcome?.scores?.[player.id];
@@ -111,7 +117,9 @@ export function RoomPlayerList({
                 ? ""
                 : active
                   ? "shadow-[inset_0_0_0_2px_var(--color-sun)]"
-                  : "";
+                  : you
+                    ? "shadow-[inset_0_0_0_2px_var(--color-iris)]"
+                    : "";
           const rail = layout === "grid";
           const drawerRing = active && (
             <BrandScribble
@@ -131,7 +139,7 @@ export function RoomPlayerList({
                 rail
                   ? "@5xl/room:grid @5xl/room:grid-cols-[minmax(0,1fr)_5.5rem] @5xl/room:items-center @5xl/room:gap-x-2.5 @5xl/room:gap-y-1 @5xl/room:p-2"
                   : ""
-              } ${active ? "bg-night-soft" : "bg-night-deep/70"} ${ring}`}
+              } ${active ? "bg-night-soft" : you ? "bg-iris/20" : "bg-night-deep/70"} ${ring}`}
             >
               {spotlit && <BrandSketchyFrame bold className="text-white" />}
               <div className={`min-w-0 ${rail ? "@5xl/room:col-start-1 @5xl/room:row-start-1" : ""}`}>
@@ -148,7 +156,7 @@ export function RoomPlayerList({
                       className="size-12"
                     />
                   ) : (
-                    <span className="relative size-12 shrink-0">
+                    <span className="peer relative size-12 shrink-0">
                       <AvatarDoodle
                         strokes={player.avatar}
                         color={colour}
@@ -162,11 +170,23 @@ export function RoomPlayerList({
                   )}
                   <span className={`min-w-0 truncate font-display leading-tight ${active ? "text-sun" : "text-white"}`}>
                     {player.name}
-                    {you && <span className="ml-1 font-body text-xs text-white/65">(you)</span>}
+                    {you && (
+                      <span className="ml-1.5 rounded-full bg-iris px-1.5 align-middle font-body text-xs font-semibold text-white">
+                        you
+                      </span>
+                    )}
                     {status && <span className="sr-only">, {status}</span>}
                   </span>
                 </div>
-                {(votedIds.includes(player.id) || suspects > 0 || yourVoteId === player.id) && (
+                {you && action && (
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-x-1 top-[3.75rem] z-10 rounded-lg bg-night px-2 py-1 text-center text-xs font-semibold text-white opacity-0 shadow-[0_3px_0_var(--color-night-deep)] transition-opacity peer-hover:opacity-100 motion-reduce:transition-none"
+                  >
+                    {action.kind === "vote" ? "That’s you: vote for someone else" : "That’s you: suspect someone else"}
+                  </span>
+                )}
+                {(votedIds.includes(player.id) || suspects.length > 0 || yourVoteId === player.id) && (
                   <p className="mt-1 flex flex-wrap gap-1 text-xs">
                     {yourVoteId === player.id && (
                       <span className="rounded-full bg-berry px-1.5 font-semibold text-night">your vote</span>
@@ -176,12 +196,14 @@ export function RoomPlayerList({
                         voted
                       </span>
                     )}
-                    {suspects > 0 && (
+                    {suspects.length > 0 && (
                       <span
-                        key={suspects}
-                        className="animate-pop-in rounded-full bg-night px-1.5 text-white/85 motion-reduce:animate-none"
+                        key={suspects.join()}
+                        className={`animate-pop-in rounded-full px-1.5 motion-reduce:animate-none ${
+                          youId !== null && suspects.includes(youId) ? "bg-berry text-night" : "bg-night text-white/85"
+                        }`}
                       >
-                        suspected by {suspects}
+                        suspected by {names(suspects)}
                       </span>
                     )}
                   </p>

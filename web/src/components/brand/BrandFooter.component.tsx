@@ -38,8 +38,11 @@ function Version() {
   return <BrandLink href={RELEASE_URL + APP_VERSION}>Version {APP_VERSION}</BrandLink>;
 }
 
-/** The start page's small print: who made it, where it runs, the one thing we ask, and the version. */
-export function BrandFooter() {
+/**
+ * The small print: who made it, where it runs, the one thing we ask, and the version. `support={false}` leaves the
+ * ask out where a page already makes it (The End's donate card).
+ */
+export function BrandFooter({ support = true }: { support?: boolean }) {
   return (
     <footer className="flex flex-col items-center gap-1 px-4 pt-2 pb-3 text-center md:pt-4 md:pb-8 text-sm leading-relaxed text-white/75">
       <p className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1">
@@ -63,7 +66,7 @@ export function BrandFooter() {
           Hosted in the <BrandFlag country="eu" /> European Union
         </span>
       </p>
-      <BrandSupportLine />
+      {support && <BrandSupportLine />}
       <p className="text-xs text-white/60">
         <Version />
       </p>

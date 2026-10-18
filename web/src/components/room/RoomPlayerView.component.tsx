@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, useState } from "react";
+import { BrandFooter } from "@/components/brand/BrandFooter.component";
 import { BrandLogo } from "@/components/brand/BrandLogo.component";
 import { BrandSketchyFrame } from "@/components/brand/BrandSketchyFrame.component";
 import { BrandStyles } from "@/components/brand/_utils/brandStyles.utils";
@@ -128,7 +129,6 @@ export function RoomPlayerView({
             chosenId: suspicion,
             onChoose: (id) => {
               send({ type: "suspect", suspectId: id });
-              spotlight.pin(id);
               SoundPlayer.play("suspect");
             },
           }
@@ -139,7 +139,6 @@ export function RoomPlayerView({
               onChoose: (id) => {
                 if (id === null || id === yourVoteId) return;
                 send({ type: "castVote", suspectId: id });
-                spotlight.pin(id);
                 SoundPlayer.play("vote");
               },
             }
@@ -230,6 +229,7 @@ export function RoomPlayerView({
               hostName={view.host?.name}
               startPage={home}
             />
+            <BrandFooter support={false} />
           </div>
         ) : (
           <div className="flex min-h-0 flex-1 flex-col gap-3 @5xl/room:grid @5xl/room:grid-cols-[17rem_minmax(0,1fr)] @5xl/room:grid-rows-[minmax(0,1fr)_auto] @5xl/room:gap-x-5 @5xl/room:gap-y-3">
@@ -266,7 +266,11 @@ export function RoomPlayerView({
                   )}
                   {spotlit && (
                     <div className="absolute top-2 left-2">
-                      <RoomSpotlightChip player={spotlit} you={spotlit.id === you?.id} />
+                      <RoomSpotlightChip
+                        player={spotlit}
+                        you={spotlit.id === you?.id}
+                        onClear={spotlight.pinned === spotlit.id ? () => spotlight.pin(null) : undefined}
+                      />
                     </div>
                   )}
                   <div className="absolute right-2 bottom-2 max-w-[70%]">

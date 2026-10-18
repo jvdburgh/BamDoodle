@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect } from "storybook/test";
+import { expect, fn } from "storybook/test";
 import { RoomSpotlightChip } from "./RoomSpotlightChip.component";
 import { playersFixture } from "./_fixtures/players.fixture";
 
@@ -25,5 +25,14 @@ export const Yours: Story = {
   args: { you: true },
   play: async ({ canvas }) => {
     await expect(canvas.getByText("Your lines")).toBeVisible();
+  },
+};
+
+/** Pinned: the chip is the way back to everyone's lines, also on a phone. */
+export const PinnedClearsOnTap: Story = {
+  args: { onClear: fn() },
+  play: async ({ args, canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole("button", { name: /Pip’s lines · Show everyone/ }));
+    await expect(args.onClear).toHaveBeenCalled();
   },
 };

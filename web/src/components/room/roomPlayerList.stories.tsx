@@ -64,7 +64,7 @@ export const TurnOrder: Story = {
       expect.stringContaining("Mo"),
       expect.stringContaining("Kiki"),
     ]);
-    await expect(items[1]).toHaveTextContent(/Juno.*\(you\).*Drawing now/);
+    await expect(items[1]).toHaveTextContent(/Juno.*you.*Drawing now/);
     await expect(items[2]).toHaveTextContent(/Mo.*Up next/);
     await waitFor(() => expect(canvas.getByRole("button", { name: "Spotlight Juno" })).toBeVisible());
   },
@@ -89,6 +89,16 @@ export const PeekOnHover: Story = {
     await expect(args.onPeek).toHaveBeenLastCalledWith(3);
     await userEvent.unhover(mo);
     await expect(args.onPeek).toHaveBeenLastCalledWith(null);
+  },
+};
+
+/** Who suspects whom, by name; your own card stands out and isn't a button. */
+export const WhoSuspectsWhom: Story = {
+  args: { activeId: null, nextId: null, suspectedBy: { 3: [1, 2], 4: [1, 3, 5, 6] } },
+  play: async ({ canvas }) => {
+    await waitFor(() => expect(canvas.getByText("suspected by you and Pip")).toBeVisible());
+    await waitFor(() => expect(canvas.getByText("suspected by Pip, Mo and 2 more")).toBeVisible());
+    await expect(canvas.getByText("you")).toBeVisible();
   },
 };
 
@@ -154,7 +164,7 @@ export const AfterTheVote: Story = {
 };
 
 export const HostRow: Story = {
-  args: { players: playersFixture, youId: null, layout: "row", suspectedBy: { 3: 2 } },
+  args: { players: playersFixture, youId: null, layout: "row", suspectedBy: { 3: [1, 2] } },
   decorators: [
     (Story) => (
       <div className="w-[60rem]">
@@ -163,8 +173,8 @@ export const HostRow: Story = {
     ),
   ],
   play: async ({ canvas }) => {
-    await expect(canvas.queryByText("(you)")).toBeNull();
+    await expect(canvas.queryByText("you")).toBeNull();
     await expect(canvas.queryByRole("button", { name: /suspicious \(/ })).toBeNull();
-    await waitFor(() => expect(canvas.getByText("suspected by 2")).toBeVisible());
+    await waitFor(() => expect(canvas.getByText("suspected by Pip and Juno")).toBeVisible());
   },
 };

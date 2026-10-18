@@ -150,7 +150,10 @@ export function RoomHostView({ state, revealCode = false, colours = "free", home
                   )}
                   {spotlit && (
                     <div className="absolute top-3 left-3">
-                      <RoomSpotlightChip player={spotlit} />
+                      <RoomSpotlightChip
+                        player={spotlit}
+                        onClear={spotlight.pinned === spotlit.id ? () => spotlight.pin(null) : undefined}
+                      />
                     </div>
                   )}
                   <div className="absolute right-3 bottom-3 max-w-[60%]">

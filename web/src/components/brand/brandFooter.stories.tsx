@@ -29,3 +29,13 @@ export const Default: Story = {
     }
   },
 };
+
+/** At The End, where the donate card already asks: the maker and where it runs, without the ask. */
+export const WithoutTheAsk: Story = {
+  args: { support: false },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("link", { name: "Joris van der Burgh" })).toBeVisible();
+    await expect(canvas.queryByRole("link", { name: "Help out on GitHub" })).toBeNull();
+    await expect(canvas.queryByRole("link", { name: "donate to our friends in Ukraine" })).toBeNull();
+  },
+};

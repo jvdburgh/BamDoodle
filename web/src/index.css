@@ -85,11 +85,17 @@
     }
   }
 
+  /* Fades out as it falls: on a phone the page is taller than the screen, and confetti that stayed where it landed
+     would sit on top of what's below the podium. */
   @keyframes confetti {
     from {
       transform: translateY(-10vh) rotate(0deg);
     }
+    75% {
+      opacity: 1;
+    }
     to {
+      opacity: 0;
       transform: translateY(110vh) rotate(540deg);
     }
   }

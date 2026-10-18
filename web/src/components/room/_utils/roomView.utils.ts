@@ -76,10 +76,11 @@ function turnCount(round: RoundView | null): number {
 }
 
 /** How many players suspect each player right now. */
-function suspectedBy(round: RoundView | null): Record<number, number> {
-  const counts: Record<number, number> = {};
-  for (const { suspectId } of round?.suspicions ?? []) counts[suspectId] = (counts[suspectId] ?? 0) + 1;
-  return counts;
+/** Who suspects each player right now: suspect → the players who marked them (public while drawing). */
+function suspectedBy(round: RoundView | null): Record<number, number[]> {
+  const by: Record<number, number[]> = {};
+  for (const { playerId, suspectId } of round?.suspicions ?? []) (by[suspectId] ??= []).push(playerId);
+  return by;
 }
 
 /** Votes as voter → suspect. */

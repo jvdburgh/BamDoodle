@@ -110,7 +110,7 @@ export const Bamboozler: Story = {
     // Only on their own screen, only on their own face.
     const players = canvas.getByRole("list", { name: "Players" });
     await waitFor(() => expect(wornHats(players)).toHaveLength(1));
-    await expect(wornHats(canvas.getByText("(you)").closest("li")!)).toHaveLength(1);
+    await expect(wornHats(canvas.getByText("you").closest("li")!)).toHaveLength(1);
   },
 };
 
@@ -235,7 +235,7 @@ export const ShadesPerPlayer: Story = {
 export const Laptop: Story = {
   args: { width: "1100px" },
   play: async ({ canvas }) => {
-    await waitFor(() => expect(canvas.getByText("(you)")).toBeVisible());
+    await waitFor(() => expect(canvas.getByText("you")).toBeVisible());
     await expect(canvas.getByRole("status", { name: "Round progress" })).toHaveTextContent("Pip’s turn");
   },
 };

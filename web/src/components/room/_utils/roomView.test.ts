@@ -81,13 +81,13 @@ describe("RoomViewUtils turns", () => {
 });
 
 describe("RoomViewUtils.suspectedBy and votes", () => {
-  it("counts how many suspect each player", () => {
+  it("says who suspects each player", () => {
     const suspicions = [
       { playerId: 1, suspectId: 3 },
       { playerId: 2, suspectId: 3 },
       { playerId: 3, suspectId: 1 },
     ];
-    expect(RoomViewUtils.suspectedBy(round({ suspicions }))).toEqual({ 3: 2, 1: 1 });
+    expect(RoomViewUtils.suspectedBy(round({ suspicions }))).toEqual({ 3: [1, 2], 1: [3] });
   });
 
   it("maps votes by voter", () => {
