@@ -69,6 +69,7 @@ Modern, a bit mysterious, colourful. It should feel like a hand-made little game
 - No default component-kit look (generic shadcn cards, Inter, purple gradients). Tailwind with our own components
   first; a headless library only where accessibility is hard (dialogs, menus).
 - The bamboozler's own logo moves (`BrandLogo sly`): the coat's collar goes up and the hat's colour wedges swirl,
-  then settle. The logo is inlined from `/logo.svg` for that, never redrawn.
-- No unlockables, no dark patterns. The only promotion is the start page's small footer: the GitHub repo to help
-  out, and a "Donate to United24" link (Ukraine's official fundraising platform).
+  twice as each round starts, then rest. The logo is inlined from `/logo.svg` for that, never redrawn.
+- No unlockables, no dark patterns. The only promotion is the start page's small footer, in the maintainer's voice:
+  made in the Netherlands, hosted in the EU, free and open source; contribute on GitHub, and donate to our friends in
+  Ukraine (United24, Ukraine's official fundraising platform).

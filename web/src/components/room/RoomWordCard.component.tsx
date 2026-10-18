@@ -34,7 +34,7 @@ export function RoomWordCard({ category, word, view }: RoomWordCardProps) {
         <BrandScribble
           shape="underline"
           seed={line.length}
-          className={`absolute inset-x-0 -bottom-2.5 h-3 w-full ${view === "artist" ? "text-berry" : "text-white/40"}`}
+          className={`absolute inset-x-0 -bottom-2.5 h-3 w-full ${view === "bamboozler" ? "text-white/40" : "text-berry"}`}
         />
       </span>
     </p>

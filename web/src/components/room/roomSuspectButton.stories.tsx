@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
-import { expect, userEvent } from "storybook/test";
+import { expect, userEvent, waitFor } from "storybook/test";
 import { RoomSuspectButton } from "./RoomSuspectButton.component";
 
 const meta = {
@@ -41,5 +41,15 @@ export const Suspected: Story = {
       "aria-pressed",
       "true",
     );
+  },
+};
+
+export const LabelAfterATap: Story = {
+  play: async ({ canvas }) => {
+    const label = canvas.getByText("Mark as suspicious");
+    await expect(label).toHaveClass("opacity-0");
+    await userEvent.click(canvas.getByRole("button", { name: "Mark as suspicious (Juno)" }));
+    await expect(canvas.getByText("Marked as suspicious")).toHaveClass("opacity-100");
+    await waitFor(() => expect(canvas.getByText("Marked as suspicious")).toHaveClass("opacity-0"), { timeout: 3000 });
   },
 };

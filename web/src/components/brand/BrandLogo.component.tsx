@@ -5,8 +5,8 @@ type BrandLogoProps = {
   /** Makes the logo a link, usually home. */
   href?: string;
   /**
-   * The bamboozler's own screen: the coat's collar goes up and the hat's colours swirl, a static badge with reduced
-   * motion. The logo is inlined for that (it's an `<img>` otherwise), so its parts can move.
+   * The bamboozler's own screen: the coat's collar goes up and the hat's colours swirl, twice per mount (key it by
+   * round), a quiet static badge with reduced motion. The logo is inlined for that (it's an `<img>` otherwise), so its parts can move.
    */
   sly?: boolean;
 };
@@ -32,7 +32,7 @@ function useLogoMarkup(enabled: boolean, idPrefix: string) {
 }
 
 export function BrandLogo({ className, href, sly = false }: BrandLogoProps) {
-  const idPrefix = useId().replace(/:/g, "");
+  const idPrefix = useId();
   const markup = useLogoMarkup(sly, idPrefix);
   const size = href || sly ? "size-full" : className;
   const image = <img src="/logo.svg" alt="BamDoodle" className={size} />;
@@ -53,7 +53,7 @@ export function BrandLogo({ className, href, sly = false }: BrandLogoProps) {
       )}
       <span
         aria-hidden="true"
-        className="absolute -right-1 -bottom-1 hidden size-[38%] place-items-center rounded-full bg-sun font-display text-[0.6em] leading-none text-night ring-2 ring-night motion-reduce:grid"
+        className="absolute -right-1 -bottom-1 hidden size-[38%] place-items-center rounded-full bg-night-soft font-display text-[0.6em] leading-none text-white/70 ring-2 ring-night motion-reduce:grid"
       >
         ?
       </span>

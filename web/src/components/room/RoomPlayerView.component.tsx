@@ -179,7 +179,12 @@ export function RoomPlayerView({
       <div className="mx-auto flex max-w-[110rem] flex-col gap-3 p-3 @5xl/room:h-svh @5xl/room:gap-4 @5xl/room:px-5 @5xl/room:py-4">
         <header className="grid grid-cols-[auto_1fr_auto] items-center gap-x-2 @5xl/room:grid-cols-[1fr_auto_1fr]">
           <div className="flex items-center gap-2">
-            <BrandLogo href={home} sly={youAreBamboozler && !result} className="size-9 @5xl/room:size-11" />
+            <BrandLogo
+              key={view.roundNumber}
+              href={home}
+              sly={youAreBamboozler && !result}
+              className="size-9 @5xl/room:size-11"
+            />
             <div className="hidden leading-tight @2xl/room:block">
               <p className="font-display text-xl">BamDoodle</p>
               <BrandTagline className="hidden text-sm @5xl/room:block" />

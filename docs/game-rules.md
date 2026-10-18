@@ -26,8 +26,8 @@ goal for now.
 - **Artists** see the category and the secret word.
 - **The bamboozler** sees only the category. They draw along, trying to look like they know the word. Their screen
   says so without shouting: a small "You're the bamboozler" where an artist sees the word, and the logo in the corner
-  raises its collar and swirls its hat (a static badge with reduced motion), so it's clear to the one holding the
-  phone and easy to miss across the table.
+  raises its collar and swirls its hat twice as each round starts (a quiet static badge with reduced motion), so
+  it's clear to the one holding the phone and easy to miss across the table.
 - Exactly one bamboozler per round, picked at random by the server. Nobody but the server knows who it is
   until the reveal.
 
@@ -86,7 +86,7 @@ Everyone can use every colour: there is nothing to unlock, ever. To still see wh
 - **Mini-maps:** next to each player's name, a small canvas shows only *their* strokes. Always visible, on phones too.
 - **Pen tag:** a small chip with the drawer's avatar and name rides on their pen tip on every screen.
 - **Magnifying glass (spotlight):** click a player (or their mini-map) to highlight their strokes on the main
-  canvas while the rest fades back to grey. Click them again to show everyone. Hovering a player with a mouse
+  canvas while the rest fades back to grey. Click them again (or press Esc) to show everyone. Hovering a player with a mouse
   previews their spotlight without pinning it.
 
 **In the lab only** (`/lab`, not a server setting yet): the room's creator picks **Any colour** (everyone uses every
