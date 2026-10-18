@@ -48,9 +48,9 @@ describe.skipIf(!url)("RoomConnection against the real server", () => {
 
     sam.send({
       type: "updateSettings",
-      settings: { mode: "oneStroke", laps: 1, turnSeconds: 20, rounds: 1, language: "en", adults: false },
+      settings: { ...sam.getState().room!.settings, turnsPerPlayer: 1, rounds: 1 },
     });
-    await until(screen, (state) => state.room?.settings.laps === 1);
+    await until(screen, (state) => state.room?.settings.turnsPerPlayer === 1);
 
     sam.send({ type: "startRound" });
     const players = [sam, noor, jip];

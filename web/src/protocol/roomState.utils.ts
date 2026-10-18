@@ -111,7 +111,7 @@ export const RoomStateUtils = {
             ...round,
             activePlayerId: message.playerId,
             turnRemainingMs: message.durationMs,
-            lap: message.lap,
+            turn: message.turn,
           })),
           timers: { ...state.timers, turnEndsAt: now + message.durationMs },
         };

@@ -4,9 +4,9 @@ import type { TurnMode } from "./TurnMode";
 
 export type RoomSettings = { mode: TurnMode, 
 /**
- * Laps around the table in one-stroke mode (timed turns always go around twice).
+ * How often each player draws in one-stroke mode, 1 to 5 (timed turns: always twice).
  */
-laps: number, 
+turnsPerPlayer: number, 
 /**
  * Length of a timed turn: 10, 20, 30 or 60.
  */
@@ -16,6 +16,6 @@ turnSeconds: number,
  */
 rounds: number, language: Language, 
 /**
- * Mix the adults pack (18+) into the words.
+ * The word categories in play, by name, in `language`. Adult (18+) categories are only in play when picked.
  */
-adults: boolean, };
+categories: Array<string>, };

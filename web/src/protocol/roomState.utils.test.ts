@@ -11,7 +11,15 @@ const lobby: RoomSnapshot = {
     { id: 1, name: "Sam", score: 0, connected: true },
     { id: 2, name: "Noor", score: 0, connected: true },
   ],
-  settings: { mode: "oneStroke", laps: 3, turnSeconds: 20, rounds: 5, language: "en", adults: false },
+  settings: {
+    mode: "oneStroke",
+    turnsPerPlayer: 3,
+    turnSeconds: 20,
+    rounds: 5,
+    language: "en",
+    categories: ["Animals"],
+  },
+  wordCategories: [{ language: "en", name: "Animals", adult: false, words: 12 }],
   phase: { phase: "lobby" },
 };
 
@@ -24,8 +32,8 @@ const round: RoundView = {
   turnOrder: [2, 1],
   activePlayerId: 2,
   turnRemainingMs: 15_000,
-  lap: 1,
-  laps: 3,
+  turn: 1,
+  turnsPerPlayer: 3,
   strokes: [],
   suspicions: [],
   voted: [],
@@ -68,9 +76,9 @@ describe("RoomStateUtils.apply", () => {
     const state = play([joined, { type: "roundStarted", round }], undefined, 5_000);
     expect(state.timers).toEqual({ turnEndsAt: 20_000, votingEndsAt: null, guessEndsAt: null });
 
-    const next = RoomStateUtils.apply(state, { type: "turnStarted", playerId: 1, durationMs: 15_000, lap: 2 }, 21_000);
+    const next = RoomStateUtils.apply(state, { type: "turnStarted", playerId: 1, durationMs: 15_000, turn: 2 }, 21_000);
     expect(next.timers.turnEndsAt).toBe(36_000);
-    expect(RoomStateUtils.round(next)).toMatchObject({ activePlayerId: 1, lap: 2 });
+    expect(RoomStateUtils.round(next)).toMatchObject({ activePlayerId: 1, turn: 2 });
   });
 
   it("keeps everyone's public suspicions", () => {

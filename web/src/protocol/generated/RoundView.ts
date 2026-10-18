@@ -20,9 +20,9 @@ word: string | null,
  */
 role: Role | null, turnOrder: Array<number>, activePlayerId: number | null, turnRemainingMs: number, 
 /**
- * The lap being drawn, from 1 to `laps`.
+ * The turn being drawn, from 1 to `turns_per_player`.
  */
-lap: number, laps: number, strokes: Array<StrokeView>, 
+turn: number, turnsPerPlayer: number, strokes: Array<StrokeView>, 
 /**
  * Who suspects whom right now. Public.
  */

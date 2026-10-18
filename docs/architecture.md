@@ -50,7 +50,8 @@ All live state lives in the process ([decision 0002](decisions/0002-in-memory-st
   back the same seat (and score) after a refresh or a dropped connection. Nickname and avatar are client-side.
 - **Cleanup:** a player who is gone between rounds loses their seat after 2 minutes; a room with no players
   connected closes after 5 minutes (30 seconds if nobody ever joined it). Host screens don't keep a room open.
-- **Words** come from `words/<language>/<pack>.toml`, loaded at startup (`WORDS_DIR`).
+- **Words** come from `words/<language>/<pack>.toml`, loaded at startup (`WORDS_DIR`). Players pick categories, not
+  files: the room snapshot lists every category (`wordCategories`), and `settings.categories` says which are in play.
 - **Limits** are all in `server/src/limits.rs`.
 
 The catch: a deploy or crash ends all running games. At hobby scale that's acceptable; deploy when it's quiet.
@@ -64,12 +65,12 @@ The catch: a deploy or crash ends all running games. At hobby scale that's accep
 - **The first message picks the room:** `createRoom { name }` (you become host), `joinRoom { code, name,
   sessionToken? }` or `watchRoom { code }` for a host screen. The answer is `joined` with your player id, your
   session token and a snapshot of the room as you may see it, or `rejected` with a reason.
-- **A game and its rounds:** the host can `updateSettings` between rounds (mode, laps, seconds per turn, rounds,
+- **A game and its rounds:** the host can `updateSettings` between rounds (mode, turns per player, seconds per turn, rounds,
   words) and sends `startRound`; the first round of a game comes with `gameStarted` (scores from zero). Each device
   gets its own `roundStarted` (artists with the word, the bamboozler and host screens without). The active player
   sends `beginStroke`, `extendStroke` (batches of points) and `endStroke`; everyone gets `strokeBegun`,
-  `strokeExtended`, `strokeEnded` and `turnStarted` (with the lap). While drawing, `suspect` is announced to everyone
-  as `suspicionChanged`. After the last lap comes `votingStarted`: the final `castVote` is announced as `voteCast`
+  `strokeExtended`, `strokeEnded` and `turnStarted` (with which turn it is). While drawing, `suspect` is announced to everyone
+  as `suspicionChanged`. After the last turn comes `votingStarted`: the final `castVote` is announced as `voteCast`
   with only the voter. When everyone has voted or the time is up (unsubmitted suspicions count), `revealed` names
   the bamboozler and every vote; their `guessWord` (or the guess timer) ends the round with `roundFinished`: the word,
   the guess, the awards, the scores and whether that was the last round (`gameOver`).

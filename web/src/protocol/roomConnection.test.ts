@@ -44,7 +44,15 @@ const room: RoomSnapshot = {
   code: "BKTZ",
   hostId: 1,
   players: [{ id: 1, name: "Sam", score: 0, connected: true }],
-  settings: { mode: "oneStroke", laps: 3, turnSeconds: 20, rounds: 5, language: "en", adults: false },
+  settings: {
+    mode: "oneStroke",
+    turnsPerPlayer: 3,
+    turnSeconds: 20,
+    rounds: 5,
+    language: "en",
+    categories: ["Animals"],
+  },
+  wordCategories: [{ language: "en", name: "Animals", adult: false, words: 12 }],
   phase: { phase: "lobby" },
 };
 
@@ -57,8 +65,8 @@ const round: RoundView = {
   turnOrder: [1, 2, 3],
   activePlayerId: 1,
   turnRemainingMs: 15_000,
-  lap: 1,
-  laps: 3,
+  turn: 1,
+  turnsPerPlayer: 3,
   strokes: [],
   suspicions: [],
   voted: [],

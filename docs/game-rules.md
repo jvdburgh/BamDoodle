@@ -34,11 +34,11 @@ can change the number of rounds between rounds; when that's already been reached
 ## A round
 
 1. **Lobby.** Players join with a room code or link, pick a nickname and draw or tweak their avatar while they
-   wait. The host sets up the room: mode, laps or turn length, rounds per game, words (and whether the adults pack is
-   on) and colours, then starts.
-2. **Secret.** The server picks a word from the pack and tells each player their role.
-3. **Drawing.** Players take turns on the shared canvas in a shuffled order shown on screen, for a set number of
-   laps. The player whose turn it is is highlighted, and their strokes appear live for everyone.
+   wait. The host sets up the room: mode, turns per player or turn length, rounds per game, the language and the
+   word categories to play with (Efteling, Places, Very British, …, and 18+ ones if they want), then starts.
+2. **Secret.** The server picks a word from the chosen categories and tells each player their role.
+3. **Drawing.** Players take turns on the shared canvas in a shuffled order shown on screen; each player
+   gets the same number of turns. The player whose turn it is is highlighted, and their strokes appear live for everyone.
 4. **Suspecting, while the drawing goes on.** Any time, a player can point at who they suspect, and change their mind.
    That's public and part of the fun: everyone sees "Noor thinks Jip is sketchy".
 5. **Who's sketchy?** After the last turn, everyone makes their final choice: "Who do you think didn't know the word?"
@@ -53,8 +53,8 @@ can change the number of rounds between rounds; when that's already been reached
 
 | Mode | A turn is | The host sets |
 | --- | --- | --- |
-| **One stroke each** | one stroke (press, draw, release), with a 15 second limit | laps: 1 to 5 (default 3) |
-| **Timed turns** | free drawing, any number of strokes | seconds per turn: 10, 20 (default), 30 or 60; 2 laps |
+| **One stroke each** | one stroke (press, draw, release), with a 15 second limit | turns per player: 1 to 5 (default 3) |
+| **Timed turns** | free drawing, any number of strokes | seconds per turn: 10, 20 (default), 30 or 60; 2 turns each |
 
 The server enforces the turn: strokes from someone whose turn it isn't, or after the time limit, are dropped.
 Simultaneous drawing is parked: it is hard to follow who draws what and much heavier to sync.
@@ -80,10 +80,15 @@ If playtests show this isn't enough, a fallback is one colour family per player.
 
 Split votes need no tie-break: points are per voter, not per majority.
 
-## Word packs
+## Words and categories
 
-- English and Dutch, simple and drawable, grouped into categories. See [words.md](words.md).
-- An **adults pack** (18+, innuendo and rude-but-drawable words) the host can switch on. Off by default.
+- English and Dutch, simple and drawable. See [words.md](words.md).
+- The host picks which **categories** are in play before starting: everyday ones (Animals, Food, Places, …) and
+  themed ones (Efteling, Sinterklaas, Typisch Nederlands, Lekker Nederlands, Very British, Christmas, Fairy tales,
+  Landmarks). A new room starts with every category of its language that isn't 18+, themed ones included; the
+  host narrows it down.
+- **18+ categories** (innuendo and rude-but-drawable words) are categories like any other, marked 18+ and never in
+  play unless the host picks them.
 
 ## Current defaults (revisit after playtests)
 
@@ -91,9 +96,9 @@ These are implemented in the server (`server/src/limits.rs`) and easy to change:
 
 - **Players:** 3 to start a round, at most 8 in a room. Designed for 4 to 6.
 - **Timers:** one-stroke turns 15 seconds, timed turns as set, the final vote 30 seconds, the bamboozler's guess 20
-  seconds. There's no separate round timer: laps decide how long the drawing lasts.
+  seconds. There's no separate round timer: the turns decide how long the drawing lasts.
 - **Turn order** is shuffled each round and the bamboozler is picked fully at random, so the same player can be it
-  twice in a row (any rule about who it can't be would narrow it down). Words don't repeat until the pack runs out.
+  twice in a row (any rule about who it can't be would narrow it down). Words don't repeat until the picked categories run out.
 - **Everyone votes, the bamboozler too**, so not voting doesn't give them away; their vote earns nothing. Final votes
   stay secret until the reveal; everyone sees who has voted. Suspicions during the drawing are public.
 - **The guess** is free text, forgiving about case, accents, spaces and one typo in words of five letters or more.
@@ -107,5 +112,5 @@ These are implemented in the server (`server/src/limits.rs`) and easy to change:
 ## Open questions
 
 - Does the host screen need its own controls (start the next round, kick a player), or is that the host's phone?
-- Should timed turns also let the host pick the number of laps?
+- Should timed turns also let the host pick the number of turns per player?
 - A computer-controlled bamboozler (the original pitch said "player or AI"): later, if ever.

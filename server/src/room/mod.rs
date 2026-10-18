@@ -75,9 +75,9 @@ struct Round {
     bamboozler_id: PlayerId,
     turn_order: Vec<PlayerId>,
     turn_index: usize,
-    /// Turns over so far, skipped ones included; the drawing ends at `laps × players`.
+    /// Turns over so far, skipped ones included; the drawing ends at `turns_per_player × players`.
     turns_taken: usize,
-    laps: u32,
+    turns_per_player: u32,
     turn_duration: Duration,
     turn_deadline: Instant,
     strokes: Vec<Stroke>,
@@ -114,9 +114,11 @@ pub struct Room {
 
 impl Room {
     pub fn new(code: String, words: Arc<WordLibrary>, seed: u64) -> Self {
+        let mut settings = RoomSettings::default();
+        settings.categories = words.default_categories(settings.language);
         Self {
             code,
-            settings: RoomSettings::default(),
+            settings,
             players: Vec::new(),
             host_id: None,
             next_player_id: 1,
@@ -292,6 +294,7 @@ impl Room {
             host_id: self.host_id,
             players: self.players.iter().map(summary).collect(),
             settings: self.settings.clone(),
+            word_categories: self.words.catalogue(),
             phase,
         }
     }
@@ -299,10 +302,10 @@ impl Room {
     fn update_settings(&mut self, player_id: PlayerId, settings: RoomSettings) -> Result<Outbox, RejectReason> {
         self.require_host(player_id)?;
         self.require_between_rounds()?;
-        let valid = limits::LAPS.contains(&settings.laps)
+        let valid = limits::TURNS_PER_PLAYER.contains(&settings.turns_per_player)
             && limits::TURN_SECONDS.contains(&settings.turn_seconds)
             && limits::ROUNDS.contains(&settings.rounds)
-            && self.words.has_language(settings.language);
+            && self.words.has_categories(settings.language, &settings.categories);
         if !valid {
             return Err(RejectReason::InvalidSettings);
         }
@@ -331,7 +334,7 @@ impl Room {
             .words
             .pick(
                 self.settings.language,
-                self.settings.adults,
+                &self.settings.categories,
                 &self.used_words,
                 &mut self.rng,
             )
@@ -359,10 +362,10 @@ impl Room {
         }
         self.rounds_played += 1;
 
-        let (laps, turn_duration) = match self.settings.mode {
-            TurnMode::OneStroke => (self.settings.laps, limits::ONE_STROKE_TURN),
+        let (turns_per_player, turn_duration) = match self.settings.mode {
+            TurnMode::OneStroke => (self.settings.turns_per_player, limits::ONE_STROKE_TURN),
             TurnMode::Timed => (
-                limits::TIMED_LAPS,
+                limits::TIMED_TURNS_PER_PLAYER,
                 Duration::from_secs(self.settings.turn_seconds.into()),
             ),
         };
@@ -374,7 +377,7 @@ impl Room {
             turn_order,
             turn_index: 0,
             turns_taken: 0,
-            laps,
+            turns_per_player,
             turn_duration,
             turn_deadline: now + turn_duration,
             strokes: Vec::new(),
@@ -555,7 +558,7 @@ impl Room {
         Ok(self.finish(Some(guess), now))
     }
 
-    /// Ends the current turn: the next connected player draws, or after the last lap everyone votes.
+    /// Ends the current turn: the next connected player draws, or after the last turn everyone votes.
     fn next_turn(&mut self, now: Instant) -> Outbox {
         let connected: HashSet<PlayerId> = self
             .players
@@ -569,7 +572,7 @@ impl Room {
         let mut outbox = finish_drawing_stroke(round);
 
         let count = round.turn_order.len();
-        let total = count * round.laps as usize;
+        let total = count * round.turns_per_player as usize;
         round.turns_taken += 1;
         while round.turns_taken < total && !connected.contains(&round.turn_order[round.turns_taken % count]) {
             round.turns_taken += 1;
@@ -587,7 +590,7 @@ impl Room {
             ServerMessage::TurnStarted {
                 player_id: round.turn_order[round.turn_index],
                 duration_ms: millis(round.turn_duration),
-                lap: lap_of(round),
+                turn: turn_of(round),
             },
         ));
         outbox
@@ -768,7 +771,7 @@ impl Room {
             }
             Viewer::Player(_) => (None, None, None),
         };
-        let drawing = round.turns_taken < round.turn_order.len() * round.laps as usize;
+        let drawing = round.turns_taken < round.turn_order.len() * round.turns_per_player as usize;
         RoundView {
             number: round.number,
             rounds: self.settings.rounds,
@@ -782,8 +785,8 @@ impl Room {
             } else {
                 0
             },
-            lap: lap_of(round),
-            laps: round.laps,
+            turn: turn_of(round),
+            turns_per_player: round.turns_per_player,
             strokes: round.strokes.iter().map(stroke_view).collect(),
             suspicions: round.suspicions.clone(),
             voted: round.votes.iter().map(|vote| vote.voter_id).collect(),
@@ -827,10 +830,10 @@ fn score(round: &Round, guess_correct: bool) -> Vec<Award> {
     awards
 }
 
-/// The lap being drawn, 1-based and never past the last one.
-fn lap_of(round: &Round) -> u32 {
-    let lap = round.turns_taken / round.turn_order.len() + 1;
-    u32::try_from(lap).unwrap_or(u32::MAX).min(round.laps)
+/// The turn being drawn, 1-based and never past the last one.
+fn turn_of(round: &Round) -> u32 {
+    let turn = round.turns_taken / round.turn_order.len() + 1;
+    u32::try_from(turn).unwrap_or(u32::MAX).min(round.turns_per_player)
 }
 
 fn has_voted(round: &Round, player_id: PlayerId) -> bool {

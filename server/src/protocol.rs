@@ -19,7 +19,7 @@ pub struct Point(pub f32, pub f32, pub f32);
 #[serde(rename_all = "camelCase")]
 #[ts(export)]
 pub enum TurnMode {
-    /// One stroke per turn, for a set number of laps.
+    /// One stroke per turn, a set number of turns per player.
     OneStroke,
     /// A set number of seconds of free drawing per turn.
     Timed,
@@ -55,26 +55,27 @@ pub enum Role {
 #[ts(export)]
 pub struct RoomSettings {
     pub mode: TurnMode,
-    /// Laps around the table in one-stroke mode (timed turns always go around twice).
-    pub laps: u32,
+    /// How often each player draws in one-stroke mode, 1 to 5 (timed turns: always twice).
+    pub turns_per_player: u32,
     /// Length of a timed turn: 10, 20, 30 or 60.
     pub turn_seconds: u32,
     /// Rounds in a game; after the last one comes the final scoreboard.
     pub rounds: u32,
     pub language: Language,
-    /// Mix the adults pack (18+) into the words.
-    pub adults: bool,
+    /// The word categories in play, by name, in `language`. Adult (18+) categories are only in play when picked.
+    pub categories: Vec<String>,
 }
 
 impl Default for RoomSettings {
+    /// No categories: a new room fills in its language's everyday ones (`Room::new`).
     fn default() -> Self {
         Self {
             mode: TurnMode::OneStroke,
-            laps: 3,
+            turns_per_player: 3,
             turn_seconds: 20,
             rounds: 5,
             language: Language::En,
-            adults: false,
+            categories: Vec::new(),
         }
     }
 }
@@ -187,7 +188,7 @@ pub enum ServerMessage {
     TurnStarted {
         player_id: PlayerId,
         duration_ms: u32,
-        lap: u32,
+        turn: u32,
     },
     #[serde(rename_all = "camelCase")]
     StrokeBegun {
@@ -275,7 +276,20 @@ pub struct RoomSnapshot {
     pub host_id: Option<PlayerId>,
     pub players: Vec<PlayerSummary>,
     pub settings: RoomSettings,
+    /// Every category the host can pick from, in every language.
+    pub word_categories: Vec<WordCategory>,
     pub phase: PhaseView,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct WordCategory {
+    pub language: Language,
+    pub name: String,
+    /// 18+: never picked unless the host picks it.
+    pub adult: bool,
+    pub words: u32,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
@@ -319,9 +333,9 @@ pub struct RoundView {
     pub turn_order: Vec<PlayerId>,
     pub active_player_id: Option<PlayerId>,
     pub turn_remaining_ms: u32,
-    /// The lap being drawn, from 1 to `laps`.
-    pub lap: u32,
-    pub laps: u32,
+    /// The turn being drawn, from 1 to `turns_per_player`.
+    pub turn: u32,
+    pub turns_per_player: u32,
     pub strokes: Vec<StrokeView>,
     /// Who suspects whom right now. Public.
     pub suspicions: Vec<Suspicion>,
@@ -429,12 +443,12 @@ mod tests {
         let message = ServerMessage::TurnStarted {
             player_id: 2,
             duration_ms: 10_000,
-            lap: 1,
+            turn: 1,
         };
         let json = serde_json::to_value(&message).unwrap();
         assert_eq!(
             json,
-            serde_json::json!({ "type": "turnStarted", "playerId": 2, "durationMs": 10000, "lap": 1 })
+            serde_json::json!({ "type": "turnStarted", "playerId": 2, "durationMs": 10000, "turn": 1 })
         );
     }
 
@@ -444,7 +458,7 @@ mod tests {
         assert_eq!(
             json,
             serde_json::json!({
-                "mode": "oneStroke", "laps": 3, "turnSeconds": 20, "rounds": 5, "language": "en", "adults": false
+                "mode": "oneStroke", "turnsPerPlayer": 3, "turnSeconds": 20, "rounds": 5, "language": "en", "categories": []
             })
         );
     }

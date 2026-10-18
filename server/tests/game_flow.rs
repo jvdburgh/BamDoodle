@@ -160,7 +160,7 @@ async fn a_whole_round_with_three_players_and_a_host_screen() {
         .await;
     assert_eq!(suspicion, (artists[0], Some(bamboozler)));
 
-    // Three laps of one stroke each, then the final vote.
+    // Three turns each of one stroke, then the final vote.
     let mut active = active;
     let mut strokes = 0;
     loop {

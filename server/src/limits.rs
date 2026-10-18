@@ -8,8 +8,8 @@ pub const MAX_ROOMS: usize = 500;
 pub const NAME_MAX_CHARS: usize = 20;
 pub const GUESS_MAX_CHARS: usize = 40;
 
-pub const LAPS: std::ops::RangeInclusive<u32> = 1..=5;
-pub const TIMED_LAPS: u32 = 2;
+pub const TURNS_PER_PLAYER: std::ops::RangeInclusive<u32> = 1..=5;
+pub const TIMED_TURNS_PER_PLAYER: u32 = 2;
 pub const TURN_SECONDS: [u32; 4] = [10, 20, 30, 60];
 pub const ROUNDS: std::ops::RangeInclusive<u32> = 1..=10;
 pub const ONE_STROKE_TURN: Duration = Duration::from_secs(15);

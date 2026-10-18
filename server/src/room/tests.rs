@@ -28,7 +28,11 @@ struct Game {
 
 impl Game {
     fn with_players(count: usize) -> Self {
-        let mut room = Room::new("BKTZ".into(), library(), 7);
+        Self::with_library(count, library())
+    }
+
+    fn with_library(count: usize, words: Arc<WordLibrary>) -> Self {
+        let mut room = Room::new("BKTZ".into(), words, 7);
         let names = ["Sam", "Noor", "Jip", "Max", "Ada", "Bo", "Cas", "Dex"];
         let seats = names[..count]
             .iter()
@@ -289,11 +293,11 @@ mod settings {
         let mut game = Game::with_players(3);
         let settings = RoomSettings {
             mode: TurnMode::Timed,
-            laps: 2,
+            turns_per_player: 2,
             turn_seconds: 30,
             rounds: 3,
             language: Language::Nl,
-            adults: false,
+            categories: vec!["Dingen".into()],
         };
         let noor = game.seats[1].player_id;
         let outbox = game.send(
@@ -322,24 +326,36 @@ mod settings {
         let mut game = Game::with_players(3);
         for settings in [
             RoomSettings {
-                laps: 0,
-                ..RoomSettings::default()
+                turns_per_player: 0,
+                ..game.room.settings.clone()
             },
             RoomSettings {
-                laps: 6,
-                ..RoomSettings::default()
+                turns_per_player: 6,
+                ..game.room.settings.clone()
             },
             RoomSettings {
                 turn_seconds: 15,
-                ..RoomSettings::default()
+                ..game.room.settings.clone()
             },
             RoomSettings {
                 rounds: 0,
-                ..RoomSettings::default()
+                ..game.room.settings.clone()
             },
             RoomSettings {
                 rounds: 11,
-                ..RoomSettings::default()
+                ..game.room.settings.clone()
+            },
+            RoomSettings {
+                categories: Vec::new(),
+                ..game.room.settings.clone()
+            },
+            RoomSettings {
+                categories: vec!["Dingen".into()],
+                ..game.room.settings.clone()
+            },
+            RoomSettings {
+                categories: vec!["Things".into(), "Things".into()],
+                ..game.room.settings.clone()
             },
         ] {
             let outbox = game.send(game.host(), ClientMessage::UpdateSettings { settings });
@@ -408,7 +424,10 @@ mod starting {
                 Audience::Everyone => panic!("the round start is never broadcast"),
             }
             assert_eq!(view.category, "Things");
-            assert_eq!((view.number, view.rounds, view.lap, view.laps), (1, 5, 1, 3));
+            assert_eq!(
+                (view.number, view.rounds, view.turn, view.turns_per_player),
+                (1, 5, 1, 3)
+            );
             assert_eq!(view.active_player_id, Some(view.turn_order[0]));
         }
     }
@@ -533,24 +552,24 @@ mod drawing {
         assert_ne!(game.active(), first);
         assert!(has(&outbox, |message| matches!(
             message,
-            ServerMessage::TurnStarted { player_id, lap: 1, .. } if *player_id == game.active()
+            ServerMessage::TurnStarted { player_id, turn: 1, .. } if *player_id == game.active()
         )));
     }
 
     #[test]
-    fn the_drawing_lasts_the_chosen_laps_then_everyone_votes() {
+    fn the_drawing_lasts_the_chosen_turns_then_everyone_votes() {
         let mut game = Game::with_players(3);
-        game.room.settings.laps = 2;
+        game.room.settings.turns_per_player = 2;
         game.send(game.host(), ClientMessage::StartRound);
-        let mut laps_seen = Vec::new();
+        let mut turns_seen = Vec::new();
         for _ in 0..5 {
             let outbox = game.draw_a_stroke();
-            laps_seen.extend(outbox.iter().filter_map(|(_, message)| match message {
-                ServerMessage::TurnStarted { lap, .. } => Some(*lap),
+            turns_seen.extend(outbox.iter().filter_map(|(_, message)| match message {
+                ServerMessage::TurnStarted { turn, .. } => Some(*turn),
                 _ => None,
             }));
         }
-        assert_eq!(laps_seen, vec![1, 1, 2, 2, 2]);
+        assert_eq!(turns_seen, vec![1, 1, 2, 2, 2]);
         assert!(matches!(game.room.phase, Phase::Drawing(_)));
 
         let outbox = game.draw_a_stroke();
@@ -563,7 +582,7 @@ mod drawing {
     }
 
     #[test]
-    fn timed_turns_last_the_chosen_seconds_for_two_laps() {
+    fn timed_turns_last_the_chosen_seconds_twice_each() {
         let mut game = Game::with_players(3);
         game.room.settings.mode = TurnMode::Timed;
         game.room.settings.turn_seconds = 30;
@@ -671,7 +690,7 @@ mod drawing {
     #[test]
     fn a_disconnected_player_is_skipped_and_their_turn_still_counts() {
         let mut game = Game::with_players(3);
-        game.room.settings.laps = 1;
+        game.room.settings.turns_per_player = 1;
         game.send(game.host(), ClientMessage::StartRound);
         let second = game.round().turn_order[1];
         game.room.disconnect(second, game.now);
@@ -1113,7 +1132,7 @@ mod edge_cases {
 
         let settings = RoomSettings {
             rounds: 1,
-            ..RoomSettings::default()
+            ..game.room.settings.clone()
         };
         game.send(game.host(), ClientMessage::UpdateSettings { settings });
         let outbox = game.send(game.host(), ClientMessage::StartRound);
@@ -1127,7 +1146,7 @@ mod edge_cases {
     #[test]
     fn a_drawer_dropping_on_the_last_turn_starts_the_vote() {
         let mut game = Game::with_players(3);
-        game.room.settings.laps = 1;
+        game.room.settings.turns_per_player = 1;
         game.send(game.host(), ClientMessage::StartRound);
         game.draw_a_stroke();
         game.draw_a_stroke();
@@ -1139,5 +1158,77 @@ mod edge_cases {
             ServerMessage::VotingStarted { .. }
         )));
         assert!(matches!(game.room.phase, Phase::Voting { .. }));
+    }
+}
+
+mod categories {
+    use super::*;
+
+    fn library_with_adults() -> Arc<WordLibrary> {
+        Arc::new(WordLibrary::new(vec![
+            WordPack {
+                language: Language::En,
+                adult: false,
+                categories: BTreeMap::from([
+                    ("Animals".into(), vec!["owl".into()]),
+                    ("Food".into(), vec!["pizza".into()]),
+                ]),
+            },
+            WordPack {
+                language: Language::En,
+                adult: true,
+                categories: BTreeMap::from([("After dark".into(), vec!["hangover".into()])]),
+            },
+        ]))
+    }
+
+    fn room_with(categories: &[&str]) -> Game {
+        let mut game = Game::with_library(3, library_with_adults());
+        let settings = RoomSettings {
+            categories: categories.iter().map(|name| name.to_string()).collect(),
+            ..game.room.settings.clone()
+        };
+        let outbox = game.send(game.host(), ClientMessage::UpdateSettings { settings });
+        assert!(rejected(&outbox).is_none());
+        game
+    }
+
+    #[test]
+    fn a_new_room_plays_its_languages_everyday_categories_and_lists_them_all() {
+        let room = Room::new("BKTZ".into(), library_with_adults(), 3);
+        assert_eq!(
+            room.settings.categories,
+            vec!["Animals".to_string(), "Food".to_string()]
+        );
+
+        let snapshot = room.snapshot(Viewer::Screen, Instant::now());
+        let names: Vec<(&str, bool)> = snapshot
+            .word_categories
+            .iter()
+            .map(|category| (category.name.as_str(), category.adult))
+            .collect();
+        assert_eq!(names, vec![("Animals", false), ("Food", false), ("After dark", true)]);
+    }
+
+    #[test]
+    fn the_word_comes_from_the_picked_categories() {
+        let mut game = room_with(&["Food"]);
+        game.send(game.host(), ClientMessage::StartRound);
+        assert_eq!(
+            (game.round().category.as_str(), game.round().word.as_str()),
+            ("Food", "pizza")
+        );
+    }
+
+    #[test]
+    fn adult_words_only_when_their_category_is_picked() {
+        for _ in 0..5 {
+            let mut game = room_with(&["Animals", "Food"]);
+            game.send(game.host(), ClientMessage::StartRound);
+            assert_ne!(game.round().category, "After dark");
+        }
+        let mut game = room_with(&["After dark"]);
+        game.send(game.host(), ClientMessage::StartRound);
+        assert_eq!(game.round().word, "hangover");
     }
 }
