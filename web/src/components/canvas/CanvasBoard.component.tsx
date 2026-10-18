@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useRef, type PointerEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, type ReactNode } from "react";
 import { useCanvasSize } from "@/components/canvas/_hooks/canvasSize.hook";
 import { useFrame } from "@/components/canvas/_hooks/frame.hook";
+import { usePointerStroke } from "@/components/canvas/_hooks/pointerStroke.hook";
 import type { Stroke } from "@/components/canvas/_types/stroke.types";
-import { CanvasUtils } from "@/components/canvas/_utils/canvas.utils";
 import type { Drawing } from "@/components/canvas/_utils/drawing.utils";
 
 const FADED_ALPHA = 0.14;
@@ -39,7 +39,6 @@ export function CanvasBoard({
 }: CanvasBoardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const tagRef = useRef<HTMLDivElement>(null);
-  const pointerId = useRef<number | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const halo = useRef<string | null>(null);
 
@@ -97,48 +96,27 @@ export function CanvasBoard({
   useEffect(() => drawing.subscribe(schedule), [drawing, schedule]);
   useEffect(schedule, [schedule, order, spotlightId]);
 
+  const { handlers, isDrawing, stop } = usePointerStroke({
+    enabled: activePlayerId !== null,
+    onBegin: (point, hasPressure) => {
+      if (activePlayerId) drawing.begin({ playerId: activePlayerId, color, size: brushSize, hasPressure }, point);
+    },
+    onExtend: (points) => drawing.extend(points),
+    onEnd: () => {
+      const stroke = drawing.end();
+      if (stroke) onStrokeEnd?.(stroke);
+    },
+  });
+
   useEffect(
     () => () => {
       // The turn moved on mid-stroke: keep what was drawn so far, for the player who drew it.
-      if (pointerId.current === null) return;
-      pointerId.current = null;
+      if (!isDrawing()) return;
+      stop();
       drawing.end();
     },
-    [activePlayerId, drawing],
+    [activePlayerId, drawing, isDrawing, stop],
   );
-
-  const onPointerDown = (event: PointerEvent<HTMLCanvasElement>) => {
-    if (!activePlayerId || pointerId.current !== null) return;
-    if (event.pointerType === "mouse" && event.button !== 0) return;
-    event.preventDefault();
-    try {
-      event.currentTarget.setPointerCapture(event.pointerId);
-    } catch {
-      // Synthetic events in tests have no active pointer to capture.
-    }
-    pointerId.current = event.pointerId;
-    const box = event.currentTarget.getBoundingClientRect();
-    drawing.begin(
-      { playerId: activePlayerId, color, size: brushSize, hasPressure: event.pointerType === "pen" },
-      CanvasUtils.normalise(event.clientX, event.clientY, event.pressure, box),
-    );
-  };
-
-  const onPointerMove = (event: PointerEvent<HTMLCanvasElement>) => {
-    if (event.pointerId !== pointerId.current) return;
-    const box = event.currentTarget.getBoundingClientRect();
-    const native = event.nativeEvent;
-    const coalesced = typeof native.getCoalescedEvents === "function" ? native.getCoalescedEvents() : [];
-    const events = coalesced.length > 0 ? coalesced : [native];
-    drawing.extend(events.map((e) => CanvasUtils.normalise(e.clientX, e.clientY, e.pressure, box)));
-  };
-
-  const onPointerEnd = (event: PointerEvent<HTMLCanvasElement>) => {
-    if (event.pointerId !== pointerId.current) return;
-    pointerId.current = null;
-    const stroke = drawing.end();
-    if (stroke) onStrokeEnd?.(stroke);
-  };
 
   return (
     <div ref={rootRef} className="relative aspect-[4/3] w-full overflow-hidden rounded-[10px_14px_12px_9px] bg-paper">
@@ -147,11 +125,7 @@ export function CanvasBoard({
         role="img"
         aria-label={label}
         className={`absolute inset-0 size-full touch-none ${activePlayerId ? "cursor-crosshair" : "cursor-default"}`}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerEnd}
-        onPointerCancel={onPointerEnd}
-        onLostPointerCapture={onPointerEnd}
+        {...handlers}
       />
       <div ref={tagRef} hidden className="pointer-events-none absolute translate-x-3 -translate-y-[calc(100%+6px)]">
         {penTag}
