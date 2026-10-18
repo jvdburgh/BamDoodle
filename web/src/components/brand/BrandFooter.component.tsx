@@ -1,16 +1,14 @@
 import { AvatarDoodle } from "@/components/avatar/AvatarDoodle.component";
 import { AvatarUtils } from "@/components/avatar/_utils/avatar.utils";
+import { BrandFlag, BrandSupportLine, supportLink } from "@/components/brand/BrandSupportLine.component";
 import { ScribbleUtils } from "@/components/brand/_utils/scribble.utils";
 import { CanvasTools } from "@/components/canvas/_utils/canvasTools.utils";
 import { APP_VERSION } from "@/protocol/version";
 
-export const MAKER_URL = "https://github.com/jvdburgh";
+const MAKER_URL = "https://github.com/jvdburgh";
 const RELEASE_URL = "https://github.com/jvdburgh/BamDoodle/releases/tag/";
-export const REPO_URL = "https://github.com/jvdburgh/BamDoodle";
-/** United24, Ukraine's official fundraising platform. */
-export const DONATE_URL = "https://u24.gov.ua/";
 
-const ink = (name: string) => CanvasTools.colours.find((colour) => colour.name === name)?.value ?? AvatarUtils.white;
+const ink = (name: string) => CanvasTools.colours.find((colour) => colour.name === name)!.value;
 const pen = (name: string, points: number[][]) => AvatarUtils.fromBox(points, ink(name));
 const { loop, line } = ScribbleUtils;
 
@@ -33,38 +31,10 @@ const makerAvatar = [
   pen("White", line(15, 42, 72, 58, 72, 6)),
 ];
 
-export const supportLink =
-  "rounded-sm underline decoration-white/40 underline-offset-3 hover:text-white hover:decoration-sun focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white";
-
-function Flag({ emoji, label }: { emoji: string; label: string }) {
-  return (
-    <span role="img" aria-label={label}>
-      {emoji}
-    </span>
-  );
-}
-
-/** What we ask, the same words in the footer and after the last round. */
-export function BrandSupportLine({ className = "" }: { className?: string }) {
-  return (
-    <p className={className}>
-      Enjoying BamDoodle?{" "}
-      <a href={REPO_URL} target="_blank" rel="noopener noreferrer" className={supportLink}>
-        Help out on GitHub
-      </a>
-      , and please{" "}
-      <a href={DONATE_URL} target="_blank" rel="noopener noreferrer" className={supportLink}>
-        donate to our friends in Ukraine
-      </a>{" "}
-      <Flag emoji="🇺🇦" label="Ukrainian flag" />
-    </p>
-  );
-}
-
 /** The start page's small print: who made it, where it runs, and the one thing we ask (donate to Ukraine). */
 export function BrandFooter() {
   return (
-    <footer className="flex flex-col items-center gap-2 px-4 pt-2 pb-5 text-center text-sm leading-relaxed text-white/75">
+    <footer className="flex flex-col items-center gap-2 px-4 pt-2 pb-5 text-center leading-relaxed text-white/70">
       <p className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1">
         <span>Made by</span>
         <a
@@ -76,18 +46,18 @@ export function BrandFooter() {
           <AvatarDoodle
             strokes={makerAvatar}
             backdrop={false}
-            className="size-10 transition-transform group-hover:-rotate-12 motion-reduce:transition-none"
+            className="h-[1.2em] w-auto transition-transform motion-safe:group-hover:-rotate-12"
           />
           Joris van der Burgh
         </a>
         <span>
-          in <Flag emoji="🇳🇱" label="Dutch flag" /> the Netherlands
+          in <BrandFlag emoji="🇳🇱" label="Dutch flag" /> the Netherlands
         </span>
         <span aria-hidden="true" className="text-white/40">
           /
         </span>
         <span>
-          Hosted in the <Flag emoji="🇪🇺" label="EU flag" /> European Union
+          Hosted in the <BrandFlag emoji="🇪🇺" label="EU flag" /> European Union
         </span>
       </p>
       <BrandSupportLine />

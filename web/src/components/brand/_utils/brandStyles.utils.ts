@@ -4,7 +4,7 @@ const button =
 
 /** The block buttons (the main actions): bigger type, a tilt and lift on hover, a squish when pressed. */
 const block =
-  "min-h-12 px-5 text-xl sm:min-h-14 sm:px-6 sm:text-2xl enabled:hover:-translate-y-0.5 enabled:hover:-rotate-1 enabled:active:scale-95 motion-reduce:transition-none";
+  "min-h-12 px-5 text-xl sm:min-h-14 sm:px-6 sm:text-2xl motion-safe:enabled:hover:-translate-y-0.5 motion-safe:enabled:hover:-rotate-1 motion-safe:enabled:active:scale-95";
 
 const primaryButton = `${button} ${block} bg-sun text-night shadow-[0_4px_0_var(--color-amber),0_6px_0_var(--color-night-deep)]`;
 const quietButton = `${button} ${block} bg-night-soft text-white hover:bg-iris/40`;

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect } from "storybook/test";
+import { expect, waitFor } from "storybook/test";
 import { AvatarDoodle } from "./AvatarDoodle.component";
 import { drawnAvatarFixture } from "./_fixtures/avatar.fixture";
 import { AvatarUtils } from "./_utils/avatar.utils";
@@ -90,11 +90,12 @@ export const Faces: Story = {
 export const WearingTheHat: Story = {
   args: { hat: "worn", className: "mt-12 size-32" },
   play: async ({ canvasElement }) => {
-    await expect(canvasElement.querySelector("img.animate-hat-drop")).not.toBeNull();
+    const hat = canvasElement.querySelector("img")!;
+    await waitFor(() => expect(Number(getComputedStyle(hat).opacity)).toBe(1));
   },
 };
 
-export const HatPreviewOnHover: Story = {
+export const HatPreviewOnFocus: Story = {
   args: { hat: "preview", className: "mt-12 size-32" },
   render: (args) => (
     <button type="button" aria-label="Mark Pip as suspicious" className="group rounded-full">
@@ -102,9 +103,11 @@ export const HatPreviewOnHover: Story = {
     </button>
   ),
   play: async ({ canvas, canvasElement, userEvent }) => {
-    const hat = canvasElement.querySelector("img");
-    await expect(hat).toHaveClass("opacity-0");
-    await userEvent.hover(canvas.getByRole("button", { name: "Mark Pip as suspicious" }));
-    await expect(hat).toHaveClass("group-hover:opacity-60");
+    const hat = canvasElement.querySelector("img")!;
+    const opacity = () => Number(getComputedStyle(hat).opacity);
+    await expect(opacity()).toBe(0);
+    await userEvent.tab();
+    await expect(canvas.getByRole("button", { name: "Mark Pip as suspicious" })).toHaveFocus();
+    await waitFor(() => expect(opacity()).toBeGreaterThan(0.5));
   },
 };

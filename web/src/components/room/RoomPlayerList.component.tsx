@@ -136,7 +136,7 @@ export function RoomPlayerList({
                       <AvatarDoodle
                         strokes={player.avatar}
                         color={colour}
-                        hat={you && youWearTheHat ? "worn" : undefined}
+                        hat={(you && youWearTheHat) || (action?.kind === "vote" && chosen) ? "worn" : undefined}
                         className="size-full"
                       />
                       {drawerRing}

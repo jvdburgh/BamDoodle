@@ -32,6 +32,13 @@ function PlayerFromState({ phase, you, hostId, colours, width, rejection, send, 
   );
 }
 
+/** Fedoras anyone can see right now: worn ones, not the faint preview that waits for a hover. */
+const wornHats = (root: HTMLElement) =>
+  [...root.querySelectorAll<HTMLImageElement>('img[src*="svgView"]')].filter(
+    (hat) => Number(getComputedStyle(hat).opacity) > 0.5,
+  );
+const settle = () => new Promise((resolve) => setTimeout(resolve, 900));
+
 const meta = {
   title: "Room/RoomPlayerView",
   component: PlayerFromState,
@@ -51,6 +58,8 @@ type Story = StoryObj<typeof meta>;
 
 export const Watching: Story = {
   play: async ({ args, canvas, userEvent }) => {
+    await settle();
+    await expect(wornHats(canvas.getByRole("list", { name: "Players" }))).toHaveLength(0);
     await expect(canvas.getByText("Giraffe")).toBeVisible();
     await expect(canvas.getByRole("img", { name: "Shared drawing. Pip is drawing." })).toBeVisible();
     await expect(canvas.getAllByRole("listitem")).toHaveLength(6);
@@ -96,6 +105,10 @@ export const Bamboozler: Story = {
   play: async ({ canvas }) => {
     await expect(canvas.getByText("You’re the bamboozler")).toBeVisible();
     await expect(canvas.queryByText("Giraffe")).toBeNull();
+    // Only on their own screen, only on their own face.
+    const players = canvas.getByRole("list", { name: "Players" });
+    await waitFor(() => expect(wornHats(players)).toHaveLength(1));
+    await expect(wornHats(canvas.getByText("(you)").closest("li")!)).toHaveLength(1);
   },
 };
 

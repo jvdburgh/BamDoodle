@@ -28,11 +28,16 @@ export const Toggles: Story = {
   play: async ({ canvas }) => {
     const button = canvas.getByRole("button", { name: "Mark Juno as suspicious" });
     await expect(button).toHaveAttribute("aria-pressed", "false");
+    const hat = button.querySelector("img")!;
+    const opacity = () => Number(getComputedStyle(hat).opacity);
     await userEvent.click(button);
     await expect(button).toHaveAttribute("aria-pressed", "true");
+    await waitFor(() => expect(opacity()).toBe(1));
     await expect(button).toHaveAccessibleName("Mark Juno as suspicious");
     await userEvent.click(button);
     await expect(button).toHaveAttribute("aria-pressed", "false");
+    // Back to the faint preview (it still has focus), no longer worn.
+    await waitFor(() => expect(opacity()).toBeLessThan(0.7));
   },
 };
 

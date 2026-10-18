@@ -13,7 +13,10 @@ type AvatarDoodleProps = {
    * "preview" shows it faintly on hover or focus of the surrounding `group` (the suspect button).
    */
   hat?: "worn" | "preview";
-  /** False draws the lines alone, without the navy circle behind them (the maker's doodle in the footer). */
+  /**
+   * False draws the lines alone, cropped to them, without the navy circle behind (the maker's doodle in the footer,
+   * sized like an emoji).
+   */
   backdrop?: boolean;
   /** Holds the hat's drop back, for the reveal. */
   hatDelayMs?: number;
@@ -37,10 +40,20 @@ export function AvatarDoodle({
     () => strokes.map((stroke) => ({ d: CanvasUtils.strokeToPath(stroke, 100, 100), fill: stroke.color })),
     [strokes],
   );
+  // Without the circle, the box hugs the lines (plus half a pen width), so no empty margin is left around them.
+  const viewBox = useMemo(() => {
+    const points = strokes.flatMap((stroke) => stroke.points);
+    if (points.length === 0) return "0 0 100 100";
+    const pad = Math.max(...strokes.map((stroke) => stroke.size)) * 50;
+    const xs = points.map(([x]) => x * 100);
+    const ys = points.map(([, y]) => y * 100);
+    const [left, top] = [Math.min(...xs) - pad, Math.min(...ys) - pad];
+    return `${left} ${top} ${Math.max(...xs) + pad - left} ${Math.max(...ys) + pad - top}`;
+  }, [strokes]);
   const a11y = label ? { role: "img", "aria-label": label } : { "aria-hidden": true };
   const face = (
     <svg
-      viewBox="0 0 100 100"
+      viewBox={backdrop ? "0 0 100 100" : viewBox}
       className={`${backdrop ? "[clip-path:circle(50%)]" : "overflow-visible"} ${hat ? "size-full" : className}`}
       {...a11y}
     >

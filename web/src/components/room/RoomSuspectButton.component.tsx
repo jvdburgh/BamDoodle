@@ -56,7 +56,7 @@ export function RoomSuspectButton({
             strokes={avatar}
             color={color}
             hat={suspected ? "worn" : "preview"}
-            className="size-full transition-transform group-hover:-rotate-6 group-active:scale-90 motion-reduce:transition-none"
+            className="size-full transition-transform motion-safe:group-hover:-rotate-6 motion-safe:group-active:scale-90"
           />
         </button>
         {ring}

@@ -1,4 +1,4 @@
-import { BrandSupportLine } from "@/components/brand/BrandFooter.component";
+import { BrandSupportLine } from "@/components/brand/BrandSupportLine.component";
 
 /** After the last round, the one thing we ask for, in the footer's words. */
 export function BrandDonateCard() {

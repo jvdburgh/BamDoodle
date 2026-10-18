@@ -14,6 +14,13 @@ function HostFromState({ phase, reconnecting = false }: { phase: PhaseView; reco
   return <RoomHostView state={state} />;
 }
 
+/** Fedoras anyone can see right now: worn ones, not the faint preview that waits for a hover. */
+const wornHats = (root: HTMLElement) =>
+  [...root.querySelectorAll<HTMLImageElement>('img[src*="svgView"]')].filter(
+    (hat) => Number(getComputedStyle(hat).opacity) > 0.5,
+  );
+const settle = () => new Promise((resolve) => setTimeout(resolve, 900));
+
 const meta = {
   title: "Room/RoomHostView",
   component: HostFromState,
@@ -31,6 +38,8 @@ export const NeverShowsTheWord: Story = {
     await expect(canvas.getByRole("img", { name: "Shared drawing. Pip is drawing." })).toBeVisible();
     await expect(canvas.queryByRole("region", { name: "Drawing tools" })).toBeNull();
     await expect(canvas.getByText("bamdoodle.io")).toBeVisible();
+    await settle();
+    await expect(wornHats(canvas.getByRole("list", { name: "Players" }))).toHaveLength(0);
   },
 };
 
