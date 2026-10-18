@@ -1,0 +1,8 @@
+# Triviapakket: memes, bordspellen en bekende mensen, met de hand gekozen voor BamDoodle. CC BY-SA 4.0, zie
+# words/NOTICE. Namen van mensen, spellen en memes zijn hier alleen woorden om te tekenen.
+language = "nl"
+
+[categories]
+Memes = ["Amogus", "ASMR", "bonk", "Cheems", "chonk", "clickbait", "Clippy", "dabben", "Doge", "doggo", "doomscrollen", "duckface", "facepalm", "fidgetspinner", "flossen", "Gangnam", "ghosten", "Gigachad", "groepsapp", "Hadouken", "hamsteren", "Harambe", "Kermit", "Leeroy", "lolcat", "Nyan", "photobomb", "planken", "Pusheen", "Rickroll", "Skibidi", "Stonks", "Trollface", "unboxing", "yeet"]
+Bordspellen = ["Backgammon", "Boggle", "Carcassonne", "Catan", "Cluedo", "Codenames", "Dixit", "Dobble", "Halma", "Jenga", "Keezen", "Kwartet", "Mahjong", "Mastermind", "Memory", "Mens-erger-je-niet", "Monopoly", "Pim-pam-pet", "Qwirkle", "Risk", "Rummikub", "Scrabble", "Stratego", "Uno", "Yahtzee", "Zeeslag"]
+"Bekende mensen" = ["Adele", "Banksy", "Beatrix", "Beckham", "Beethoven", "Beyoncé", "Bezos", "Biden", "Bieber", "Caesar", "Chaplin", "Churchill", "Columbus", "Cruijff", "Darwin", "Edison", "Einstein", "Elvis", "Eminem", "Erasmus", "Escher", "Federer", "Gaga", "Galilei", "Hawking", "Hazes", "Houdini", "Kardashian", "Lincoln", "Macron", "Madonna", "Mandela", "Merkel", "Messi", "Michelangelo", "Mondriaan", "Mozart", "Musk", "Máxima", "Napoleon", "Nefertiti", "Newton", "Obama", "Oprah", "Picasso", "Putin", "Rembrandt", "Rihanna", "Robben", "Ronaldo", "Rutte", "Shakespeare", "Shakira", "Thatcher", "Thunberg", "Tiësto", "Toetanchamon", "Trump", "Vermeer", "Verstappen", "Wilders", "Willem-Alexander", "Zelensky", "Zuckerberg"]

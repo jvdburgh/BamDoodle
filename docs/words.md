@@ -5,8 +5,11 @@
 - English and Dutch, simple, concrete, drawable words, grouped into categories (animals, food, objects, places,
   actions, …). Target about 800 to 1,200 base words per language, 10 to 14 categories of 50 to 100 words.
 - **Themed categories** players pick before a round: Dutch and English culture (Efteling, Sinterklaas, Typisch
-  Nederlands, Lekker Nederlands, Very British, Christmas, Fairy tales, Landmarks) and Logos (Dutch and
-  international brands), more to come. Efteling has every attraction and figure.
+  Nederlands, Lekker Nederlands, Very British, Christmas, Fairy tales, Landmarks), Logos (Dutch and
+  international brands) and trivia (Memes, Superheroes, Board games, Famous people), more to come. Efteling has every
+  attraction and figure.
+- **Famous people** may be living or controversial, and politicians of any side are fair game. Not
+  mass murderers, and nobody known mainly for abuse.
 - **18+ categories** per language: about 150 to 300 suggestive but drawable words (think hangover,
   handcuffs, bikini). Rude is fine, hateful isn't: no slurs.
 - Every word has one obvious drawable meaning.
@@ -50,14 +53,16 @@ words/
   NOTICE            licence and credits for every source
   en/base.toml      everyday categories (single words)
   en/tech.toml      Tech
-  en/media.toml     Films, TV shows, Cartoons and comics, Video games
+  en/media.toml     Films, TV shows, Cartoons and comics, Superheroes, Video games
+  en/trivia.toml    Memes, Board games, Famous people
   en/world.toml     Countries, Cities
   en/culture.toml   themed: Very British, Christmas, Fairy tales, Landmarks
   en/logos.toml     Logos: Dutch and international brands
   en/adults.toml    adult = true
   nl/base.toml      everyday categories (single words)
   nl/tech.toml      Technologie
-  nl/media.toml     Films, Tv-series, Tekenfilms en strips, Games
+  nl/media.toml     Films, Tv-series, Tekenfilms en strips, Superhelden, Games
+  nl/trivia.toml    Memes, Bordspellen, Bekende mensen
   nl/world.toml     Landen, Steden
   nl/nederland.toml themed: Efteling (every attraction and figure), Sinterklaas, Typisch Nederlands, Lekker Nederlands
   nl/logos.toml     Logo's: Nederlandse en internationale merken

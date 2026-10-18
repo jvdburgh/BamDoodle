@@ -1,0 +1,8 @@
+# Trivia pack: memes, board games and famous people, curated by hand for BamDoodle. CC BY-SA 4.0, see words/NOTICE.
+# Names of people, games and memes are only words to draw.
+language = "en"
+
+[categories]
+Memes = ["Amogus", "ASMR", "bonk", "bottle-flip", "Cheems", "chonk", "clickbait", "Clippy", "dabbing", "Doge", "doggo", "doomscrolling", "duckface", "facepalm", "fidget-spinner", "flossing", "Gangnam", "ghosting", "Gigachad", "Hadouken", "Harambe", "ice-bucket", "Kermit", "Leeroy", "lolcat", "Nyan", "photobomb", "planking", "Pusheen", "rage-quit", "Rickroll", "Skibidi", "Stonks", "Trollface", "unboxing", "yeet"]
+"Board games" = ["Backgammon", "Battleship", "Boggle", "Carcassonne", "Catan", "Cluedo", "Codenames", "Dixit", "Dobble", "Jenga", "Kerplunk", "Ludo", "Mahjong", "Mastermind", "Monopoly", "Operation", "Qwirkle", "Risk", "Rummikub", "Scrabble", "Stratego", "Uno", "Yahtzee"]
+"Famous people" = ["Adele", "Banksy", "Beckham", "Beethoven", "Beyoncé", "Bezos", "Biden", "Bieber", "Caesar", "Chaplin", "Churchill", "Columbus", "Darwin", "Edison", "Einstein", "Elvis", "Eminem", "Federer", "Gaga", "Galileo", "Hawking", "Houdini", "Kardashian", "Lincoln", "Macron", "Madonna", "Mandela", "Merkel", "Messi", "Michelangelo", "Mozart", "Musk", "Napoleon", "Nefertiti", "Newton", "Obama", "Oprah", "Picasso", "Putin", "Rembrandt", "Rihanna", "Ronaldo", "Shakira", "Thatcher", "Thunberg", "Trump", "Zelensky", "Zuckerberg"]
