@@ -16,6 +16,8 @@ Check these first; each was a real finding (2026-10-18, lobby avatar editor).
 - Playground screens offering host-only actions (start round) to joiners, against docs/game-rules.md.
 
 - Back across a remount (key change, other component) loses focus: an opener ref inside the component can't survive it.
+- Image made decorative (alt="") because text names it, while a responsive class can `hidden` that text: the link
+  loses its name on phones (falls to `title`). Hide visually with `sr-only`, or tie alt to visibility.
 - A flow change documented in game-rules.md but the same flow left stale in architecture.md "Screens and routes".
 
 **Why:** these repeat in UI prototype work while the server side doesn't exist yet.

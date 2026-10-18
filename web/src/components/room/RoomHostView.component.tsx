@@ -1,7 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { BrandLogo } from "@/components/brand/BrandLogo.component";
 import { BrandSketchyFrame } from "@/components/brand/BrandSketchyFrame.component";
-import { BrandTagline } from "@/components/brand/BrandTagline.component";
 import { BrandStyles } from "@/components/brand/_utils/brandStyles.utils";
 import { CanvasBoard } from "@/components/canvas/CanvasBoard.component";
 import { RoomFeed } from "@/components/room/RoomFeed.component";
@@ -71,13 +70,12 @@ export function RoomHostView({ state, revealCode = false, colours = "free", home
     <div className="@container/room relative min-h-full">
       <div className="mx-auto flex max-w-[110rem] flex-col gap-4 p-4 pb-20 @4xl/room:gap-6 @4xl/room:p-8 @4xl/room:pb-24">
         <header className="grid grid-cols-[1fr_auto] items-center gap-4 @4xl/room:grid-cols-[1fr_auto_1fr]">
-          <div className="flex items-center gap-3">
-            <BrandLogo href={home} className="size-12 @4xl/room:size-16" />
-            <div className="leading-tight">
-              <p className="font-display text-2xl @4xl/room:text-4xl">BamDoodle</p>
-              <BrandTagline className="text-sm @4xl/room:text-base" />
-            </div>
-          </div>
+          <BrandLogo
+            named
+            href={home}
+            className="size-12 @4xl/room:size-16"
+            nameClassName="text-sm @4xl/room:text-xl"
+          />
           <div className="col-span-2 row-start-2 @4xl/room:col-span-1 @4xl/room:row-start-auto">
             {view.category !== null && <RoomWordCard category={view.category} word={null} view="host" />}
           </div>

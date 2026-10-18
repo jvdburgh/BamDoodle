@@ -72,6 +72,7 @@ export function LabApp() {
         />
       ) : settings.screen === "setup" ? (
         <LobbySetup
+          home="/lab?screen=start"
           roomCode={creating ? undefined : roomCode}
           doneLabel={creating ? "Next" : undefined}
           onBack={creating ? () => goCreate(null) : undefined}
@@ -86,6 +87,7 @@ export function LabApp() {
         />
       ) : settings.screen === "lobby" ? (
         <LobbyWaiting
+          home="/lab?screen=start"
           name={yourName}
           roomCode={roomCode}
           avatar={yourAvatar}

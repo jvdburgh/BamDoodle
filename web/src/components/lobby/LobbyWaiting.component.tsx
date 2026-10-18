@@ -11,10 +11,12 @@ type LobbyWaitingProps = {
   avatar: AvatarStroke[];
   onAvatarChange: (strokes: AvatarStroke[]) => void;
   onStart: () => void;
+  /** Where the logo goes: the start page. */
+  home?: string;
 };
 
 /** Between joining and the first round: draw your face while the others arrive. */
-export function LobbyWaiting({ name, roomCode, avatar, onAvatarChange, onStart }: LobbyWaitingProps) {
+export function LobbyWaiting({ name, roomCode, avatar, onAvatarChange, onStart, home = "/" }: LobbyWaitingProps) {
   const headingId = useId();
   const heading = useRef<HTMLHeadingElement>(null);
 
@@ -24,7 +26,7 @@ export function LobbyWaiting({ name, roomCode, avatar, onAvatarChange, onStart }
   return (
     <main className="mx-auto flex min-h-svh max-w-md flex-col gap-5 px-4 py-4">
       <header className="flex items-center justify-between gap-3">
-        <BrandLogo href="/?screen=start" className="size-10" />
+        <BrandLogo named href={home} className="size-10" />
         <p className="rounded-full bg-night-soft px-3 py-1 text-sm text-white/80">
           <span className="sr-only">Room code </span>
           <span aria-hidden="true">Room </span>

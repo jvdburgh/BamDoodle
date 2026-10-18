@@ -6,7 +6,15 @@ type BrandTaglineProps = {
 export function BrandTagline({ className = "" }: BrandTaglineProps) {
   return (
     <p className={`text-white/70 ${className}`}>
-      Draw <span className="text-berry">•</span> Guess <span className="text-berry">•</span> Deceive
+      Draw{" "}
+      <span aria-hidden="true" className="text-berry">
+        •
+      </span>{" "}
+      Guess{" "}
+      <span aria-hidden="true" className="text-berry">
+        •
+      </span>{" "}
+      Deceive
     </p>
   );
 }

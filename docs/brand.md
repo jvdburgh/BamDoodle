@@ -4,6 +4,8 @@
 
 - **BamDoodle**: bamboozle + doodle. Written with a capital D.
 - Tagline: **Draw • Guess • Deceive** (the dots in berry pink).
+- The top left of every screen is the logo with the name and tagline beside it (`BrandLogo named`), and the whole
+  block is one link to the start page. Only the room on a narrow phone shows the logo alone; the word needs the space.
 - Second line, for the game itself (round start, reveal, loading): **Who's sketchy?** The logo is a sketchy
   character, the game is about finding the sketchy one, and everything is sketched. Use it as a playful question,
   not as the main tagline.

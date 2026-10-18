@@ -24,6 +24,29 @@ export const HomeLink: Story = {
   },
 };
 
+/** The top-left of every screen: the whole block is the link home. */
+export const Named: Story = {
+  args: { named: true, href: "/", className: "size-10" },
+  play: async ({ canvas }) => {
+    const link = canvas.getByRole("link", { name: /^BamDoodle\s+Draw/ });
+    await expect(link).toHaveAttribute("href", "/");
+    await expect(link).toHaveTextContent("Draw • Guess • Deceive");
+    await expect(canvas.queryByRole("img", { name: "BamDoodle" })).toBeNull();
+  },
+};
+
+/** The bamboozler's logo in the room header: still one link, named by the text, the moving logo hidden from it. */
+export const SlyNamed: Story = {
+  args: { sly: true, named: true, href: "/", className: "size-10" },
+  play: async ({ canvas, canvasElement }) => {
+    await waitFor(() => expect(canvasElement.querySelector(".logo-sly svg")).not.toBeNull());
+    await expect(canvas.getByRole("link", { name: /^BamDoodle\s+Draw/ })).toBeVisible();
+    await expect(canvas.queryByRole("img")).toBeNull();
+    await expect(canvasElement.querySelector(".logo-sly")).toHaveAttribute("aria-hidden", "true");
+    await expect(canvasElement.querySelector("img")).toHaveAttribute("alt", "");
+  },
+};
+
 export const Sly: Story = {
   args: { sly: true, className: "size-16" },
   play: async ({ canvas, canvasElement }) => {

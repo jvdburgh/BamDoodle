@@ -22,6 +22,8 @@ type LobbySetupProps = {
   /** What the done button says: going to the room, or on to your name when the room doesn't exist yet. */
   doneLabel?: string;
   onBack?: () => void;
+  /** Where the logo goes: the start page. */
+  home?: string;
   /** Any colour or Own colours: only where it can be tried (the lab), until the server has the setting. */
   attribution?: Attribution;
   onAttribution?: (attribution: Attribution) => void;
@@ -47,6 +49,7 @@ export function LobbySetup({
   onDone,
   doneLabel = "Go to the room",
   onBack,
+  home = "/",
   attribution,
   onAttribution,
 }: LobbySetupProps) {
@@ -66,10 +69,7 @@ export function LobbySetup({
     <div className="flex min-h-svh flex-col">
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-3 px-4 py-3 md:max-w-5xl">
         <header className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <BrandLogo className="size-10" />
-            <p className="font-display text-2xl">BamDoodle</p>
-          </div>
+          <BrandLogo named href={home} className="size-10" />
           {roomCode && (
             <p className="rounded-full bg-night-soft px-3 py-1 text-sm text-white/80">
               <span className="sr-only">Room code </span>
