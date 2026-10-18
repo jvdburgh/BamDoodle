@@ -1,8 +1,9 @@
-# Themed pack, hand-written for BamDoodle. CC BY-SA 4.0, see words/NOTICE.
+# Themed pack, curated for BamDoodle. CC BY-SA 4.0, see words/NOTICE.
+# Everyday things are one word; names (people, characters, places, landmarks) keep their real, multi-word names.
 language = "en"
 
 [categories]
-"Very British" = ["bagpipes", "Beefeater", "Big Ben", "black cab", "corgi", "cricket", "crumpet", "cup of tea", "double-decker bus", "fish and chips", "full English breakfast", "Loch Ness monster", "pub", "queue", "red phone box", "scone", "Sherlock Holmes", "Stonehenge", "Tower Bridge"]
-Christmas = ["candy cane", "chimney", "Christmas cracker", "Christmas jumper", "Christmas tree", "elf", "gingerbread man", "mistletoe", "reindeer", "Santa Claus", "sleigh", "snow globe", "snowflake", "stocking", "wreath"]
-"Fairy tales" = ["big bad wolf", "Cinderella", "frog prince", "gingerbread house", "glass slipper", "Goldilocks", "Hansel and Gretel", "Jack and the Beanstalk", "Little Red Riding Hood", "magic mirror", "Pinocchio", "poisoned apple", "pumpkin carriage", "Rapunzel", "Sleeping Beauty", "Snow White", "Three Little Pigs"]
-Landmarks = ["Atomium", "Brandenburg Gate", "Colosseum", "Easter Island heads", "Eiffel Tower", "Golden Gate Bridge", "Great Wall of China", "Leaning Tower of Pisa", "Machu Picchu", "Mount Fuji", "Mount Rushmore", "Sphinx", "Statue of Liberty", "Sydney Opera House", "Taj Mahal", "windmills of Kinderdijk"]
+"Very British" = ["bagpipes", "bearskin", "Beatles", "Beefeater", "biscuit", "bobby", "bowler", "brolly", "bulldog", "butler", "chippy", "corgi", "cricket", "crisps", "crumpet", "cuppa", "double-decker", "fry-up", "haggis", "kilt", "maypole", "Nessie", "Oxford", "Paddington", "pint", "postbox", "pub", "queue", "roundabout", "scone", "Shakespeare", "Sherlock", "Stonehenge", "teapot", "trifle", "Tube", "wellies", "Wembley", "Wimbledon", "Windsor"]
+Christmas = ["angel", "bauble", "chestnut", "chimney", "cracker", "eggnog", "elf", "fireplace", "fruitcake", "garland", "gingerbread", "Grinch", "holly", "manger", "mistletoe", "nutcracker", "present", "pudding", "reindeer", "ribbon", "Rudolph", "sack", "Santa", "Scrooge", "sleigh", "snowball", "snowflake", "snowman", "sprouts", "stocking", "tinsel", "workshop", "wreath"]
+"Fairy tales" = ["Aladdin", "Bluebeard", "breadcrumbs", "carriage", "Cinderella", "crown", "dwarf", "Goldilocks", "jester", "king", "knight", "Pinocchio", "prince", "princess", "queen", "Rapunzel", "Rumpelstiltskin", "spindle", "throne", "Thumbelina", "Tinkerbell", "tower", "woodcutter"]
+Landmarks = ["Acropolis", "Alcatraz", "Alhambra", "Atomium", "Colosseum", "Everest", "Kilimanjaro", "Kinderdijk", "Kremlin", "Louvre", "Matterhorn", "Moai", "Neuschwanstein", "Notre-Dame", "Parthenon", "Pentagon", "Petra", "Sphinx", "Uluru", "Versailles", "Vesuvius"]

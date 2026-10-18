@@ -1,8 +1,11 @@
-# Starter adults pack (18+), hand-written for BamDoodle. CC BY-SA 4.0, see words/NOTICE.
-# Rude or suggestive is fine, hateful never.
+# Adults pack (18+), hand-written for BamDoodle. CC BY-SA 4.0, see words/NOTICE.
+# Crude and funny is the point; hateful never. No slurs, nothing about protected groups, nothing involving minors,
+# no sexual violence, no hard drugs. Checked against LDNOOBW (CC BY 4.0) as a blocklist.
 language = "en"
 adult = true
 
 [categories]
-"After dark" = ["beer belly", "bikini", "booty call", "handcuffs", "hangover", "love bite", "skinny dipping", "speed dating", "strip poker", "walk of shame"]
-"Bodily matters" = ["belly button", "bra", "burp", "fart", "hairy back", "pimple", "sweaty armpit", "toilet paper", "underpants", "wedgie"]
+"Bedroom" = ["69", "blindfold", "blowjob", "bondage", "buttplug", "cockring", "condom", "cowgirl", "dickpic", "dildo", "dominatrix", "fetish", "foreplay", "handcuffs", "handjob", "hickey", "Kamasutra", "kinky", "latex", "lingerie", "lube", "missionary", "OnlyFans", "orgasm", "orgy", "porn", "quickie", "safeword", "sex", "sexting", "spanking", "sperm", "spooning", "stockings", "strap-on", "thong", "threesome", "Tinder", "vibrator", "voyeur", "whip"]
+"Naughty bits" = ["anus", "arse", "balls", "boner", "boobjob", "boobs", "booty", "breasts", "bulge", "bum", "butt", "cleavage", "cock", "dick", "foreskin", "junk", "knob", "knockers", "moobs", "nipple", "nutsack", "penis", "pubes", "schlong", "six-pack", "taint", "testicles", "tits", "todger", "vagina", "willy"]
+"Party night" = ["afterparty", "bong", "bouncer", "cougar", "drunk", "flirt", "hangover", "Ibiza", "joint", "kebab", "mooning", "nightclub", "nudes", "pornstar", "shots", "snog", "streaker", "stripper", "striptease", "swingers", "tequila", "toyboy", "twerking", "wingman"]
+"Toilet humour" = ["bogey", "burp", "constipation", "dandruff", "diarrhoea", "dingleberry", "earwax", "fart", "floater", "laxative", "pee", "piles", "piss", "plunger", "poo", "portaloo", "puke", "shart", "shit", "skidmarks", "snot", "turd", "urinal", "wedgie", "zit"]

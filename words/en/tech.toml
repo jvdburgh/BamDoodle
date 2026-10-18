@@ -1,0 +1,6 @@
+# Tech pack, curated for BamDoodle. CC BY-SA 4.0, see words/NOTICE.
+# One word each (hyphens are fine): gadgets, screens and the things we do with them. Tech words live only here.
+language = "en"
+
+[categories]
+Tech = ["antenna", "app", "ATM", "barcode", "battery", "cable", "camcorder", "camera", "cassette", "CD", "charger", "chatbot", "circuit", "computer", "console", "controller", "cursor", "cyborg", "download", "drone", "e-reader", "earbuds", "email", "emoji", "fax", "gamer", "GPS", "hacker", "hashtag", "headphones", "headset", "hologram", "hoverboard", "influencer", "joystick", "keyboard", "laptop", "laser", "livestream", "meme", "microchip", "monitor", "mousepad", "password", "photocopier", "pixel", "plug", "podcast", "printer", "programmer", "projector", "radar", "radio", "remote", "robot", "router", "satellite", "scanner", "screenshot", "selfie", "smartphone", "smartwatch", "socket", "spam", "speaker", "tablet", "telephone", "television", "thermostat", "touchpad", "touchscreen", "tripod", "typewriter", "USB", "virus", "vlogger", "walkie-talkie", "webcam", "website", "wifi"]

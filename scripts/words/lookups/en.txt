@@ -1,0 +1,116 @@
+Annie	Annie (1982 film)
+Cleopatra	Cleopatra (1963 film)
+Clueless	Clueless
+E.T.	E.T. the Extra-Terrestrial
+Flashdance	Flashdance
+Grease	Grease (film)
+Gremlins	Gremlins
+Hairspray	Hairspray (2007 film)
+Hook	Hook (film)
+Labyrinth	Labyrinth (1986 film)
+Matilda	Matilda (1996 film)
+Paddington	Paddington (film)
+Trolls	Trolls (film)
+Twister	Twister (1996 film)
+Wicked	Wicked (2024 film)
+Wonka	Wonka (film)
+Countdown	Countdown (game show)
+Eurovision	Eurovision Song Contest
+Songfestival	Eurovision Song Contest
+Lassie	Lassie (1954 TV series)
+Magnum	Magnum, P.I.
+MasterChef	MasterChef
+Muppets	The Muppets
+Poirot	Agatha Christie's Poirot
+Survivor	Survivor (franchise)
+Thunderbirds	Thunderbirds (TV series)
+Xena	Xena: Warrior Princess
+Derrick	Derrick (TV series)
+Flipper	Flipper (1964 TV series)
+Skippy	Skippy the Bush Kangaroo
+Babar	Babar the Elephant
+Baloo	Baloo
+Baloe	Baloo
+Barbapapa	Barbapapa
+Casper	Casper the Friendly Ghost
+Dory	Dory (Finding Nemo)
+Goku	Goku
+Miraculous	Miraculous: Tales of Ladybug & Cat Noir
+Moomins	Moomins
+Nemo	Finding Nemo
+Noddy	Noddy (character)
+Olaf	Olaf (Frozen)
+Pikachu	Pikachu
+Pumbaa	Timon and Pumbaa
+Taz	Tasmanian Devil (Looney Tunes)
+Totoro	My Neighbor Totoro
+She-Ra	She-Ra
+Smurfin	Smurfette
+Bomberman	Bomberman
+Bowser	Bowser
+Cyberpunk	Cyberpunk 2077
+GTA	Grand Theft Auto
+Halo	Halo (franchise)
+Luigi	Luigi
+Mario	Mario
+Overcooked	Overcooked
+PUBG	PUBG: Battlegrounds
+Rayman	Rayman
+SingStar	SingStar
+Skyrim	The Elder Scrolls V: Skyrim
+Solitaire	Microsoft Solitaire
+Sonic	Sonic the Hedgehog
+Spyro	Spyro
+Wolfenstein	Wolfenstein
+Worms	Worms (series)
+Yoshi	Yoshi
+Zelda	The Legend of Zelda
+Wordfeud	Wordfeud
+Denmark	Denmark
+England	England
+Greenland	Greenland
+Korea	South Korea
+Netherlands	Netherlands
+Scotland	Scotland
+USA	United States
+Vatican	Vatican City
+Wales	Wales
+Aruba	Aruba
+Bonaire	Bonaire
+Curaçao	Curaçao
+Auckland
+Barcelona
+Berlin
+Birmingham
+Bologna
+Bucharest
+Delhi
+Dubrovnik
+Havana
+Jakarta
+Jerusalem
+Kyiv
+Lisbon
+London
+Madrid
+Manchester
+Marseille
+Mecca
+Miami
+Montreal
+Mumbai
+Osaka
+Oxford
+Philadelphia
+Pisa
+Rio	Rio de Janeiro
+Seoul
+Seville
+Valencia
+Vienna
+Zurich
+Breda
+Groningen
+Enschede
+Leeuwarden
+Middelburg

@@ -1,7 +1,11 @@
-# Startpakket voor volwassenen (18+), met de hand geschreven voor BamDoodle. CC BY-SA 4.0, zie words/NOTICE.
+# Pakket voor volwassenen (18+), met de hand geschreven voor BamDoodle. CC BY-SA 4.0, zie words/NOTICE.
+# Grof en grappig mag; haatdragend nooit. Geen scheldwoorden voor groepen, niets met minderjarigen, geen seksueel
+# geweld, geen harddrugs. Gecontroleerd tegen LDNOOBW (CC BY 4.0); spelling waar mogelijk tegen OpenTaal.
 language = "nl"
 adult = true
 
 [categories]
-"Na middernacht" = ["afterparty", "bierbuik", "bikini", "handboeien", "kater", "naaktzwemmen", "speeddate", "strippoker", "vrijgezellenfeest", "zuigzoen"]
-"Lichamelijk" = ["beha", "boer", "harige rug", "navel", "onderbroek", "puistje", "scheet", "snurken", "wc-papier", "zweetplek"]
+"Edele delen" = ["aars", "ballen", "balzak", "bierbuik", "bikinilijn", "billen", "bilnaad", "borsten", "borsthaar", "bouwvakkersdecolleté", "decolleté", "eikel", "flamoes", "jongeheer", "klokkenspel", "kloten", "kont", "lul", "mannentieten", "navelpiercing", "neptieten", "ochtenderectie", "okselhaar", "penis", "piemel", "pik", "reet", "schaamhaar", "sixpack", "stijve", "tepel", "tepelpiercing", "tieten", "vagina", "voorhuid", "zwembandjes"]
+"Onder de lakens" = ["69", "aftrekken", "beffen", "billenkoek", "blinddoek", "bondage", "buttplug", "condoom", "dickpic", "dildo", "glijmiddel", "handboeien", "jarretels", "kamasutra", "klaarkomen", "latex", "lingerie", "massageolie", "meesteres", "minnaar", "missionarishouding", "naaktfoto", "netkousen", "neuken", "nummertje", "onenightstand", "opblaaspop", "orgasme", "orgie", "pijpen", "porno", "pornoster", "quickie", "safeword", "seks", "seksschommel", "seksspeeltje", "sekstape", "sexten", "standje", "strap-on", "stringetje", "tepelklemmen", "trio", "vibrator", "voorspel", "vreemdgaan", "vrijen", "zaadcel", "zweep"]
+"Poep en pies" = ["aambeien", "diarree", "dixi", "drol", "fluim", "kakken", "keutel", "kotsen", "kotszak", "laxeermiddel", "mee-eter", "neuspeuteren", "ontstopper", "oorsmeer", "piesen", "pissoir", "plee", "plopper", "poep", "puist", "remsporen", "scheet", "scheetkussen", "schijten", "snot", "stront", "verstopping", "wc-borstel", "wc-bril", "wc-rol", "wildplassen", "zweetoksels", "zweetplek", "zweetvoeten"]
+"Uit de bol" = ["adtje", "afterparty", "afzakkertje", "après-ski", "bierbril", "bierfiets", "bierpong", "bodyshot", "coffeeshop", "condoomautomaat", "datingapp", "dronken", "joint", "kater", "kroegentocht", "lapdance", "mannenstripper", "naaktstrand", "naaktzwemmen", "paaldansen", "parenclub", "peepshow", "schuurfeest", "seksshop", "shoarma", "shotje", "spacecake", "speeddate", "streaken", "stripclub", "stripper", "strippoker", "striptease", "suikeroom", "tequila", "tongen", "toyboy", "uitsmijter", "versieren", "vrijgezellenfeest", "wallen", "zuipen", "zuipkeet"]

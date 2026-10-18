@@ -9,6 +9,9 @@ Read [docs/words.md](../../../docs/words.md) first: it has the allowed sources a
 
 ## A good word
 
+- **One word**, names included ("Shrek", "Coca-Cola", "Nieuw-Zeeland"; hyphens and apostrophes are fine), so it's easy
+  to guess and type. The only exception is the Efteling category, which keeps real attraction and figure names.
+  `python3 -I scripts/words/check.py` enforces it.
 - Concrete and drawable in a few strokes by an average person: "lighthouse" yes, "freedom" no.
 - One obvious meaning (no "bat" without a category that settles it).
 - Common enough that most players know it, in the target language (not a translation nobody uses).

@@ -10,6 +10,9 @@
 - **18+ categories** per language: about 150 to 300 suggestive but drawable words (think hangover,
   handcuffs, bikini). Rude is fine, hateful isn't: no slurs.
 - Every word has one obvious drawable meaning.
+- **Every entry is a single word**, names included (hyphens and apostrophes are fine). Only the Efteling category keeps
+  multi-word names. `python3 -I scripts/words/check.py` checks this, sorting and duplicates; with the downloaded
+  OpenTaal, WordNet and frequency lists it also flags spelling and rare words.
 
 ## Where words come from
 
@@ -45,11 +48,17 @@ Efteling = ["Holle Bolle Gijs", "Langnek", "Droomvlucht"]
 ```
 words/
   NOTICE            licence and credits for every source
-  en/base.toml      everyday categories
+  en/base.toml      everyday categories (single words)
+  en/tech.toml      Tech
+  en/media.toml     Films, TV shows, Cartoons and comics, Video games
+  en/world.toml     Countries, Cities
   en/culture.toml   themed: Very British, Christmas, Fairy tales, Landmarks
   en/logos.toml     Logos: Dutch and international brands
   en/adults.toml    adult = true
-  nl/base.toml
+  nl/base.toml      everyday categories (single words)
+  nl/tech.toml      Technologie
+  nl/media.toml     Films, Tv-series, Tekenfilms en strips, Games
+  nl/world.toml     Landen, Steden
   nl/nederland.toml themed: Efteling (every attraction and figure), Sinterklaas, Typisch Nederlands, Lekker Nederlands
   nl/logos.toml     Logo's: Nederlandse en internationale merken
   nl/adults.toml

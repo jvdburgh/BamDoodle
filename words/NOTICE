@@ -1,8 +1,22 @@
-BamDoodle word packs
+BamDoodle word lists
 
-The word lists in this folder are written for BamDoodle and licensed under the
+The word lists in this folder are written and curated for BamDoodle and licensed under the
 Creative Commons Attribution-ShareAlike 4.0 International licence (CC BY-SA 4.0),
 https://creativecommons.org/licenses/by-sa/4.0/
 
-Third-party sources used to find or check words are credited below when their
-words are added. None so far.
+Sources used to find, rank or check words (scripts in scripts/words/):
+
+- Wikidata, https://www.wikidata.org, CC0 1.0. Candidates and their Dutch and English
+  names for everyday things, technology, films, series, cartoons, games, countries and
+  cities, ranked by how many Wikipedias have an article about them.
+- Open English WordNet, https://github.com/globalwordnet/english-wordnet, CC BY 4.0,
+  based on Princeton WordNet (WordNet 3.0 licence, Princeton University). English check.
+- OpenTaal word list, https://github.com/OpenTaal/opentaal-wordlist, BSD-3-Clause or
+  CC BY 3.0, Stichting OpenTaal. Dutch spelling check.
+- FrequencyWords, https://github.com/hermitdave/FrequencyWords, MIT, Hermit Dave.
+  How common a word is, in English and Dutch.
+- List of Dirty, Naughty, Obscene, and Otherwise Bad Words,
+  https://github.com/LDNOOBW/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words,
+  CC BY 4.0, Shutterstock. Inspiration for the 18+ categories and a check against slurs.
+
+Brand and attraction names (Logos, Efteling) are only used as words to draw.
