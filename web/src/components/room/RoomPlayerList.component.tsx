@@ -107,7 +107,7 @@ export function RoomPlayerList({
               <div className={`min-w-0 ${rail ? "@5xl/room:col-start-1 @5xl/room:row-start-1" : ""}`}>
                 <p className="flex min-w-0 items-center gap-1.5">
                   <span className="relative size-6 shrink-0">
-                    <AvatarDoodle seed={player.avatarSeed} color={colour} className="size-full" />
+                    <AvatarDoodle strokes={player.avatar} color={colour} className="size-full" />
                     {active && (
                       <BrandScribble
                         shape="ring"

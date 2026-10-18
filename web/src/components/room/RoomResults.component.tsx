@@ -84,7 +84,7 @@ export function RoomResults({
               <tr key={playerId} className="bg-night-deep/70">
                 <th scope="row" className="rounded-l-full py-1 pr-2 pl-1 font-normal">
                   <span className="flex items-center gap-2">
-                    <AvatarDoodle seed={player.avatarSeed} color={colours?.[playerId]} className="size-8 shrink-0" />
+                    <AvatarDoodle strokes={player.avatar} color={colours?.[playerId]} className="size-8 shrink-0" />
                     <span className="truncate">
                       {playerId === youId ? "You" : player.name}
                       {playerId === bamboozlerId && <span className="ml-1 text-sm text-berry">bamboozler</span>}

@@ -6,7 +6,7 @@ import { playersFixture } from "./_fixtures/players.fixture";
 const meta = {
   title: "Room/RoomPenTag",
   component: RoomPenTag,
-  args: { player: playersFixture[2] ?? { id: "mo", name: "Mo", avatarSeed: 23 } },
+  args: { player: playersFixture[2] ?? { id: "mo", name: "Mo", avatarSeed: 23, avatar: [] } },
 } satisfies Meta<typeof RoomPenTag>;
 
 export default meta;
@@ -21,6 +21,6 @@ export const FreeColours: Story = {
 export const WithShade: Story = {
   args: { color: "#7ec42e" },
   play: async ({ canvasElement }) => {
-    await expect(canvasElement.querySelector("circle")).toHaveStyle({ fill: "rgb(126, 196, 46)" });
+    await expect(canvasElement.querySelector("circle[stroke]")).toHaveAttribute("stroke", "#7ec42e");
   },
 };

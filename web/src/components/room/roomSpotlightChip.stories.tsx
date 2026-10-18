@@ -6,7 +6,7 @@ import { playersFixture } from "./_fixtures/players.fixture";
 const meta = {
   title: "Room/RoomSpotlightChip",
   component: RoomSpotlightChip,
-  args: { player: playersFixture[0] ?? { id: "pip", name: "Pip", avatarSeed: 12 }, onClear: fn() },
+  args: { player: playersFixture[0] ?? { id: "pip", name: "Pip", avatarSeed: 12, avatar: [] }, onClear: fn() },
 } satisfies Meta<typeof RoomSpotlightChip>;
 
 export default meta;

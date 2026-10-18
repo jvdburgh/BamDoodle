@@ -28,7 +28,7 @@ export function RoomReveal({ players, bamboozlerId, votes, youId = null, colours
         style={{ animationDelay: "500ms" }}
       >
         <AvatarDoodle
-          seed={bamboozler.avatarSeed}
+          strokes={bamboozler.avatar}
           color={colours?.[bamboozler.id]}
           className={big ? "size-36" : "size-24"}
         />
@@ -49,7 +49,7 @@ export function RoomReveal({ players, bamboozlerId, votes, youId = null, colours
           const right = suspect === bamboozlerId;
           return (
             <li key={player.id} className="flex items-center gap-2 rounded-full bg-night-deep/70 py-1 pr-3 pl-1">
-              <AvatarDoodle seed={player.avatarSeed} color={colours?.[player.id]} className="size-7 shrink-0" />
+              <AvatarDoodle strokes={player.avatar} color={colours?.[player.id]} className="size-7 shrink-0" />
               <span className="min-w-0 flex-1 truncate">
                 <span className="capitalize">{nameOf(player.id)}</span>{" "}
                 <span className="text-white/60">{suspect ? "voted" : "didn’t vote"}</span>{" "}

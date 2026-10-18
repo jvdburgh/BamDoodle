@@ -60,7 +60,7 @@ Modern, a bit mysterious, colourful. It should feel like a hand-made little game
 
 - Navy everywhere, colour as the reward (strokes, avatars, highlights).
 - Hand-drawn touches made with our own stroke engine: underlines, borders, icons, the magnifying glass
-  (`BrandScribble`), and the placeholder doodle avatars.
+  (`BrandScribble`), and the doodle faces every avatar starts from.
 - "Sketchy" frames: outlines get a slight wobble from an SVG turbulence filter (`BrandSketchyFrame`), on borders
   only, never on text. Who's sketchy? is the playful second line (round start, reveal), not the tagline.
 - Sun (`#fbb03b`) is the lamp: it marks whose turn it is and the main action. Berry marks urgency (last seconds).

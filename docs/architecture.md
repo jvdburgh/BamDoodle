@@ -48,6 +48,7 @@ All live state lives in the process ([decision 0002](decisions/0002-in-memory-st
   unit tests drive, one or more per rule in [game-rules.md](game-rules.md).
 - **Players** get a random session token when they join; the browser keeps it in `localStorage` and sends it to take
   back the same seat (and score) after a refresh or a dropped connection. Nickname and avatar are client-side.
+  An avatar is a short list of strokes in the canvas's normalised point format, drawn in the lobby.
 - **Cleanup:** a player who is gone between rounds loses their seat after 2 minutes; a room with no players
   connected closes after 5 minutes (30 seconds if nobody ever joined it). Host screens don't keep a room open.
 - **Words** come from `words/<language>/<pack>.toml`, loaded at startup (`WORDS_DIR`). Players pick categories, not

@@ -1,14 +1,22 @@
+import { AvatarUtils } from "@/components/avatar/_utils/avatar.utils";
 import type { RoomPlayer, RoomSetup } from "@/components/room/_types/room.types";
 import { RoundUtils } from "@/components/room/_utils/round.utils";
 
-/** Six seats, the most a room is meant for; take the first three to six. */
+const seat = (id: string, name: string, avatarSeed: number): RoomPlayer => ({
+  id,
+  name,
+  avatarSeed,
+  avatar: AvatarUtils.face(avatarSeed),
+});
+
+/** Six seats, the most a room is meant for; take the first three to six. Everyone kept their starting face. */
 export const playersFixture: RoomPlayer[] = [
-  { id: "pip", name: "Pip", avatarSeed: 12 },
-  { id: "juno", name: "Juno", avatarSeed: 7 },
-  { id: "mo", name: "Mo", avatarSeed: 23 },
-  { id: "kiki", name: "Kiki", avatarSeed: 4 },
-  { id: "rafa", name: "Rafa", avatarSeed: 31 },
-  { id: "tess", name: "Tess", avatarSeed: 18 },
+  seat("pip", "Pip", 12),
+  seat("juno", "Juno", 7),
+  seat("mo", "Mo", 23),
+  seat("kiki", "Kiki", 4),
+  seat("rafa", "Rafa", 31),
+  seat("tess", "Tess", 18),
 ];
 
 /** Four letters from the server's code alphabet (no vowels, so no accidental words). */

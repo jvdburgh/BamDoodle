@@ -68,7 +68,12 @@ function freehandPath(points: number[][], size: number, hasPressure = false, com
 }
 
 /** A stroke as SVG path data in a `width` × `height` pixel space. */
-function strokeToPath(stroke: Stroke, width: number, height: number, complete = true): string {
+function strokeToPath(
+  stroke: Pick<Stroke, "points" | "size" | "hasPressure">,
+  width: number,
+  height: number,
+  complete = true,
+): string {
   const points = stroke.points.map(([x, y, pressure]) => [x * width, y * height, pressure]);
   return freehandPath(points, stroke.size * width, stroke.hasPressure, complete);
 }

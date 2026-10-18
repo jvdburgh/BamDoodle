@@ -1,3 +1,4 @@
+import type { AvatarStroke } from "@/components/avatar/_types/avatar.types";
 import type { Language } from "@/protocol/generated/Language";
 import type { TurnMode } from "@/protocol/generated/TurnMode";
 import type { WordCategory } from "@/protocol/generated/WordCategory";
@@ -5,8 +6,9 @@ import type { WordCategory } from "@/protocol/generated/WordCategory";
 export type RoomPlayer = {
   id: string;
   name: string;
-  /** Seed for the placeholder doodle avatar. */
+  /** Seed for this player's hand-drawn marks (rings, magnifier), so they wobble the same on every render. */
   avatarSeed: number;
+  avatar: AvatarStroke[];
 };
 
 export type { TurnMode };

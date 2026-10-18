@@ -1,8 +1,29 @@
+import type { AvatarEdit, AvatarHistory, AvatarStroke } from "@/components/avatar/_types/avatar.types";
 import { ScribbleUtils } from "@/components/brand/_utils/scribble.utils";
+import type { StrokePoint } from "@/components/canvas/_types/stroke.types";
+import { CanvasUtils } from "@/components/canvas/_utils/canvas.utils";
+import { CanvasTools } from "@/components/canvas/_utils/canvasTools.utils";
 
 type Points = number[][];
 
-/** A placeholder face in a 100 × 100 box, until players draw their own avatars in the lobby. */
+/** One pen for avatars, as a fraction of the avatar's width: the weight of the doodle faces. */
+const brushSize = 0.042;
+
+/** The canvas colours that read on the navy circle, white first. */
+const colours = ["White", "Peach", "Blush", "Berry", "Tomato", "Sun", "Lemon", "Lime", "Lagoon", "Violet"].flatMap(
+  (name) => CanvasTools.colours.filter((colour) => colour.name === name),
+);
+
+/** The doodle faces' colour, and the pen players start with. */
+const white = "#ffffff";
+
+/** What one avatar may hold, so it fits in one message to the room (server limit: 16 KiB). */
+const limits = { strokes: 48, points: 700 };
+
+/** Coarser than the main canvas: an avatar is small on every screen, and it goes to everyone in the room. */
+const SIMPLIFY_TOLERANCE = 0.006;
+
+/** A random face in a 100 × 100 box, repeatable for the same seed: where every avatar starts. */
 function doodle(seed: number): Points[] {
   const rand = ScribbleUtils.random(seed);
   const pick = (count: number) => Math.floor(rand() * count);
@@ -52,4 +73,46 @@ function doodle(seed: number): Points[] {
   return strokes;
 }
 
-export const AvatarUtils = { doodle };
+/** Normalised points to an avatar stroke in the one avatar pen, thinned out to what's worth sending. */
+function stroke(points: StrokePoint[], color: string, hasPressure = false): AvatarStroke {
+  return { color, size: brushSize, hasPressure, points: CanvasUtils.simplify(points, SIMPLIFY_TOLERANCE) };
+}
+
+/** Points in a 100 × 100 box (doodles, scribbles) to an avatar stroke. */
+function fromBox(points: number[][], color = white): AvatarStroke {
+  const round = (value: number) => Math.round(value * 100) / 10000;
+  return stroke(
+    points.map(([x = 0, y = 0]): StrokePoint => [round(x), round(y), 0.5]),
+    color,
+  );
+}
+
+/** The doodle face as avatar strokes, the shape players start from and can draw over. */
+function face(seed: number): AvatarStroke[] {
+  return doodle(seed).map((points) => fromBox(points));
+}
+
+const pointCount = (strokes: AvatarStroke[]) => strokes.reduce((count, { points }) => count + points.length, 0);
+
+/** True when one more stroke would take the avatar past `limits`. */
+function isFull(strokes: AvatarStroke[], next: AvatarStroke): boolean {
+  return strokes.length >= limits.strokes || pointCount(strokes) + next.points.length > limits.points;
+}
+
+/** Every edit keeps the avatar before it, so undo also brings back a cleared or shuffled face. */
+function edit(history: AvatarHistory, action: AvatarEdit): AvatarHistory {
+  const { past, present } = history;
+  switch (action.kind) {
+    case "draw":
+      if (isFull(present, action.stroke)) return history;
+      return { past: [...past, present], present: [...present, action.stroke] };
+    case "clear":
+      return present.length === 0 ? history : { past: [...past, present], present: [] };
+    case "shuffle":
+      return { past: [...past, present], present: face(action.seed) };
+    case "undo":
+      return past.length === 0 ? history : { past: past.slice(0, -1), present: past.at(-1) ?? [] };
+  }
+}
+
+export const AvatarUtils = { brushSize, colours, white, limits, doodle, stroke, fromBox, face, isFull, edit };

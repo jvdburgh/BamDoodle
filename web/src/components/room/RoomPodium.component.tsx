@@ -61,7 +61,7 @@ export function RoomPodium({ players, totals, youId = null, colours, onNewGame, 
               style={{ animationDelay: `${rises[index]}ms` }}
             >
               <AvatarDoodle
-                seed={player.avatarSeed}
+                strokes={player.avatar}
                 color={colours?.[player.id]}
                 className={index === 0 ? "size-20" : "size-14"}
               />
@@ -88,7 +88,7 @@ export function RoomPodium({ players, totals, youId = null, colours, onNewGame, 
             return (
               <li key={player.id} className="flex items-center gap-2 rounded-full bg-night-deep/70 py-1 pr-4 pl-1">
                 <span className="w-6 text-center font-display text-white/70">{standing.place}</span>
-                <AvatarDoodle seed={player.avatarSeed} color={colours?.[player.id]} className="size-7" />
+                <AvatarDoodle strokes={player.avatar} color={colours?.[player.id]} className="size-7" />
                 <span className="flex-1 truncate">{player.id === youId ? "You" : player.name}</span>
                 <span className="font-display">
                   {standing.total} {standing.total === 1 ? "pt" : "pts"}

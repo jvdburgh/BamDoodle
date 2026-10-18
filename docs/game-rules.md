@@ -36,10 +36,12 @@ can change the number of rounds between rounds; when that's already been reached
 
 ## A round
 
-1. **Lobby.** The start page offers **Join a room** (most people) or **Create a room**. Joining asks for the
-   four-letter room code (shown as "Join at bamdoodle.io with code …" on the host's screen) and a nickname, or skips
-   the code when you open a shared link; players draw or tweak their avatar while they wait. The host sets up the room: mode, turns per player or turn length, rounds per game, the language and the
-   word categories to play with (Efteling, Places, Very British, …, and 18+ ones if they want), then starts.
+1. **Lobby.** The start page offers **Join a room** (most people) or **Create a room**. Joining asks for the four-letter
+   room code (shown as "Join at bamdoodle.io with code …" on the host's screen) and a nickname, or skips the code when
+   you open a shared link; players draw or tweak their avatar while they wait (a random doodle face to start from,
+   shuffle for another; a small round pad with one pen and the colours that read on navy; undo and clear). The host sets
+   up the room: mode, turns per player or turn length, rounds per game, the language and the word categories to play
+   with (Efteling, Places, Very British, …, and 18+ ones if they want), then starts.
 2. **Secret.** The server picks a word from the chosen categories and tells each player their role.
 3. **Drawing.** Players take turns on the shared canvas in a shuffled order shown on screen; each player
    gets the same number of turns. The player whose turn it is is highlighted, and their strokes appear live for everyone.

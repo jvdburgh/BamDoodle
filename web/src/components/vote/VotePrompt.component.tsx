@@ -60,7 +60,7 @@ export function VotePrompt({ players, picked, voted, onLock, votedIds, msLeft, c
 
       {voted ? (
         <p ref={resultRef} tabIndex={-1} className="mt-3 flex items-center gap-2 outline-none" aria-live="polite">
-          <AvatarDoodle seed={voted.avatarSeed} color={colours?.[voted.id]} className="size-8" />
+          <AvatarDoodle strokes={voted.avatar} color={colours?.[voted.id]} className="size-8" />
           You voted <span className="font-display text-xl text-sun">{voted.name}</span>. No take-backs.
         </p>
       ) : (
@@ -87,7 +87,7 @@ export function VotePrompt({ players, picked, voted, onLock, votedIds, msLeft, c
           .map((player) => (
             <AvatarDoodle
               key={player.id}
-              seed={player.avatarSeed}
+              strokes={player.avatar}
               color={colours?.[player.id]}
               label={`${player.name} has voted`}
               className="size-6"

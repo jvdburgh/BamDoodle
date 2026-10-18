@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
+import type { AvatarHistory, AvatarStroke } from "@/components/avatar/_types/avatar.types";
 import { AvatarUtils } from "@/components/avatar/_utils/avatar.utils";
+import type { StrokePoint } from "@/components/canvas/_types/stroke.types";
 
 describe("AvatarUtils.doodle", () => {
   it("draws the same face for the same seed", () => {
@@ -25,5 +27,86 @@ describe("AvatarUtils.doodle", () => {
         }
       }
     }
+  });
+});
+
+describe("AvatarUtils.face", () => {
+  it("turns the doodle into white strokes normalised to 0..1", () => {
+    const face = AvatarUtils.face(4);
+    expect(face).toHaveLength(AvatarUtils.doodle(4).length);
+    for (const stroke of face) {
+      expect(stroke).toMatchObject({ color: "#ffffff", size: AvatarUtils.brushSize, hasPressure: false });
+      for (const [x, y, pressure] of stroke.points) {
+        expect(x).toBeGreaterThanOrEqual(0);
+        expect(x).toBeLessThanOrEqual(1);
+        expect(y).toBeGreaterThanOrEqual(0);
+        expect(y).toBeLessThanOrEqual(1);
+        expect(pressure).toBe(0.5);
+      }
+    }
+  });
+
+  it("keeps the doodle's shape, with fewer points", () => {
+    const doodle = AvatarUtils.doodle(4);
+    AvatarUtils.face(4).forEach(({ points }, index) => {
+      const original = doodle[index] ?? [];
+      expect(points.length).toBeLessThanOrEqual(original.length);
+      for (const [from, to] of [
+        [points[0], original[0]],
+        [points.at(-1), original.at(-1)],
+      ]) {
+        expect(from?.[0]).toBeCloseTo((to?.[0] ?? 0) / 100, 3);
+        expect(from?.[1]).toBeCloseTo((to?.[1] ?? 0) / 100, 3);
+      }
+    });
+  });
+
+  it("leaves room to draw within the limits", () => {
+    for (let seed = 0; seed < 200; seed++) {
+      const points = AvatarUtils.face(seed).reduce((count, stroke) => count + stroke.points.length, 0);
+      expect(points).toBeLessThan(AvatarUtils.limits.points / 2);
+    }
+  });
+});
+
+describe("AvatarUtils.edit", () => {
+  const face = AvatarUtils.face(1);
+  const line: AvatarStroke = { color: "#f13866", size: 0.04, hasPressure: false, points: [[0.2, 0.2, 0.5]] };
+  const start: AvatarHistory = { past: [], present: face };
+
+  it("adds a drawn stroke on top", () => {
+    expect(AvatarUtils.edit(start, { kind: "draw", stroke: line })).toEqual({ past: [face], present: [...face, line] });
+  });
+
+  it("undoes back to the previous avatar, one step at a time", () => {
+    const drawn = AvatarUtils.edit(start, { kind: "draw", stroke: line });
+    const twice = AvatarUtils.edit(drawn, { kind: "draw", stroke: line });
+    expect(AvatarUtils.edit(twice, { kind: "undo" })).toEqual(drawn);
+    expect(AvatarUtils.edit(AvatarUtils.edit(twice, { kind: "undo" }), { kind: "undo" })).toEqual(start);
+  });
+
+  it("can undo a clear and a shuffle", () => {
+    const cleared = AvatarUtils.edit(start, { kind: "clear" });
+    expect(cleared.present).toEqual([]);
+    expect(AvatarUtils.edit(cleared, { kind: "undo" })).toEqual(start);
+
+    const shuffled = AvatarUtils.edit(start, { kind: "shuffle", seed: 9 });
+    expect(shuffled.present).toEqual(AvatarUtils.face(9));
+    expect(AvatarUtils.edit(shuffled, { kind: "undo" })).toEqual(start);
+  });
+
+  it("refuses a stroke past the limits", () => {
+    const points = Array.from({ length: AvatarUtils.limits.points }, (): StrokePoint => [0.5, 0.5, 0.5]);
+    const long: AvatarStroke = { ...line, points };
+    expect(AvatarUtils.edit(start, { kind: "draw", stroke: long })).toBe(start);
+
+    const many: AvatarHistory = { past: [], present: Array.from({ length: AvatarUtils.limits.strokes }, () => line) };
+    expect(AvatarUtils.edit(many, { kind: "draw", stroke: line })).toBe(many);
+  });
+
+  it("does nothing when there is nothing to undo or clear", () => {
+    expect(AvatarUtils.edit(start, { kind: "undo" })).toBe(start);
+    const empty: AvatarHistory = { past: [face], present: [] };
+    expect(AvatarUtils.edit(empty, { kind: "clear" })).toBe(empty);
   });
 });

@@ -10,8 +10,8 @@ export type LabView = "player" | "host" | "both";
  * room; the rest are testing switches in the Lab panel.
  */
 export type LabSettings = {
-  /** The create-or-join start page, or straight into the room. */
-  screen: "start" | "room";
+  /** The create-or-join start page, the waiting room where you draw your avatar, or straight into the room. */
+  screen: "start" | "lobby" | "room";
   mode: TurnMode;
   turnsPerPlayer: number;
   turnSeconds: number;
@@ -34,7 +34,7 @@ const defaults: LabSettings = {
 };
 
 const choices: { [K in keyof LabSettings]: readonly LabSettings[K][] } = {
-  screen: ["start", "room"],
+  screen: ["start", "lobby", "room"],
   mode: ["oneStroke", "timed"],
   turnsPerPlayer: RoundUtils.TURNS_PER_PLAYER_CHOICES,
   turnSeconds: RoundUtils.TURN_SECOND_CHOICES,
