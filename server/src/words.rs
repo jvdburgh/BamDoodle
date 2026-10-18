@@ -85,17 +85,6 @@ impl WordLibrary {
                     category.language, category.name
                 ));
             }
-            // The bamboozler sees the category: a word equal to it gives the game away.
-            if let Some(word) = category
-                .words
-                .iter()
-                .find(|word| word.to_lowercase() == category.name.to_lowercase())
-            {
-                problems.push(format!(
-                    "{:?} category {:?} contains its own name ({word:?})",
-                    category.language, category.name
-                ));
-            }
         }
         Self { categories, problems }
     }
@@ -272,7 +261,7 @@ mod tests {
     }
 
     #[test]
-    fn a_word_equal_to_its_category_or_a_mixed_adult_category_is_a_problem() {
+    fn a_mixed_adult_category_is_a_problem_but_a_word_may_name_its_category() {
         let broken = WordLibrary::new(vec![
             WordPack {
                 language: Language::Nl,
@@ -288,9 +277,8 @@ mod tests {
                 categories: BTreeMap::from([("Na middernacht".into(), vec!["bierbuik".into()])]),
             },
         ]);
-        assert_eq!(broken.problems().len(), 2, "{:?}", broken.problems());
-        assert!(broken.problems().iter().any(|problem| problem.contains("its own name")));
-        assert!(broken.problems().iter().any(|problem| problem.contains("18+")));
+        assert_eq!(broken.problems().len(), 1, "{:?}", broken.problems());
+        assert!(broken.problems()[0].contains("18+"));
         assert!(library().problems().is_empty());
     }
 

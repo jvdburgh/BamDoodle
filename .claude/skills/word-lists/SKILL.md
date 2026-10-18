@@ -24,5 +24,6 @@ Read [docs/words.md](../../../docs/words.md) first: it has the allowed sources a
 - Credit sources in `words/NOTICE`. Our curated lists are CC BY-SA 4.0.
 - Keep files sorted alphabetically per category; no duplicates across categories in the same pack.
 - Dutch: check spelling against OpenTaal.
-- Never a word equal to its category name: the bamboozler sees the category. The server refuses to load such a list,
-  or a category that is 18+ in one file and everyday in another.
+- A category that is 18+ in one file and everyday in another stops the server from loading the lists.
+- Themed categories of real things (Efteling attractions, logos) list them all, by their real names, even when not
+  every one is easy to draw; that's part of the fun for people who know them. A word may equal its category name.

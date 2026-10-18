@@ -5,7 +5,8 @@
 - English and Dutch, simple, concrete, drawable words, grouped into categories (animals, food, objects, places,
   actions, …). Target about 800 to 1,200 base words per language, 10 to 14 categories of 50 to 100 words.
 - **Themed categories** players pick before a round: Dutch and English culture (Efteling, Sinterklaas, Typisch
-  Nederlands, Lekker Nederlands, Very British, Christmas, Fairy tales, Landmarks), more to come.
+  Nederlands, Lekker Nederlands, Very British, Christmas, Fairy tales, Landmarks) and Logos (Dutch and
+  international brands), more to come. Efteling has every attraction and figure.
 - **18+ categories** per language: about 150 to 300 suggestive but drawable words (think hangover,
   handcuffs, bikini). Rude is fine, hateful isn't: no slurs.
 - Every word has one obvious drawable meaning.
@@ -46,9 +47,11 @@ words/
   NOTICE            licence and credits for every source
   en/base.toml      everyday categories
   en/culture.toml   themed: Very British, Christmas, Fairy tales, Landmarks
+  en/logos.toml     Logos: Dutch and international brands
   en/adults.toml    adult = true
   nl/base.toml
-  nl/nederland.toml themed: Efteling, Sinterklaas, Typisch Nederlands, Lekker Nederlands
+  nl/nederland.toml themed: Efteling (every attraction and figure), Sinterklaas, Typisch Nederlands, Lekker Nederlands
+  nl/logos.toml     Logo's: Nederlandse en internationale merken
   nl/adults.toml
 ```
 
