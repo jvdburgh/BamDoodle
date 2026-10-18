@@ -13,6 +13,8 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   play: async ({ canvas }) => {
     await expect(canvas.getByText(/Made by Joris in the Netherlands/)).toBeVisible();
+    for (const flag of ["Dutch flag", "EU flag", "Ukrainian flag"])
+      await expect(canvas.getByRole("img", { name: flag })).toBeVisible();
     const github = canvas.getByRole("link", { name: "contribute on GitHub" });
     await expect(github).toHaveAttribute("href", "https://github.com/jvdburgh/BamDoodle");
     const donate = canvas.getByRole("link", { name: "donate to our friends in Ukraine" });

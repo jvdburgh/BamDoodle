@@ -13,19 +13,27 @@ export function LobbyFooter() {
         <span role="img" aria-label="Dutch flag">
           🇳🇱
         </span>{" "}
-        and hosted in the EU. Free and open source.
+        and hosted{" "}
+        <span className="whitespace-nowrap">
+          in the EU{" "}
+          <span role="img" aria-label="EU flag">
+            🇪🇺
+          </span>
+        </span>
       </p>
       <p>
-        To support this little game,{" "}
+        Free and open source. To support this little game,{" "}
         <a href={REPO_URL} target="_blank" rel="noopener noreferrer" className={link}>
           contribute on GitHub
         </a>{" "}
         and please{" "}
-        <a href={DONATE_URL} target="_blank" rel="noopener noreferrer" className={link}>
-          donate to our friends in Ukraine
-        </a>{" "}
-        <span role="img" aria-label="Ukrainian flag">
-          🇺🇦
+        <span className="whitespace-nowrap">
+          <a href={DONATE_URL} target="_blank" rel="noopener noreferrer" className={link}>
+            donate to our friends in Ukraine
+          </a>{" "}
+          <span role="img" aria-label="Ukrainian flag">
+            🇺🇦
+          </span>
         </span>
       </p>
     </footer>
