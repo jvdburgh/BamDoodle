@@ -1,5 +1,6 @@
 import { useId } from "react";
 import { AvatarDoodle } from "@/components/avatar/AvatarDoodle.component";
+import { BrandDonateCard } from "@/components/brand/BrandDonateCard.component";
 import { BrandStyles } from "@/components/brand/_utils/brandStyles.utils";
 import { RoomConfetti } from "@/components/room/RoomConfetti.component";
 import type { RoomPlayer } from "@/components/room/_types/room.types";
@@ -98,6 +99,7 @@ export function RoomPodium({ players, totals, youId = null, colours, onNewGame, 
           })}
         </ol>
       )}
+      <BrandDonateCard />
       {onNewGame && (
         <button type="button" onClick={onNewGame} className={BrandStyles.primaryButton}>
           New game

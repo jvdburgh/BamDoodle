@@ -147,6 +147,9 @@ export function RoomHostView({ state, revealCode = false, colours = "free", home
                   penTag={active && <RoomPenTag player={active} color={identities?.[active.id]} />}
                 >
                   {spotlit && (
+                    <BrandSketchyFrame bold className="animate-pop-in text-night motion-reduce:animate-none" />
+                  )}
+                  {spotlit && (
                     <div className="absolute top-3 left-3">
                       <RoomSpotlightChip player={spotlit} />
                     </div>

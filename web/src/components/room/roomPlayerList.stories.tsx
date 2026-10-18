@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
-import { expect, fn } from "storybook/test";
+import { expect, fn, waitFor } from "storybook/test";
 import { drawingFixture } from "@/components/canvas/_fixtures/drawing.fixture";
 import { RoomPlayerList } from "./RoomPlayerList.component";
 import { playersFixture } from "./_fixtures/players.fixture";
@@ -66,7 +66,7 @@ export const TurnOrder: Story = {
     ]);
     await expect(items[1]).toHaveTextContent(/Juno.*\(you\).*Drawing now/);
     await expect(items[2]).toHaveTextContent(/Mo.*Up next/);
-    await expect(canvas.getByRole("button", { name: "Spotlight Juno" })).toBeVisible();
+    await waitFor(() => expect(canvas.getByRole("button", { name: "Spotlight Juno" })).toBeVisible());
   },
 };
 
@@ -114,7 +114,7 @@ export const PickInTheFinalVote: Story = {
     await userEvent.click(kiki);
     await expect(args.action?.onChoose).toHaveBeenLastCalledWith(4);
     await expect(kiki).toHaveAccessibleName("Pick Kiki");
-    await expect(canvas.getByText("voted")).toBeVisible();
+    await waitFor(() => expect(canvas.getByText("voted")).toBeVisible());
   },
 };
 
@@ -130,6 +130,6 @@ export const HostRow: Story = {
   play: async ({ canvas }) => {
     await expect(canvas.queryByText("(you)")).toBeNull();
     await expect(canvas.queryByRole("button", { name: /suspicious \(/ })).toBeNull();
-    await expect(canvas.getByText("suspected by 2")).toBeVisible();
+    await waitFor(() => expect(canvas.getByText("suspected by 2")).toBeVisible());
   },
 };

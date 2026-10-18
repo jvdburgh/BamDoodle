@@ -1,5 +1,6 @@
 import { AvatarDoodle } from "@/components/avatar/AvatarDoodle.component";
 import { BrandScribble } from "@/components/brand/BrandScribble.component";
+import { BrandSketchyFrame } from "@/components/brand/BrandSketchyFrame.component";
 import { CanvasMiniMap } from "@/components/canvas/CanvasMiniMap.component";
 import type { Drawing } from "@/components/canvas/_utils/drawing.utils";
 import { RoomSuspectButton } from "@/components/room/RoomSuspectButton.component";
@@ -31,6 +32,8 @@ type RoomPlayerListProps = {
   yourVoteId?: number | null;
   /** Identity colour per player, when players have one (shade families). */
   colours?: Record<number, string>;
+  /** On the bamboozler's own screen, their face wears the fedora. */
+  youWearTheHat?: boolean;
   /** How many players suspect each player right now (public while drawing). */
   suspectedBy?: Record<number, number>;
   /** Who has locked a final vote (not for whom). */
@@ -70,6 +73,7 @@ export function RoomPlayerList({
   colours,
   suspectedBy = {},
   votedIds = [],
+  youWearTheHat = false,
   layout = "grid",
 }: RoomPlayerListProps) {
   return (
@@ -78,7 +82,7 @@ export function RoomPlayerList({
         aria-label="Players"
         className={`grid gap-2 ${layout === "row" ? `grid-cols-3 ${rowColumns[players.length] ?? rowColumns[6]}` : "grid-cols-2 @xs/players:grid-cols-3 @5xl/room:grid-cols-1"}`}
       >
-        {players.map((player) => {
+        {players.map((player, index) => {
           const you = player.id === youId;
           const active = player.id === activeId;
           const spotlit = player.id === spotlightId;
@@ -89,49 +93,60 @@ export function RoomPlayerList({
           const ring = chosen
             ? "shadow-[inset_0_0_0_2px_var(--color-berry)]"
             : spotlit
-              ? "shadow-[inset_0_0_0_2px_var(--color-white)]"
+              ? ""
               : active
                 ? "shadow-[inset_0_0_0_2px_var(--color-sun)]"
                 : "";
           const rail = layout === "grid";
+          const drawerRing = active && (
+            <BrandScribble
+              shape="ring"
+              seed={player.avatarSeed}
+              weight={1.4}
+              className="pointer-events-none absolute -inset-1 size-[calc(100%+0.5rem)] text-sun"
+            />
+          );
           return (
             <li
               key={player.id}
               onPointerEnter={(event) => event.pointerType === "mouse" && onPeek(player.id)}
               onPointerLeave={() => onPeek(null)}
-              className={`relative flex min-w-0 flex-col gap-1.5 rounded-[12px_16px_14px_10px] p-1.5 transition-colors ${
+              style={{ animationDelay: `${index * 60}ms` }}
+              className={`relative flex min-w-0 animate-card-in flex-col gap-1.5 rounded-[12px_16px_14px_10px] p-1.5 transition-colors motion-reduce:animate-none ${
                 rail
                   ? "@5xl/room:grid @5xl/room:grid-cols-[minmax(0,1fr)_5.5rem] @5xl/room:items-center @5xl/room:gap-x-2.5 @5xl/room:gap-y-1 @5xl/room:p-2"
                   : ""
               } ${active ? "bg-night-soft" : "bg-night-deep/70"} ${ring}`}
             >
+              {spotlit && <BrandSketchyFrame bold className="text-white" />}
               <div className={`min-w-0 ${rail ? "@5xl/room:col-start-1 @5xl/room:row-start-1" : ""}`}>
-                <div className="flex min-w-0 items-center gap-1.5">
-                  <span className="relative size-6 shrink-0">
-                    <AvatarDoodle strokes={player.avatar} color={colour} className="size-full" />
-                    {active && (
-                      <BrandScribble
-                        shape="ring"
-                        seed={player.avatarSeed}
-                        weight={1.4}
-                        className="absolute -inset-1 size-[calc(100%+0.5rem)] text-sun"
+                <div className="flex min-w-0 items-center gap-2">
+                  {action?.kind === "suspect" && !you ? (
+                    <RoomSuspectButton
+                      name={player.name}
+                      avatar={player.avatar}
+                      color={colour}
+                      suspected={chosen}
+                      onToggle={() => action.onChoose(chosen ? null : player.id)}
+                      ring={drawerRing}
+                      className="size-8"
+                    />
+                  ) : (
+                    <span className="relative size-8 shrink-0">
+                      <AvatarDoodle
+                        strokes={player.avatar}
+                        color={colour}
+                        hat={you && youWearTheHat ? "worn" : undefined}
+                        className="size-full"
                       />
-                    )}
-                  </span>
+                      {drawerRing}
+                    </span>
+                  )}
                   <span className={`min-w-0 truncate font-display leading-tight ${active ? "text-sun" : "text-white"}`}>
                     {player.name}
                     {you && <span className="ml-1 font-body text-xs text-white/65">(you)</span>}
                     {status && <span className="sr-only">, {status}</span>}
                   </span>
-                  {action?.kind === "suspect" && !you && (
-                    <span className="ml-auto">
-                      <RoomSuspectButton
-                        name={player.name}
-                        suspected={chosen}
-                        onToggle={() => action.onChoose(chosen ? null : player.id)}
-                      />
-                    </span>
-                  )}
                 </div>
                 {(votedIds.includes(player.id) || suspects > 0 || yourVoteId === player.id) && (
                   <p className="mt-1 flex flex-wrap gap-1 text-xs">
@@ -139,10 +154,17 @@ export function RoomPlayerList({
                       <span className="rounded-full bg-berry px-1.5 font-semibold text-night">your vote</span>
                     )}
                     {votedIds.includes(player.id) && (
-                      <span className="rounded-full bg-sun px-1.5 text-night">voted</span>
+                      <span className="animate-pop-in rounded-full bg-sun px-1.5 text-night motion-reduce:animate-none">
+                        voted
+                      </span>
                     )}
                     {suspects > 0 && (
-                      <span className="rounded-full bg-night px-1.5 text-white/85">suspected by {suspects}</span>
+                      <span
+                        key={suspects}
+                        className="animate-pop-in rounded-full bg-night px-1.5 text-white/85 motion-reduce:animate-none"
+                      >
+                        suspected by {suspects}
+                      </span>
                     )}
                   </p>
                 )}

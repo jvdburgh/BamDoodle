@@ -86,3 +86,25 @@ export const Faces: Story = {
     await expect(canvas.getAllByRole("img")).toHaveLength(24);
   },
 };
+
+export const WearingTheHat: Story = {
+  args: { hat: "worn", className: "mt-12 size-32" },
+  play: async ({ canvasElement }) => {
+    await expect(canvasElement.querySelector("img.animate-hat-drop")).not.toBeNull();
+  },
+};
+
+export const HatPreviewOnHover: Story = {
+  args: { hat: "preview", className: "mt-12 size-32" },
+  render: (args) => (
+    <button type="button" aria-label="Mark Pip as suspicious" className="group rounded-full">
+      <AvatarDoodle {...args} />
+    </button>
+  ),
+  play: async ({ canvas, canvasElement, userEvent }) => {
+    const hat = canvasElement.querySelector("img");
+    await expect(hat).toHaveClass("opacity-0");
+    await userEvent.hover(canvas.getByRole("button", { name: "Mark Pip as suspicious" }));
+    await expect(hat).toHaveClass("group-hover:opacity-60");
+  },
+};

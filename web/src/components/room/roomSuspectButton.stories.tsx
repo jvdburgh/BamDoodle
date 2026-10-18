@@ -1,17 +1,19 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { expect, userEvent, waitFor } from "storybook/test";
+import { AvatarUtils } from "@/components/avatar/_utils/avatar.utils";
 import { RoomSuspectButton } from "./RoomSuspectButton.component";
 
 const meta = {
   title: "Room/RoomSuspectButton",
   component: RoomSuspectButton,
-  args: { name: "Juno", suspected: false, onToggle: () => {} },
+  args: { name: "Juno", avatar: AvatarUtils.face(7), suspected: false, onToggle: () => {}, className: "size-8" },
   render: function Render(args) {
     const [suspected, setSuspected] = useState(args.suspected);
     return (
-      <div className="relative flex h-32 w-32 justify-end rounded-[12px_16px_14px_10px] bg-night-deep/70 p-1.5">
+      <div className="relative flex h-32 w-36 items-start gap-2 rounded-[12px_16px_14px_10px] bg-night-deep/70 p-1.5 pt-4">
         <RoomSuspectButton {...args} suspected={suspected} onToggle={() => setSuspected(!suspected)} />
+        <span className="font-display">{args.name}</span>
       </div>
     );
   },

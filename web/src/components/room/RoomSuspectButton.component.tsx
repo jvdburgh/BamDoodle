@@ -1,21 +1,37 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { AvatarDoodle } from "@/components/avatar/AvatarDoodle.component";
+import type { AvatarStroke } from "@/components/avatar/_types/avatar.types";
 
-/** The fedora from the logo, cropped out of the same file. */
-const HAT_SRC = "/logo.svg#svgView(viewBox(380,250,1500,880))";
 const LABEL_FLASH_MS = 1600;
 
 type RoomSuspectButtonProps = {
   name: string;
+  avatar: AvatarStroke[];
+  /** Identity colour, when players have one (shade families). */
+  color?: string;
   suspected: boolean;
   onToggle: () => void;
+  /** Drawn over the face, like the active drawer's ring. */
+  ring?: ReactNode;
+  /** Size of the face. */
+  className?: string;
 };
 
 /**
- * The hat with an exclamation mark on a player card: tap to suspect that player, tap again to take it back. Its label
- * shows on hover and focus, and for a moment after a tap so touch screens see what happened, as a band across the
- * card it sits in (the nearest positioned ancestor), so it never runs off a narrow screen.
+ * A player's face on their card, as the way to suspect them: hover or focus shows the fedora faintly over it with
+ * "Mark as suspicious", a tap puts the hat on (it drops onto their head), another tap takes it off. The label shows as
+ * a band across the card it sits in (the nearest positioned ancestor), and for a moment after a tap, so touch screens
+ * see what happened.
  */
-export function RoomSuspectButton({ name, suspected, onToggle }: RoomSuspectButtonProps) {
+export function RoomSuspectButton({
+  name,
+  avatar,
+  color,
+  suspected,
+  onToggle,
+  ring,
+  className = "",
+}: RoomSuspectButtonProps) {
   const [flash, setFlash] = useState(false);
   useEffect(() => {
     if (!flash) return;
@@ -25,34 +41,31 @@ export function RoomSuspectButton({ name, suspected, onToggle }: RoomSuspectButt
 
   return (
     <>
-      <button
-        type="button"
-        aria-pressed={suspected}
-        aria-label={`Mark ${name} as suspicious`}
-        onClick={() => {
-          onToggle();
-          setFlash(true);
-        }}
-        className={`peer grid size-8 shrink-0 place-items-center rounded-full bg-night ring-2 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
-          suspected ? "ring-berry" : "ring-transparent hover:ring-white/30"
-        }`}
-      >
-        <span className="relative grid place-items-center" aria-hidden="true">
-          <img src={HAT_SRC} alt="" className="w-6" />
-          <span
-            className={`absolute -top-2.5 -right-2.5 grid size-4 place-items-center rounded-full font-display text-xs leading-none ${
-              suspected ? "bg-berry text-night" : "bg-white text-night"
-            }`}
-          >
-            !
-          </span>
-        </span>
-      </button>
+      <span className={`peer relative shrink-0 ${className}`}>
+        <button
+          type="button"
+          aria-pressed={suspected}
+          aria-label={`Mark ${name} as suspicious`}
+          onClick={() => {
+            onToggle();
+            setFlash(true);
+          }}
+          className="group grid size-full place-items-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+        >
+          <AvatarDoodle
+            strokes={avatar}
+            color={color}
+            hat={suspected ? "worn" : "preview"}
+            className="size-full transition-transform group-hover:-rotate-6 group-active:scale-90 motion-reduce:transition-none"
+          />
+        </button>
+        {ring}
+      </span>
       <span
         aria-hidden="true"
-        className={`pointer-events-none absolute inset-x-1 top-10 z-10 rounded-lg bg-night px-2 py-1 text-center text-xs font-semibold shadow-[0_3px_0_var(--color-night-deep)] transition-opacity motion-reduce:transition-none ${
+        className={`pointer-events-none absolute inset-x-1 top-12 z-10 rounded-lg bg-night px-2 py-1 text-center text-xs font-semibold shadow-[0_3px_0_var(--color-night-deep)] transition-opacity motion-reduce:transition-none ${
           suspected ? "text-berry" : "text-white"
-        } ${flash ? "opacity-100" : "opacity-0 peer-hover:opacity-100 peer-focus-visible:opacity-100"}`}
+        } ${flash ? "opacity-100" : "opacity-0 peer-hover:opacity-100 peer-has-focus-visible:opacity-100"}`}
       >
         {suspected ? "Marked as suspicious" : "Mark as suspicious"}
       </span>

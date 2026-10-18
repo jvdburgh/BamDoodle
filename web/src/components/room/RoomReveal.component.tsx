@@ -30,7 +30,9 @@ export function RoomReveal({ players, bamboozlerId, votes, youId = null, colours
         <AvatarDoodle
           strokes={bamboozler.avatar}
           color={colours?.[bamboozler.id]}
-          className={big ? "size-36" : "size-24"}
+          hat="worn"
+          hatDelayMs={1200}
+          className={big ? "mt-10 size-36" : "mt-6 size-24"}
         />
         <p className={`font-display text-berry ${big ? "text-6xl" : "text-4xl"}`}>
           {bamboozler.id === youId ? "You!" : bamboozler.name}

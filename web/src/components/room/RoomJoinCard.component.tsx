@@ -34,7 +34,7 @@ export function RoomJoinCard({ roomCode, big = false, reveal = false, children }
       className={`relative flex flex-col items-center text-center shadow-[0_6px_0_var(--color-night-deep)] ${animate("animate-card-in")} ${
         big
           ? "gap-4 rounded-[20px_28px_24px_18px] bg-night px-10 py-8"
-          : "gap-3 rounded-[18px_24px_20px_16px] bg-night px-6 py-5"
+          : "gap-2 rounded-[18px_24px_20px_16px] bg-night px-4 py-3 sm:gap-3 sm:px-6 sm:py-5"
       }`}
     >
       <span
@@ -46,7 +46,9 @@ export function RoomJoinCard({ roomCode, big = false, reveal = false, children }
       <p className={`${big ? "text-xl" : "text-sm"} text-white/80 ${animate("animate-rise-in")}`} style={delay(300)}>
         Join at <span className="font-semibold text-white">{JOIN_AT}</span> with code
       </p>
-      <p className={`relative font-display tracking-[0.2em] ${big ? "pl-[0.2em] text-7xl" : "pl-[0.2em] text-5xl"}`}>
+      <p
+        className={`relative font-display tracking-[0.2em] ${big ? "pl-[0.2em] text-7xl" : "pl-[0.2em] text-4xl sm:text-5xl"}`}
+      >
         <span className="sr-only">Room code {roomCode}</span>
         <span aria-hidden="true">
           {roomCode.split("").map((letter, index) => (

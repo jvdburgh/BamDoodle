@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import { BrandLogo } from "@/components/brand/BrandLogo.component";
+import { BrandSketchyFrame } from "@/components/brand/BrandSketchyFrame.component";
 import { BrandTagline } from "@/components/brand/BrandTagline.component";
 import { BrandStyles } from "@/components/brand/_utils/brandStyles.utils";
 import { CanvasBoard } from "@/components/canvas/CanvasBoard.component";
@@ -262,6 +263,9 @@ export function RoomPlayerView({
                   penTag={active && <RoomPenTag player={active} color={identities?.[active.id]} />}
                 >
                   {spotlit && (
+                    <BrandSketchyFrame bold className="animate-pop-in text-night motion-reduce:animate-none" />
+                  )}
+                  {spotlit && (
                     <div className="absolute top-2 left-2">
                       <RoomSpotlightChip player={spotlit} you={spotlit.id === you?.id} />
                     </div>
@@ -328,6 +332,7 @@ export function RoomPlayerView({
                   colours={identities}
                   suspectedBy={phase === "drawing" ? RoomViewUtils.suspectedBy(round) : {}}
                   votedIds={phase === "voting" ? (round?.voted ?? []) : []}
+                  youWearTheHat={youAreBamboozler && !result}
                 />
               </div>
               <div className="hidden @5xl/room:block">{progress}</div>

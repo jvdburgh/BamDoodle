@@ -201,7 +201,7 @@ export const ShadesPerPlayer: Story = {
 export const Laptop: Story = {
   args: { width: "1100px" },
   play: async ({ canvas }) => {
-    await expect(canvas.getByText("(you)")).toBeVisible();
+    await waitFor(() => expect(canvas.getByText("(you)")).toBeVisible());
     await expect(canvas.getByRole("status", { name: "Round progress" })).toHaveTextContent("Pip’s turn");
   },
 };

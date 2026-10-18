@@ -1,9 +1,9 @@
 import { useEffect, useId, useRef, type FormEvent, type Ref } from "react";
+import { BrandFooter } from "@/components/brand/BrandFooter.component";
 import { BrandLogo } from "@/components/brand/BrandLogo.component";
 import { BrandSketchyFrame } from "@/components/brand/BrandSketchyFrame.component";
 import { BrandStyles } from "@/components/brand/_utils/brandStyles.utils";
 import { LobbyCategoryPicker } from "@/components/lobby/LobbyCategoryPicker.component";
-import { LobbyFooter } from "@/components/lobby/LobbyFooter.component";
 import { LobbySetupUtils } from "@/components/lobby/_utils/lobbySetup.utils";
 import type { Attribution } from "@/components/room/_types/room.types";
 import type { Language } from "@/protocol/generated/Language";
@@ -164,7 +164,7 @@ export function LobbySetup({
           </form>
         </div>
       </main>
-      <LobbyFooter />
+      <BrandFooter />
     </div>
   );
 }

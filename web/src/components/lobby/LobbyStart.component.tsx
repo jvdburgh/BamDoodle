@@ -1,9 +1,9 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
+import { BrandFooter } from "@/components/brand/BrandFooter.component";
 import { BrandLogo } from "@/components/brand/BrandLogo.component";
 import { BrandSketchyFrame } from "@/components/brand/BrandSketchyFrame.component";
 import { BrandTagline } from "@/components/brand/BrandTagline.component";
 import { BrandStyles } from "@/components/brand/_utils/brandStyles.utils";
-import { LobbyFooter } from "@/components/lobby/LobbyFooter.component";
 
 export type LobbyEntry = { name: string } & ({ kind: "create" } | { kind: "join"; code: string });
 
@@ -93,7 +93,7 @@ export function LobbyStart({
     <div className="flex min-h-svh flex-col">
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-8 px-5 py-10">
         <div className="flex flex-col items-center gap-2 text-center">
-          <BrandLogo className="size-28" />
+          <BrandLogo className="size-28 hover:animate-wiggle motion-reduce:hover:animate-none" />
           <h2 className="font-display text-5xl">BamDoodle</h2>
           <BrandTagline />
         </div>
@@ -168,7 +168,7 @@ export function LobbyStart({
           </form>
         )}
       </main>
-      <LobbyFooter />
+      <BrandFooter />
     </div>
   );
 }

@@ -76,6 +76,11 @@ Modern, a bit mysterious, colourful. It should feel like a hand-made little game
   first; a headless library only where accessibility is hard (dialogs, menus).
 - The bamboozler's own logo moves (`BrandLogo sly`): the coat's collar goes up and the hat's colour wedges swirl,
   twice as each round starts, then rest. The logo is inlined from `/logo.svg` for that, never redrawn.
-- No unlockables, no dark patterns. The only promotion is the start page's small footer, in the maintainer's voice:
-  made in the Netherlands, hosted in the EU, free and open source; contribute on GitHub, and donate to our friends in
-  Ukraine (United24, Ukraine's official fundraising platform).
+- The fedora is a prop: it drops onto the face of whoever you suspect, sits on the bamboozler's own face on their
+  screen, and lands on the bamboozler at the reveal. A spotlight gets a bold, wobbly frame on the sheet and the card.
+- Small, quick motion makes it feel alive: block buttons tilt and lift on hover and squish when pressed, player cards
+  bounce in, "voted" and "suspected by" badges pop, the start page's logo wiggles on hover. Reduced motion turns it off.
+- No unlockables, no dark patterns. The only promotion is one line, in the maintainer's voice, under the start page
+  and the setup ("Made by Joris van der Burgh in the Netherlands / Hosted in the European Union") and after the last
+  round: "Enjoying BamDoodle? Help out on GitHub, and please donate to our friends in Ukraine" (United24, Ukraine's
+  official fundraising platform). Plain links, no banner.
