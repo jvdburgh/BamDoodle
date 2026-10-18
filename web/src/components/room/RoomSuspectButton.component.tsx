@@ -11,8 +11,9 @@ type RoomSuspectButtonProps = {
 };
 
 /**
- * The hat with an exclamation mark on a player card: tap to suspect that player, tap again to take it back. The
- * label unfolds on hover and focus, and for a moment after a tap, so touch screens see what happened.
+ * The hat with an exclamation mark on a player card: tap to suspect that player, tap again to take it back. Its label
+ * shows on hover and focus, and for a moment after a tap so touch screens see what happened, as a band across the
+ * card it sits in (the nearest positioned ancestor), so it never runs off a narrow screen.
  */
 export function RoomSuspectButton({ name, suspected, onToggle }: RoomSuspectButtonProps) {
   const [flash, setFlash] = useState(false);
@@ -30,14 +31,14 @@ export function RoomSuspectButton({ name, suspected, onToggle }: RoomSuspectButt
         onToggle();
         setFlash(true);
       }}
-      className={`group inline-flex h-8 items-center rounded-full bg-night pr-1 pl-1.5 text-xs font-semibold whitespace-nowrap ring-2 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
-        suspected ? "text-berry ring-berry" : "text-white/90 ring-transparent hover:ring-white/30"
+      className={`group grid size-8 shrink-0 place-items-center rounded-full bg-night ring-2 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+        suspected ? "ring-berry" : "ring-transparent hover:ring-white/30"
       }`}
     >
-      <span className="relative grid size-6 shrink-0 place-items-center" aria-hidden="true">
+      <span className="relative grid place-items-center" aria-hidden="true">
         <img src={HAT_SRC} alt="" className="w-6" />
         <span
-          className={`absolute -top-1 -right-1 grid size-3.5 place-items-center rounded-full font-display text-[0.7rem] leading-none ${
+          className={`absolute -top-2.5 -right-2.5 grid size-4 place-items-center rounded-full font-display text-xs leading-none ${
             suspected ? "bg-berry text-night" : "bg-white text-night"
           }`}
         >
@@ -45,11 +46,9 @@ export function RoomSuspectButton({ name, suspected, onToggle }: RoomSuspectButt
         </span>
       </span>
       <span
-        className={`overflow-hidden transition-[max-width,padding] duration-200 motion-reduce:transition-none ${
-          flash
-            ? "max-w-40 px-1.5"
-            : "max-w-0 group-hover:max-w-40 group-hover:px-1.5 group-focus-visible:max-w-40 group-focus-visible:px-1.5"
-        }`}
+        className={`pointer-events-none absolute inset-x-1 top-10 z-10 rounded-lg bg-night px-2 py-1 text-center text-xs font-semibold shadow-[0_3px_0_var(--color-night-deep)] transition-opacity motion-reduce:transition-none ${
+          suspected ? "text-berry" : "text-white"
+        } ${flash ? "opacity-100" : "opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100"}`}
       >
         {suspected ? "Marked as suspicious" : "Mark as suspicious"}
         <span className="sr-only"> ({name})</span>

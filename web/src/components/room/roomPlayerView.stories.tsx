@@ -56,7 +56,7 @@ export const Watching: Story = {
     await expect(canvas.getAllByRole("listitem")).toHaveLength(6);
     await expect(canvas.getAllByRole("radio", { name: /Black|Berry|Lagoon/ })).toHaveLength(3);
 
-    await userEvent.click(canvas.getByRole("button", { name: /sketchy \(Mo\)/ }));
+    await userEvent.click(canvas.getByRole("button", { name: "Mark as suspicious (Mo)" }));
     await expect(args.send).toHaveBeenCalledWith({ type: "suspect", suspectId: 3 });
   },
 };

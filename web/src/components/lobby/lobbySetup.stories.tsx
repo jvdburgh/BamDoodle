@@ -55,13 +55,13 @@ export const SetUpTheRoom: Story = {
     await expect(canvas.getByRole("checkbox", { name: /Dieren/ })).toBeChecked();
     await expect(canvas.getByRole("checkbox", { name: /Na middernacht/ })).not.toBeChecked();
     await userEvent.click(canvas.getByRole("button", { name: "Clear" }));
-    await expect(canvas.getByRole("button", { name: "Done" })).toBeDisabled();
+    await expect(canvas.getByRole("button", { name: "Go to the room" })).toBeDisabled();
     await userEvent.click(canvas.getByText("Efteling"));
     await userEvent.click(canvas.getByText("Na middernacht"));
     await expect(args.onChange).toHaveBeenLastCalledWith(
       expect.objectContaining({ language: "nl", categories: ["Efteling", "Na middernacht"] }),
     );
-    await userEvent.click(canvas.getByRole("button", { name: "Done" }));
+    await userEvent.click(canvas.getByRole("button", { name: "Go to the room" }));
     await expect(args.onDone).toHaveBeenCalled();
   },
 };

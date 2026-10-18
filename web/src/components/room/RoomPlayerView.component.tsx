@@ -257,18 +257,7 @@ export function RoomPlayerView({
                 >
                   {spotlit && (
                     <div className="absolute top-2 left-2">
-                      <RoomSpotlightChip
-                        player={spotlit}
-                        you={spotlit.id === you?.id}
-                        onClear={
-                          spotlight.pinned !== null
-                            ? () => {
-                                spotlight.pin(null);
-                                cardsRef.current?.focus();
-                              }
-                            : undefined
-                        }
-                      />
+                      <RoomSpotlightChip player={spotlit} you={spotlit.id === you?.id} />
                     </div>
                   )}
                   <div className="absolute right-2 bottom-2 max-w-[70%]">

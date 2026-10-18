@@ -49,9 +49,11 @@ it, and it reads as a lit sheet on the navy table. (A night-navy sheet was tried
 ## Sound
 
 Every sound is synthesised in the browser with the Web Audio API (`web/src/components/sound/`): short triangle and
-square-wave notes and a filtered-noise pencil scratch. No audio files, so nothing to license, credit or download.
+square-wave notes and filtered noise. No audio files, so nothing to license, credit or download.
 Cues: a start jingle, a blip per turn (brighter when it's yours), ticks in the last 3 seconds of a turn and the last 5
 of the vote, a falling chime when time's up, and small sounds for picking a colour, finishing a stroke and voting.
+While anyone draws, a very soft pencil-on-paper bed (grainy band-passed noise) follows the stroke: louder and
+brighter as the pen moves faster, fading out as soon as points stop or the stroke ends.
 Quiet by default, silent until the first tap (browsers require it), and a mute toggle remembered per device.
 
 ## Feel
@@ -66,5 +68,7 @@ Modern, a bit mysterious, colourful. It should feel like a hand-made little game
 - Sun (`#fbb03b`) is the lamp: it marks whose turn it is and the main action. Berry marks urgency (last seconds).
 - No default component-kit look (generic shadcn cards, Inter, purple gradients). Tailwind with our own components
   first; a headless library only where accessibility is hard (dialogs, menus).
-- No unlockables, no dark patterns. The only promotion is a small, optional support banner for good causes
-  (Mozilla, United24).
+- The bamboozler's own logo moves (`BrandLogo sly`): the coat's collar goes up and the hat's colour wedges swirl,
+  then settle. The logo is inlined from `/logo.svg` for that, never redrawn.
+- No unlockables, no dark patterns. The only promotion is the start page's small footer: the GitHub repo to help
+  out, and a "Donate to United24" link (Ukraine's official fundraising platform).

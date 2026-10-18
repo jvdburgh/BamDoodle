@@ -17,7 +17,7 @@ export const CreateThenSetUp: Story = {
     await userEvent.click(canvas.getByRole("button", { name: "Create room" }));
     await expect(canvas.getByRole("heading", { name: "Set up your room" })).toBeVisible();
     await expect(canvas.getByRole("group", { name: "Colours" })).toBeVisible();
-    await userEvent.click(canvas.getByRole("button", { name: "Done" }));
+    await userEvent.click(canvas.getByRole("button", { name: "Go to the room" }));
     await expect(canvas.getByRole("heading", { name: /Draw your face/ })).toBeVisible();
   },
 };

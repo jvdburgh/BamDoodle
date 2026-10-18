@@ -3,6 +3,7 @@ import { BrandLogo } from "@/components/brand/BrandLogo.component";
 import { BrandSketchyFrame } from "@/components/brand/BrandSketchyFrame.component";
 import { BrandTagline } from "@/components/brand/BrandTagline.component";
 import { BrandStyles } from "@/components/brand/_utils/brandStyles.utils";
+import { LobbyFooter } from "@/components/lobby/LobbyFooter.component";
 
 export type LobbyEntry = { name: string } & ({ kind: "create" } | { kind: "join"; code: string });
 
@@ -89,82 +90,85 @@ export function LobbyStart({
   );
 
   return (
-    <main className="mx-auto flex min-h-svh max-w-md flex-col items-center justify-center gap-8 px-5 py-10">
-      <div className="flex flex-col items-center gap-2 text-center">
-        <BrandLogo className="size-28" />
-        <h2 className="font-display text-5xl">BamDoodle</h2>
-        <BrandTagline />
-      </div>
-
-      {step === "choose" ? (
-        <div className="grid w-full gap-3">
-          <button
-            ref={joinButton}
-            type="button"
-            onClick={() => go("join")}
-            className={`${BrandStyles.primaryButton} w-full`}
-          >
-            Join a room
-          </button>
-          <button
-            ref={createButton}
-            type="button"
-            onClick={() => go("create")}
-            className={`${BrandStyles.quietButton} w-full`}
-          >
-            Create a room
-          </button>
+    <div className="flex min-h-svh flex-col">
+      <main className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-8 px-5 py-10">
+        <div className="flex flex-col items-center gap-2 text-center">
+          <BrandLogo className="size-28" />
+          <h2 className="font-display text-5xl">BamDoodle</h2>
+          <BrandTagline />
         </div>
-      ) : (
-        <form
-          onSubmit={submit}
-          className="relative grid w-full gap-5 rounded-[18px_24px_20px_16px] bg-night-soft/50 p-5"
-        >
-          <BrandSketchyFrame className="text-white/25" />
-          <h3 className="font-display text-2xl">{step === "join" ? "Join a room" : "And you are?"}</h3>
 
-          {step === "join" && (
-            <>
-              <div className="grid gap-1.5">
-                <label htmlFor={codeId} className="text-sm text-white/70">
-                  Room code
-                </label>
-                <input
-                  ref={defaultCode ? undefined : first}
-                  id={codeId}
-                  value={code}
-                  onChange={(event) =>
-                    setCode(event.target.value.toUpperCase().replace(NOT_IN_CODE, "").slice(0, CODE_LENGTH))
-                  }
-                  autoComplete="off"
-                  autoCapitalize="characters"
-                  spellCheck={false}
-                  placeholder="BKZW"
-                  className={`${field} font-display text-3xl tracking-[0.3em] uppercase`}
-                />
-              </div>
-              {nameField}
-            </>
-          )}
-
-          {step === "create" && nameField}
-
-          {problem && (
-            <p role="alert" className="text-sm text-berry">
-              {problem}
-            </p>
-          )}
-
-          <div className="flex items-center justify-between gap-3">
-            <button type="button" onClick={() => go("choose")} className={BrandStyles.ghostButton}>
-              Back
+        {step === "choose" ? (
+          <div className="grid w-full gap-3">
+            <button
+              ref={joinButton}
+              type="button"
+              onClick={() => go("join")}
+              className={`${BrandStyles.primaryButton} w-full`}
+            >
+              Join a room
             </button>
-            <button type="submit" disabled={!canSubmit} className={BrandStyles.primaryButton}>
-              {busy ? "Just a sec…" : step === "join" ? "Join" : "Create room"}
+            <button
+              ref={createButton}
+              type="button"
+              onClick={() => go("create")}
+              className={`${BrandStyles.quietButton} w-full`}
+            >
+              Create a room
             </button>
           </div>
-        </form>
-      )}
-    </main>
+        ) : (
+          <form
+            onSubmit={submit}
+            className="relative grid w-full gap-5 rounded-[18px_24px_20px_16px] bg-night-soft/50 p-5"
+          >
+            <BrandSketchyFrame className="text-white/25" />
+            <h3 className="font-display text-2xl">{step === "join" ? "Join a room" : "And you are?"}</h3>
+
+            {step === "join" && (
+              <>
+                <div className="grid gap-1.5">
+                  <label htmlFor={codeId} className="text-sm text-white/70">
+                    Room code
+                  </label>
+                  <input
+                    ref={defaultCode ? undefined : first}
+                    id={codeId}
+                    value={code}
+                    onChange={(event) =>
+                      setCode(event.target.value.toUpperCase().replace(NOT_IN_CODE, "").slice(0, CODE_LENGTH))
+                    }
+                    autoComplete="off"
+                    autoCapitalize="characters"
+                    spellCheck={false}
+                    placeholder="BKZW"
+                    className={`${field} font-display text-3xl tracking-[0.3em] uppercase`}
+                  />
+                </div>
+                {nameField}
+              </>
+            )}
+
+            {step === "create" && nameField}
+
+            {problem && (
+              <p role="alert" className="text-sm text-berry">
+                {problem}
+              </p>
+            )}
+
+            <div className="flex items-center justify-between gap-3">
+              <button type="button" onClick={() => go("choose")} className={BrandStyles.ghostButton}>
+                Back
+              </button>
+              <button type="submit" disabled={!canSubmit} className={BrandStyles.primaryButton}>
+                {busy ? "Just a sec…" : step === "join" ? "Join" : "Create room"}
+              </button>
+            </div>
+          </form>
+        )}
+      </main>
+      <LobbyFooter />
+    </div>
   );
 }

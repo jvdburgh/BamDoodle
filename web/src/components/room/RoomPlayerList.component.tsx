@@ -2,11 +2,12 @@ import { AvatarDoodle } from "@/components/avatar/AvatarDoodle.component";
 import { BrandScribble } from "@/components/brand/BrandScribble.component";
 import { CanvasMiniMap } from "@/components/canvas/CanvasMiniMap.component";
 import type { Drawing } from "@/components/canvas/_utils/drawing.utils";
+import { RoomSuspectButton } from "@/components/room/RoomSuspectButton.component";
 import type { RoomPlayer } from "@/components/room/_types/room.types";
 
 /**
- * What the card's button does: mark someone as sketchy while drawing (changeable, public), or pick them in the final
- * vote. Left out on the host screen and once you've voted.
+ * What the card's button does: the hat marks someone as suspicious while drawing (changeable, public), a button picks
+ * them in the final vote. Left out on the host screen and once you've voted.
  */
 export type RoomPlayerAction = {
   kind: "suspect" | "vote";
@@ -53,7 +54,7 @@ const rowColumns: Record<number, string> = {
 
 /**
  * The turn order and who drew what: one card per player with a live mini-map of only their strokes (click it to
- * spotlight them on the canvas), and the button to mark them as sketchy or, in the final vote, to pick them.
+ * spotlight them on the canvas), and the hat to mark them as suspicious or, in the final vote, a button to pick them.
  */
 export function RoomPlayerList({
   players,
@@ -98,14 +99,14 @@ export function RoomPlayerList({
               key={player.id}
               onPointerEnter={(event) => event.pointerType === "mouse" && onPeek(player.id)}
               onPointerLeave={() => onPeek(null)}
-              className={`flex min-w-0 flex-col gap-1.5 rounded-[12px_16px_14px_10px] p-1.5 transition-colors ${
+              className={`relative flex min-w-0 flex-col gap-1.5 rounded-[12px_16px_14px_10px] p-1.5 transition-colors ${
                 rail
                   ? "@5xl/room:grid @5xl/room:grid-cols-[minmax(0,1fr)_5.5rem] @5xl/room:items-center @5xl/room:gap-x-2.5 @5xl/room:gap-y-1 @5xl/room:p-2"
                   : ""
               } ${active ? "bg-night-soft" : "bg-night-deep/70"} ${ring}`}
             >
               <div className={`min-w-0 ${rail ? "@5xl/room:col-start-1 @5xl/room:row-start-1" : ""}`}>
-                <p className="flex min-w-0 items-center gap-1.5">
+                <div className="flex min-w-0 items-center gap-1.5">
                   <span className="relative size-6 shrink-0">
                     <AvatarDoodle strokes={player.avatar} color={colour} className="size-full" />
                     {active && (
@@ -122,7 +123,16 @@ export function RoomPlayerList({
                     {you && <span className="ml-1 font-body text-xs text-white/65">(you)</span>}
                     {status && <span className="sr-only">, {status}</span>}
                   </span>
-                </p>
+                  {action?.kind === "suspect" && !you && (
+                    <span className="ml-auto">
+                      <RoomSuspectButton
+                        name={player.name}
+                        suspected={chosen}
+                        onToggle={() => action.onChoose(chosen ? null : player.id)}
+                      />
+                    </span>
+                  )}
+                </div>
                 {(votedIds.includes(player.id) || suspects > 0 || yourVoteId === player.id) && (
                   <p className="mt-1 flex flex-wrap gap-1 text-xs">
                     {yourVoteId === player.id && (
@@ -160,7 +170,7 @@ export function RoomPlayerList({
                 </span>
               </button>
 
-              {action && !you && (
+              {action?.kind === "vote" && !you && (
                 <button
                   type="button"
                   aria-pressed={chosen}
@@ -169,13 +179,7 @@ export function RoomPlayerList({
                     rail ? "@5xl/room:col-start-1 @5xl/room:row-start-2 @5xl/room:self-end" : ""
                   } ${chosen ? "bg-berry text-night" : "bg-night text-white/90 hover:bg-night-soft"}`}
                 >
-                  {action.kind === "suspect"
-                    ? chosen
-                      ? "Marked sketchy"
-                      : "Mark as sketchy"
-                    : chosen
-                      ? "Picked"
-                      : "Pick"}
+                  {chosen ? "Picked" : "Pick"}
                   <span className="sr-only"> ({player.name})</span>
                 </button>
               )}

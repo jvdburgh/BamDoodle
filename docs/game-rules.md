@@ -24,7 +24,10 @@ goal for now.
 ## Roles
 
 - **Artists** see the category and the secret word.
-- **The bamboozler** sees only the category. They draw along, trying to look like they know the word.
+- **The bamboozler** sees only the category. They draw along, trying to look like they know the word. Their screen
+  says so without shouting: a small "You're the bamboozler" where an artist sees the word, and the logo in the corner
+  raises its collar and swirls its hat (a static badge with reduced motion), so it's clear to the one holding the
+  phone and easy to miss across the table.
 - Exactly one bamboozler per round, picked at random by the server. Nobody but the server knows who it is
   until the reveal.
 
@@ -40,7 +43,8 @@ can change the number of rounds between rounds; when that's already been reached
    room code (shown as "Join at bamdoodle.io with code …" on the host's screen) and a nickname, or skips the code when
    you open a shared link (`/join/BKZW`; the address bar shows it once you're in). Creating asks your nickname, then
    the host sets up the room: mode, turns per player or turn length, rounds per game, the language and the word
-   categories to play with (Efteling, Places, Very British, …, and 18+ ones if they want). Every change reaches the
+   categories to play with (Efteling, Places, Very British, …, and 18+ ones if they want), in two columns on a wide
+   screen (how you play on the left, the words on the right) and one on a phone. Every change reaches the
    room at once, and the host can open the settings again between rounds. Then everyone draws or tweaks their avatar
    (a random doodle face to start from, shuffle for another; a small round pad with one pen and the colours that read
    on navy; undo and clear) and goes to the room. Everyone in the room sees each other's faces; a face can change
@@ -82,15 +86,16 @@ Everyone can use every colour: there is nothing to unlock, ever. To still see wh
 - **Mini-maps:** next to each player's name, a small canvas shows only *their* strokes. Always visible, on phones too.
 - **Pen tag:** a small chip with the drawer's avatar and name rides on their pen tip on every screen.
 - **Magnifying glass (spotlight):** click a player (or their mini-map) to highlight their strokes on the main
-  canvas while the rest fades back to grey. Click again or press Esc to show everyone. Hovering a player with a mouse
+  canvas while the rest fades back to grey. Click them again to show everyone. Hovering a player with a mouse
   previews their spotlight without pinning it.
 
 **In the lab only** (`/lab`, not a server setting yet): the room's creator picks **Any colour** (everyone uses every
 colour, the default) or **Own colours** (each player gets a family of five shades, and their avatar wears it), so
 playtests can compare both. Real rooms use any colour until the setting is on the wire.
 
-**Suspecting and voting on screen:** every player card (avatar, name, mini-map of their strokes) has a
-"Mark as sketchy" button; marking or changing it is public table talk ("Noor thinks Jip is sketchy") and cards show
+**Suspecting and voting on screen:** every player card (avatar, name, mini-map of their strokes) has a small hat with
+an exclamation mark (the logo's fedora); its label "Mark as suspicious" shows on hover, on focus and for a moment
+after a tap. Tapping it suspects that player, tapping again takes it back; marking or changing it is public table talk ("Noor thinks Jip is sketchy") and cards show
 how many suspect that player. After the last turn the same cards turn into the choice ("Pick"), next to a "Time's up!
 Who's sketchy? Who do you think didn't know the word?" prompt with a 30 s countdown, your suspicion pre-selected and
 a "Lock in my vote" button; it shows who has voted, never for whom. On a laptop everything fits one screen (cards

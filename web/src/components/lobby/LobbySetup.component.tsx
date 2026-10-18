@@ -1,4 +1,4 @@
-import { useEffect, useRef, type FormEvent, type Ref } from "react";
+import { useEffect, useId, useRef, type FormEvent, type Ref } from "react";
 import { BrandLogo } from "@/components/brand/BrandLogo.component";
 import { BrandSketchyFrame } from "@/components/brand/BrandSketchyFrame.component";
 import { BrandStyles } from "@/components/brand/_utils/brandStyles.utils";
@@ -44,6 +44,7 @@ export function LobbySetup({
   onAttribution,
 }: LobbySetupProps) {
   const first = useRef<HTMLInputElement>(null);
+  const wordsHeading = useId();
   const change = (patch: Partial<RoomSettings>) => onChange({ ...settings, ...patch });
   const ready = settings.categories.length > 0;
 
@@ -55,7 +56,7 @@ export function LobbySetup({
   };
 
   return (
-    <main className="mx-auto flex min-h-svh max-w-md flex-col gap-5 px-4 py-4">
+    <main className="mx-auto flex min-h-svh max-w-md flex-col gap-3 px-4 py-3 md:max-w-5xl">
       <header className="flex items-center justify-between gap-3">
         <BrandLogo className="size-10" />
         <p className="rounded-full bg-night-soft px-3 py-1 text-sm text-white/80">
@@ -65,71 +66,94 @@ export function LobbySetup({
         </p>
       </header>
 
-      <form onSubmit={submit} className="relative grid w-full gap-5 rounded-[18px_24px_20px_16px] bg-night-soft/50 p-5">
+      <form
+        onSubmit={submit}
+        className="relative grid w-full gap-5 rounded-[18px_24px_20px_16px] bg-night-soft/50 p-5 md:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] md:gap-x-8 md:gap-y-4"
+      >
         <BrandSketchyFrame className="text-white/25" />
-        <h2 className="font-display text-2xl">Set up your room</h2>
-        <LobbyChoice
-          legend="Turns"
-          name="lobby-mode"
-          options={turnOptions}
-          value={settings.mode}
-          onChange={(mode) => change({ mode })}
-          firstRef={first}
-        />
-        {settings.mode === "oneStroke" ? (
-          <LobbyPills
-            legend="Each player draws"
-            name="lobby-turns"
-            options={LobbySetupUtils.choices.turnsPerPlayer.map((turns) => ({
-              value: turns,
-              label: turns === 1 ? "once" : `${turns} times`,
-            }))}
-            value={settings.turnsPerPlayer}
-            onChange={(turnsPerPlayer) => change({ turnsPerPlayer })}
-          />
-        ) : (
-          <LobbyPills
-            legend="Seconds per turn"
-            name="lobby-seconds"
-            options={LobbySetupUtils.choices.turnSeconds.map((seconds) => ({ value: seconds, label: `${seconds} s` }))}
-            value={settings.turnSeconds}
-            onChange={(turnSeconds) => change({ turnSeconds })}
-          />
-        )}
-        <LobbyPills
-          legend="Rounds"
-          name="lobby-rounds"
-          options={LobbySetupUtils.choices.rounds.map((rounds) => ({ value: rounds, label: String(rounds) }))}
-          value={settings.rounds}
-          onChange={(rounds) => change({ rounds })}
-        />
-        {attribution && onAttribution && (
+        <h2 className="font-display text-2xl md:col-span-2">Set up your room</h2>
+        <div className="grid content-start gap-5 md:gap-4">
           <LobbyChoice
-            legend="Colours"
-            name="lobby-colours"
-            options={colourOptions}
-            value={attribution}
-            onChange={onAttribution}
+            legend="Turns"
+            name="lobby-mode"
+            options={turnOptions}
+            value={settings.mode}
+            onChange={(mode) => change({ mode })}
+            firstRef={first}
           />
-        )}
-        <LobbyPills<Language>
-          legend="Words"
-          name="lobby-language"
-          options={[
-            { value: "en", label: "English" },
-            { value: "nl", label: "Nederlands" },
-          ]}
-          value={settings.language}
-          onChange={(language) => change({ language, categories: LobbySetupUtils.defaults(wordCategories, language) })}
-        />
-        <LobbyCategoryPicker
-          categories={LobbySetupUtils.inLanguage(wordCategories, settings.language)}
-          selected={settings.categories}
-          onChange={(categories) => change({ categories })}
-        />
+          {settings.mode === "oneStroke" ? (
+            <LobbyPills
+              legend="Each player draws"
+              name="lobby-turns"
+              options={LobbySetupUtils.choices.turnsPerPlayer.map((turns) => ({
+                value: turns,
+                label: turns === 1 ? "once" : `${turns} times`,
+              }))}
+              value={settings.turnsPerPlayer}
+              onChange={(turnsPerPlayer) => change({ turnsPerPlayer })}
+            />
+          ) : (
+            <LobbyPills
+              legend="Seconds per turn"
+              name="lobby-seconds"
+              options={LobbySetupUtils.choices.turnSeconds.map((seconds) => ({
+                value: seconds,
+                label: `${seconds} s`,
+              }))}
+              value={settings.turnSeconds}
+              onChange={(turnSeconds) => change({ turnSeconds })}
+            />
+          )}
+          <LobbyPills
+            legend="Rounds"
+            name="lobby-rounds"
+            options={LobbySetupUtils.choices.rounds.map((rounds) => ({ value: rounds, label: String(rounds) }))}
+            value={settings.rounds}
+            onChange={(rounds) => change({ rounds })}
+          />
+          {attribution && onAttribution && (
+            <LobbyChoice
+              legend="Colours"
+              name="lobby-colours"
+              options={colourOptions}
+              value={attribution}
+              onChange={onAttribution}
+            />
+          )}
+        </div>
 
-        <button type="submit" disabled={!ready} className={`${BrandStyles.primaryButton} justify-self-end`}>
-          Done
+        <section
+          aria-labelledby={wordsHeading}
+          className="grid content-start gap-5 border-t-2 md:gap-4 border-white/10 pt-5 md:border-t-0 md:border-l-2 md:pt-0 md:pl-8"
+        >
+          <h3 id={wordsHeading} className="font-display text-xl">
+            Words
+          </h3>
+          <LobbyPills<Language>
+            legend="Language"
+            name="lobby-language"
+            options={[
+              { value: "en", label: "English" },
+              { value: "nl", label: "Nederlands" },
+            ]}
+            value={settings.language}
+            onChange={(language) =>
+              change({ language, categories: LobbySetupUtils.defaults(wordCategories, language) })
+            }
+          />
+          <LobbyCategoryPicker
+            categories={LobbySetupUtils.inLanguage(wordCategories, settings.language)}
+            selected={settings.categories}
+            onChange={(categories) => change({ categories })}
+          />
+        </section>
+
+        <button
+          type="submit"
+          disabled={!ready}
+          className={`${BrandStyles.primaryButton} justify-self-end md:col-span-2`}
+        >
+          Go to the room
         </button>
       </form>
     </main>

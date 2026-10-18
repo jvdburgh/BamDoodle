@@ -92,16 +92,16 @@ export const PeekOnHover: Story = {
   },
 };
 
-export const MarkAsSketchy: Story = {
+export const MarkAsSuspicious: Story = {
   args: { action: { kind: "suspect", chosenId: null, onChoose: fn() } },
   play: async ({ args, canvas, userEvent }) => {
     await expect(canvas.queryByRole("button", { name: /\(Juno\)/ })).toBeNull();
-    const mo = canvas.getByRole("button", { name: /sketchy \(Mo\)/ });
+    const mo = canvas.getByRole("button", { name: "Mark as suspicious (Mo)" });
     await userEvent.click(mo);
     await expect(args.action?.onChoose).toHaveBeenLastCalledWith(3);
     await expect(mo).toHaveAttribute("aria-pressed", "true");
-    await expect(mo).toHaveTextContent("Marked sketchy");
-    await userEvent.click(canvas.getByRole("button", { name: /sketchy \(Pip\)/ }));
+    await expect(mo).toHaveAccessibleName("Marked as suspicious (Mo)");
+    await userEvent.click(canvas.getByRole("button", { name: "Mark as suspicious (Pip)" }));
     await expect(args.action?.onChoose).toHaveBeenLastCalledWith(1);
     await expect(mo).toHaveAttribute("aria-pressed", "false");
   },
@@ -127,7 +127,7 @@ export const HostRow: Story = {
   ],
   play: async ({ canvas }) => {
     await expect(canvas.queryByText("(you)")).toBeNull();
-    await expect(canvas.queryByRole("button", { name: /sketchy \(/ })).toBeNull();
+    await expect(canvas.queryByRole("button", { name: /suspicious \(/ })).toBeNull();
     await expect(canvas.getByText("suspected by 2")).toBeVisible();
   },
 };

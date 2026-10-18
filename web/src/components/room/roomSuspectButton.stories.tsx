@@ -9,7 +9,11 @@ const meta = {
   args: { name: "Juno", suspected: false, onToggle: () => {} },
   render: function Render(args) {
     const [suspected, setSuspected] = useState(args.suspected);
-    return <RoomSuspectButton {...args} suspected={suspected} onToggle={() => setSuspected(!suspected)} />;
+    return (
+      <div className="relative flex h-32 w-32 justify-end rounded-[12px_16px_14px_10px] bg-night-deep/70 p-1.5">
+        <RoomSuspectButton {...args} suspected={suspected} onToggle={() => setSuspected(!suspected)} />
+      </div>
+    );
   },
 } satisfies Meta<typeof RoomSuspectButton>;
 
