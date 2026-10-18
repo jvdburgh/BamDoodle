@@ -1102,6 +1102,29 @@ mod reveal_and_points {
     }
 
     #[test]
+    fn a_finished_round_is_counted_without_the_word_or_anyone_in_it() {
+        let mut game = caught_game(4);
+        let bamboozler = game.bamboozler();
+        let word = game.round().word.clone();
+        let (guard, events) = crate::logging::capture::start();
+        game.send(bamboozler, ClientMessage::GuessWord { guess: word.clone() });
+        drop(guard);
+        let rounds = crate::logging::capture::of(&events, crate::usage::TARGET, "round_finished");
+        assert_eq!(rounds.len(), 1);
+        let round = &rounds[0];
+        assert_eq!(round["players"], "4");
+        assert_eq!(round["caught"], "3");
+        assert_eq!(round["caught_by_all"], "true");
+        assert_eq!(round["guessed"], "true");
+        assert_eq!(round["mode"], "one_stroke");
+        let logged = format!("{round:?}");
+        assert!(!logged.contains(&word), "the word stays out of the logs");
+        for player in &game.room.players {
+            assert!(!logged.contains(&player.name), "names stay out of the logs");
+        }
+    }
+
+    #[test]
     fn caught_but_guessed_the_word() {
         let mut game = caught_game(4);
         let bamboozler = game.bamboozler();

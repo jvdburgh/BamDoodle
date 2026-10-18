@@ -16,6 +16,7 @@ use crate::{
     limits,
     protocol::{ClientMessage, PlayerId, RejectReason, ServerMessage},
     registry::{Registry, RoomHandle},
+    usage,
     words::WordLibrary,
 };
 
@@ -58,8 +59,10 @@ async fn run(mut room: Room, mut commands: mpsc::Receiver<RoomCommand>, registry
     let mut empty_since = Some(Instant::now());
     // Anything a person does: joining, drawing, voting, settings. Pings and server timers don't count.
     let mut last_activity = Instant::now();
+    let opened = Instant::now();
 
-    loop {
+    // Why it ended, for the usage log; None when the registry itself went away.
+    let closed = loop {
         let grace = if seated_anyone {
             limits::EMPTY_ROOM_GRACE
         } else {
@@ -73,7 +76,7 @@ async fn run(mut room: Room, mut commands: mpsc::Receiver<RoomCommand>, registry
         let command = tokio::select! {
             command = commands.recv() => match command {
                 Some(command) => Some(command),
-                None => break,
+                None => break None,
             },
             () = sleep_until(wake_at.unwrap_or_else(Instant::now)), if wake_at.is_some() => None,
         };
@@ -188,7 +191,7 @@ async fn run(mut room: Room, mut commands: mpsc::Receiver<RoomCommand>, registry
                 },
             )];
             dispatch(&connections, closed);
-            break;
+            break Some(usage::Closed::Idle);
         }
 
         let players_here = connections
@@ -204,9 +207,16 @@ async fn run(mut room: Room, mut commands: mpsc::Receiver<RoomCommand>, registry
                 limits::UNUSED_ROOM_GRACE
             };
             if now >= since + grace {
-                break;
+                break Some(if seated_anyone {
+                    usage::Closed::Empty
+                } else {
+                    usage::Closed::Unused
+                });
             }
         }
+    };
+    if let Some(closed) = closed {
+        usage::room_closed(closed, opened.elapsed());
     }
 
     tracing::debug!(code = room.code(), "room closed");
@@ -302,14 +312,20 @@ mod tests {
 
     #[tokio::test(start_paused = true)]
     async fn a_room_nobody_joined_closes_soon() {
+        let (_guard, events) = crate::logging::capture::start();
         let registry = registry();
         registry.create().unwrap();
         tokio::time::sleep(limits::UNUSED_ROOM_GRACE + Duration::from_secs(1)).await;
         assert_eq!(registry.room_count(), 0);
+        let closed = crate::logging::capture::of(&events, crate::usage::TARGET, "room_closed");
+        assert_eq!(closed.len(), 1);
+        assert_eq!(closed[0]["reason"], "unused");
+        assert_eq!(closed[0]["minutes_open"], "0");
     }
 
     #[tokio::test(start_paused = true)]
     async fn a_room_nobody_plays_in_closes_and_everyone_hears_why() {
+        let (_guard, events) = crate::logging::capture::start();
         let registry = registry();
         let (_, room) = registry.create().unwrap();
         let (sam, mut sam_outbox) = join(&room, "Sam", None).await.unwrap();
@@ -328,6 +344,10 @@ mod tests {
         }
         tokio::time::sleep(std::time::Duration::from_secs(1)).await;
         assert_eq!(registry.room_count(), 0);
+        let logged = crate::logging::capture::of(&events, crate::usage::TARGET, "room_closed");
+        assert_eq!(logged.len(), 1);
+        assert_eq!(logged[0]["reason"], "idle");
+        assert_eq!(logged[0]["minutes_open"], "30");
 
         let closed = ServerMessage::Rejected {
             reason: RejectReason::RoomClosed,
@@ -362,6 +382,7 @@ mod tests {
 
     #[tokio::test(start_paused = true)]
     async fn an_empty_room_closes_after_the_grace_and_screens_dont_keep_it_open() {
+        let (_guard, events) = crate::logging::capture::start();
         let registry = registry();
         let (_, room) = registry.create().unwrap();
         let (sam, _sam_outbox) = join(&room, "Sam", None).await.unwrap();
@@ -375,6 +396,9 @@ mod tests {
         assert_eq!(registry.room_count(), 1);
         tokio::time::sleep(Duration::from_secs(20)).await;
         assert_eq!(registry.room_count(), 0);
+        let closed = crate::logging::capture::of(&events, crate::usage::TARGET, "room_closed");
+        assert_eq!(closed.len(), 1);
+        assert_eq!(closed[0]["reason"], "empty");
     }
 
     #[tokio::test]

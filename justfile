@@ -72,6 +72,25 @@ icons:
 share-image:
     node scripts/share-image.mjs
 
+# Cockpit for the live game (decision 0005): keep its logs and metrics a year and push the alert rules in
+# infra/scaleway/cockpit/. Safe to run again. Needs `scw init` with access to the bamdoodle project.
+cockpit:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    region=nl-ams
+    project=$(scw account project list name=bamdoodle -o json | python3 -c 'import json, sys; print(json.load(sys.stdin)[0]["id"])')
+    sources=$(scw cockpit data-source list project-id="$project" origin=scaleway region=$region -o json)
+    source_of() { echo "$sources" | python3 -c "import json, sys; s = [d for d in json.load(sys.stdin) if d['type'] == '$1'][0]; print(s['id'], s['url'])"; }
+    read -r logs_id logs_url < <(source_of logs)
+    read -r metrics_id metrics_url < <(source_of metrics)
+    scw cockpit data-source update "$logs_id" retention-days=365 region=$region > /dev/null
+    scw cockpit data-source update "$metrics_id" retention-days=365 region=$region > /dev/null
+    echo "Scaleway Logs and Metrics: kept 365 days"
+    key=$(scw config get secret-key)
+    push() { curl -fsS -X POST -H "X-Auth-Token: $key" -H "Content-Type: application/yaml" --data-binary "@infra/scaleway/cockpit/$1" "$2" > /dev/null && echo "pushed $1"; }
+    push logs-rules.yaml "$logs_url/loki/api/v1/rules/bamdoodle"
+    push metrics-rules.yaml "$metrics_url/prometheus/config/v1/rules/bamdoodle"
+
 # WebSocket smoke/soak test against a running server, e.g. just soak ws://localhost:8080/ws 1 0
 soak url="ws://localhost:8080/ws" rooms="1" minutes="0":
     node scripts/ws-soak.mjs --url {{url}} --rooms {{rooms}} --minutes {{minutes}}

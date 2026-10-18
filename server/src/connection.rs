@@ -32,7 +32,7 @@ pub async fn handle(mut socket: WebSocket, registry: Arc<Registry>) {
         }
     };
 
-    let mut limiter = RateLimiter::new(limits::MESSAGES_PER_SECOND);
+    let mut limiter = RateLimiter::new(limits::MESSAGES_PER_SECOND, Duration::from_secs(1));
     loop {
         tokio::select! {
             outgoing = outbox.recv() => match outgoing {
@@ -134,32 +134,34 @@ async fn send(socket: &mut WebSocket, message: &ServerMessage) -> Result<(), axu
     socket.send(Message::Text(Utf8Bytes::from(json))).await
 }
 
-/// Allows `per_second` messages in every one-second window and drops the rest.
-struct RateLimiter {
-    per_second: u32,
+/// Allows `limit` messages in every `window` and drops the rest.
+pub(crate) struct RateLimiter {
+    limit: u32,
+    window: Duration,
     window_start: Option<Instant>,
     count: u32,
 }
 
 impl RateLimiter {
-    fn new(per_second: u32) -> Self {
+    pub(crate) fn new(limit: u32, window: Duration) -> Self {
         Self {
-            per_second,
+            limit,
+            window,
             window_start: None,
             count: 0,
         }
     }
 
-    fn allow(&mut self, now: Instant) -> bool {
+    pub(crate) fn allow(&mut self, now: Instant) -> bool {
         match self.window_start {
-            Some(start) if now.duration_since(start) < Duration::from_secs(1) => {}
+            Some(start) if now.duration_since(start) < self.window => {}
             _ => {
                 self.window_start = Some(now);
                 self.count = 0;
             }
         }
         self.count += 1;
-        self.count <= self.per_second
+        self.count <= self.limit
     }
 }
 
@@ -169,7 +171,7 @@ mod tests {
 
     #[test]
     fn the_rate_limiter_drops_bursts_and_recovers() {
-        let mut limiter = RateLimiter::new(3);
+        let mut limiter = RateLimiter::new(3, Duration::from_secs(1));
         let start = Instant::now();
         let allowed = (0..5).filter(|_| limiter.allow(start)).count();
         assert_eq!(allowed, 3);

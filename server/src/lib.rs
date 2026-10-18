@@ -1,22 +1,25 @@
 pub mod connection;
 pub mod limits;
+pub mod logging;
 pub mod protocol;
 pub mod registry;
 pub mod room;
+pub mod usage;
 pub mod words;
 
 use std::{
     path::{Path, PathBuf},
-    sync::Arc,
+    sync::{Arc, Mutex},
+    time::{Duration, Instant},
 };
 
 use axum::{
-    Router,
-    extract::{Request, State, ws::WebSocketUpgrade},
-    http::{HeaderValue, StatusCode, header},
+    Json, Router,
+    extract::{DefaultBodyLimit, Request, State, ws::WebSocketUpgrade},
+    http::{HeaderMap, HeaderValue, StatusCode, header},
     middleware::{self, Next},
     response::{IntoResponse, Response},
-    routing::get,
+    routing::{get, post},
 };
 use tower::ServiceExt;
 use tower_http::{
@@ -25,7 +28,7 @@ use tower_http::{
     trace::TraceLayer,
 };
 
-use crate::registry::Registry;
+use crate::{connection::RateLimiter, protocol::ClientErrorReport, registry::Registry};
 
 /// The release this binary was built for, baked in by the Docker build (`BAMDOODLE_VERSION`); `dev` otherwise.
 pub const VERSION: &str = match option_env!("BAMDOODLE_VERSION") {
@@ -43,11 +46,20 @@ const CONTENT_SECURITY_POLICY: &str = "default-src 'self'; script-src 'self'; st
 pub fn app(registry: Arc<Registry>, static_dir: &Path) -> Router {
     let index = Arc::new(static_dir.join("index.html"));
     let app_routes = get(app_route).with_state(index);
+    let reports = Arc::new(Mutex::new(RateLimiter::new(
+        limits::CLIENT_ERRORS_PER_MINUTE,
+        Duration::from_secs(60),
+    )));
+    let client_errors = post(move |headers: HeaderMap, Json(report): Json<ClientErrorReport>| {
+        client_error(reports.clone(), headers, report)
+    })
+    .layer(DefaultBodyLimit::max(limits::CLIENT_ERROR_BYTES));
 
     Router::new()
         .route("/api/health", get(|| async { "ok" }))
         .route("/api/version", get(|| async { VERSION }))
         .route("/api/room-defaults", get(room_defaults))
+        .route("/api/client-error", client_errors)
         .route("/ws", get(websocket))
         .with_state(registry)
         .fallback_service(ServeDir::new(static_dir).fallback(app_routes))
@@ -62,6 +74,39 @@ async fn room_defaults(State(registry): State<Arc<Registry>>) -> axum::Json<prot
         settings: room::Room::default_settings(words),
         word_categories: words.catalogue(),
     })
+}
+
+/// A browser's error, into the logs (`bamdoodle::client_error`) for Cockpit and its alert. Cut to size, never the
+/// IP address; over the server-wide limit per minute it's dropped.
+async fn client_error(reports: Arc<Mutex<RateLimiter>>, headers: HeaderMap, report: ClientErrorReport) -> StatusCode {
+    let allowed = reports
+        .lock()
+        .expect("never poisoned: nothing panics while holding it")
+        .allow(Instant::now());
+    if !allowed {
+        return StatusCode::TOO_MANY_REQUESTS;
+    }
+    let cut = |text: &str, max: usize| text.chars().take(max).collect::<String>();
+    let page = match report.page.as_str() {
+        page @ ("start" | "join" | "watch" | "lab") => page,
+        _ => "other",
+    };
+    let browser = headers
+        .get(header::USER_AGENT)
+        .and_then(|agent| agent.to_str().ok())
+        .map(|agent| cut(agent, limits::CLIENT_ERROR_AGENT_CHARS))
+        .unwrap_or_default();
+    tracing::warn!(
+        target: "bamdoodle::client_error",
+        version = %cut(&report.version, 40),
+        page,
+        // Not `message`: that's the log line's own field in the JSON.
+        error = %cut(&report.message, limits::CLIENT_ERROR_MESSAGE_CHARS),
+        stack = %cut(report.stack.as_deref().unwrap_or_default(), limits::CLIENT_ERROR_STACK_CHARS),
+        %browser,
+        "client error"
+    );
+    StatusCode::NO_CONTENT
 }
 
 async fn websocket(upgrade: WebSocketUpgrade, State(registry): State<Arc<Registry>>) -> Response {
@@ -204,6 +249,110 @@ mod tests {
         let defaults: protocol::RoomDefaults = serde_json::from_str(&body).unwrap();
         assert!(!defaults.settings.categories.is_empty());
         assert!(defaults.word_categories.iter().any(|category| category.adult));
+    }
+
+    async fn report(router: &Router, body: String) -> StatusCode {
+        let request = Request::post("/api/client-error")
+            .header(header::CONTENT_TYPE, "application/json")
+            .header(
+                header::USER_AGENT,
+                "Mozilla/5.0 (Android 14; Mobile; rv:131.0) Gecko/131.0 Firefox/131.0",
+            )
+            .body(Body::from(body))
+            .unwrap();
+        router.clone().oneshot(request).await.unwrap().status()
+    }
+
+    #[tokio::test]
+    async fn browser_errors_are_taken_within_limits() {
+        let (router, dir) = site();
+        let valid = r#"{"message":"boom","stack":null,"version":"v0.1.5","page":"join"}"#.to_owned();
+        let (_guard, events) = crate::logging::capture::start();
+        assert_eq!(report(&router, valid.clone()).await, StatusCode::NO_CONTENT);
+        let sneaky = format!(
+            r#"{{"message":"{}","stack":"{}","version":"v0.1.5","page":"join/BKZW"}}"#,
+            "m".repeat(1_000),
+            "s".repeat(5_000)
+        );
+        assert_eq!(report(&router, sneaky).await, StatusCode::NO_CONTENT);
+        {
+            let logged = events.lock().unwrap();
+            let reports: Vec<_> = logged
+                .iter()
+                .filter(|(target, _)| target == "bamdoodle::client_error")
+                .map(|(_, fields)| fields)
+                .collect();
+            assert_eq!(reports.len(), 2);
+            assert_eq!(reports[0]["page"], "join");
+            assert_eq!(
+                reports[1]["page"], "other",
+                "only known screens: never a code from the path"
+            );
+            assert_eq!(reports[1]["error"].chars().count(), limits::CLIENT_ERROR_MESSAGE_CHARS);
+            assert_eq!(reports[1]["stack"].chars().count(), limits::CLIENT_ERROR_STACK_CHARS);
+            assert!(reports[1]["browser"].starts_with("Mozilla/5.0 (Android 14"));
+        }
+        assert_eq!(report(&router, "not json".into()).await, StatusCode::BAD_REQUEST);
+        let huge = format!(
+            r#"{{"message":"{}","stack":null,"version":"v0.1.5","page":"join"}}"#,
+            "x".repeat(limits::CLIENT_ERROR_BYTES)
+        );
+        assert_eq!(report(&router, huge).await, StatusCode::PAYLOAD_TOO_LARGE);
+        for _ in 2..limits::CLIENT_ERRORS_PER_MINUTE {
+            assert_eq!(report(&router, valid.clone()).await, StatusCode::NO_CONTENT);
+        }
+        assert_eq!(
+            report(&router, valid).await,
+            StatusCode::TOO_MANY_REQUESTS,
+            "a burst from every tab of a broken release doesn't flood the logs"
+        );
+        fs::remove_dir_all(dir).unwrap();
+    }
+
+    #[tokio::test]
+    async fn any_user_agent_is_logged_as_sent_cut_to_size() {
+        let (router, dir) = site();
+        let (_guard, events) = crate::logging::capture::start();
+        let body = r#"{"message":"boom","stack":null,"version":"v0.1.5","page":"start"}"#;
+        let agents = [
+            "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)".to_owned(),
+            "x".repeat(5_000),
+            String::new(),
+        ];
+        for agent in &agents {
+            let request = Request::post("/api/client-error")
+                .header(header::CONTENT_TYPE, "application/json")
+                .header(header::USER_AGENT, agent.as_str())
+                .body(Body::from(body))
+                .unwrap();
+            assert_eq!(
+                router.clone().oneshot(request).await.unwrap().status(),
+                StatusCode::NO_CONTENT
+            );
+        }
+        // Not valid UTF-8: still taken, with no agent.
+        let request = Request::post("/api/client-error")
+            .header(header::CONTENT_TYPE, "application/json")
+            .header(header::USER_AGENT, HeaderValue::from_bytes(b"caf\xe9").unwrap())
+            .body(Body::from(body))
+            .unwrap();
+        assert_eq!(
+            router.clone().oneshot(request).await.unwrap().status(),
+            StatusCode::NO_CONTENT
+        );
+
+        let logged = events.lock().unwrap();
+        let browsers: Vec<_> = logged
+            .iter()
+            .filter(|(target, _)| target == "bamdoodle::client_error")
+            .map(|(_, fields)| fields["browser"].clone())
+            .collect();
+        assert_eq!(browsers[0], agents[0]);
+        assert_eq!(browsers[1].chars().count(), limits::CLIENT_ERROR_AGENT_CHARS);
+        assert_eq!(browsers[2], "");
+        assert_eq!(browsers[3], "");
+        drop(logged);
+        fs::remove_dir_all(dir).unwrap();
     }
 
     #[tokio::test]

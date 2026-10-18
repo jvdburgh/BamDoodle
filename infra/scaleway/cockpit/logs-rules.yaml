@@ -1,0 +1,29 @@
+# Alert rules on the container's logs (Loki, the "Scaleway Logs" data source). `just cockpit` pushes them.
+# Lines are our JSON wrapped in Scaleway's: unwrap twice, taking only the fields a rule needs (each extracted field
+# becomes a label, and a per-line one like `timestamp` would make every line its own series). Decision 0005 says what
+# may be in them.
+name: bamdoodle-logs
+interval: 1m
+rules:
+  - alert: BamDoodleServerError
+    expr: >-
+      sum(count_over_time({resource_type="serverless_container", resource_name=~"(.+-)?bamdoodle-game"}
+      | json message="message" | line_format "{{.message}}" | json level="level" | level="ERROR" [5m])) > 0
+    labels:
+      severity: critical
+    annotations:
+      summary: "BamDoodle logged a server error or panic"
+      description: >-
+        The game server logged {{ $value }} error(s) in the last 5 minutes. In Cockpit, Explore the Scaleway Logs
+        with level="ERROR" to see which.
+  - alert: BamDoodleBrowserErrors
+    expr: >-
+      sum(count_over_time({resource_type="serverless_container", resource_name=~"(.+-)?bamdoodle-game"}
+      | json message="message" | line_format "{{.message}}" | json target="target" | target="bamdoodle::client_error" [15m])) >= 5
+    labels:
+      severity: warning
+    annotations:
+      summary: "Players' browsers are reporting errors"
+      description: >-
+        {{ $value }} browser error reports in the last 15 minutes. In Cockpit, Explore the Scaleway Logs with
+        target="bamdoodle::client_error" for the messages, release and browser.

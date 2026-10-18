@@ -57,6 +57,7 @@ impl Registry {
         let seed = rng.random::<u64>();
         let handle = task::spawn(code.clone(), self.words.clone(), seed, Arc::downgrade(self));
         rooms.insert(code.clone(), handle.clone());
+        crate::usage::room_created(rooms.len());
         Ok((code, handle))
     }
 

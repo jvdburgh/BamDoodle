@@ -36,7 +36,7 @@ FROM debian:trixie-slim AS runtime
 COPY --from=rust-builder /app/target/release/bamdoodle-server /usr/local/bin/bamdoodle-server
 COPY --from=web-build /app/web/dist /app/static
 COPY words/ /app/words
-ENV PORT=8080 RUST_LOG=info STATIC_DIR=/app/static WORDS_DIR=/app/words
+ENV PORT=8080 RUST_LOG=info LOG_FORMAT=json STATIC_DIR=/app/static WORDS_DIR=/app/words
 EXPOSE 8080
 USER nobody
 ENTRYPOINT ["bamdoodle-server"]

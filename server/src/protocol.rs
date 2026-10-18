@@ -556,3 +556,17 @@ mod tests {
         assert_eq!(json, serde_json::json!({ "phase": "lobby" }));
     }
 }
+
+/// `POST /api/client-error`: an error a browser caught (an uncaught exception or rejected promise), for the logs.
+/// Nothing about the player: no name, no room code (the page is only which screen), no IP address.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct ClientErrorReport {
+    pub message: String,
+    pub stack: Option<String>,
+    /// The web app's release, e.g. v0.1.5.
+    pub version: String,
+    /// Which screen: start, join, watch, lab or other.
+    pub page: String,
+}

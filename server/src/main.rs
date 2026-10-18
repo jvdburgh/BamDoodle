@@ -1,13 +1,11 @@
 use std::{env, net::SocketAddr, path::PathBuf, sync::Arc};
 
-use bamdoodle_server::{app, registry::Registry, words::WordLibrary};
-use tracing_subscriber::{EnvFilter, fmt};
+use bamdoodle_server::{app, logging, registry::Registry, words::WordLibrary};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    fmt()
-        .with_env_filter(EnvFilter::try_from_default_env().unwrap_or_else(|_| "info".into()))
-        .init();
+    // One JSON object per line in production (`LOG_FORMAT=json`, set in the image), so Cockpit can query the fields.
+    logging::init(env::var("LOG_FORMAT").is_ok_and(|format| format == "json"));
 
     let port: u16 = env::var("PORT").ok().and_then(|port| port.parse().ok()).unwrap_or(8080);
     let static_dir = PathBuf::from(env::var("STATIC_DIR").unwrap_or_else(|_| "../web/dist".into()));

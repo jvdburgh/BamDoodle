@@ -1,0 +1,434 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_SCALEWAY_LOGS",
+      "label": "Scaleway Logs",
+      "description": "The project's Scaleway Logs data source",
+      "type": "datasource",
+      "pluginId": "loki",
+      "pluginName": "Loki"
+    }
+  ],
+  "title": "BamDoodle usage",
+  "uid": "bamdoodle-usage",
+  "tags": [
+    "bamdoodle"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "time": {
+    "from": "now-30d",
+    "to": "now"
+  },
+  "refresh": "",
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Games finished",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_SCALEWAY_LOGS}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_SCALEWAY_LOGS}"
+          },
+          "expr": "sum(count_over_time({resource_type=\"serverless_container\", resource_name=~\"(.+-)?bamdoodle-game\"} | json message=\"message\" | line_format \"{{.message}}\" | json target=\"target\", event=\"event\", game_over=\"game_over\" | target=\"bamdoodle::usage\" | event=\"round_finished\" | game_over=\"true\" [$__interval]))",
+          "legendFormat": "",
+          "queryType": "range"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none"
+      },
+      "interval": "1h"
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Rounds played",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_SCALEWAY_LOGS}"
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_SCALEWAY_LOGS}"
+          },
+          "expr": "sum(count_over_time({resource_type=\"serverless_container\", resource_name=~\"(.+-)?bamdoodle-game\"} | json message=\"message\" | line_format \"{{.message}}\" | json target=\"target\", event=\"event\" | target=\"bamdoodle::usage\" | event=\"round_finished\" [$__interval]))",
+          "legendFormat": "",
+          "queryType": "range"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none"
+      },
+      "interval": "1h"
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Rooms created",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_SCALEWAY_LOGS}"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_SCALEWAY_LOGS}"
+          },
+          "expr": "sum(count_over_time({resource_type=\"serverless_container\", resource_name=~\"(.+-)?bamdoodle-game\"} | json message=\"message\" | line_format \"{{.message}}\" | json target=\"target\", event=\"event\" | target=\"bamdoodle::usage\" | event=\"room_created\" [$__interval]))",
+          "legendFormat": "",
+          "queryType": "range"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none"
+      },
+      "interval": "1h"
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Browser errors",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_SCALEWAY_LOGS}"
+      },
+      "gridPos": {
+        "x": 18,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_SCALEWAY_LOGS}"
+          },
+          "expr": "sum(count_over_time({resource_type=\"serverless_container\", resource_name=~\"(.+-)?bamdoodle-game\"} | json message=\"message\" | line_format \"{{.message}}\" | json target=\"target\" | target=\"bamdoodle::client_error\" [$__interval]))",
+          "legendFormat": "",
+          "queryType": "range"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none"
+      },
+      "interval": "1h"
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Games, rounds and rooms per day",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_SCALEWAY_LOGS}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 16,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_SCALEWAY_LOGS}"
+          },
+          "expr": "sum(count_over_time({resource_type=\"serverless_container\", resource_name=~\"(.+-)?bamdoodle-game\"} | json message=\"message\" | line_format \"{{.message}}\" | json target=\"target\", event=\"event\", game_over=\"game_over\" | target=\"bamdoodle::usage\" | event=\"round_finished\" | game_over=\"true\" [1d]))",
+          "legendFormat": "games",
+          "queryType": "range"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_SCALEWAY_LOGS}"
+          },
+          "expr": "sum(count_over_time({resource_type=\"serverless_container\", resource_name=~\"(.+-)?bamdoodle-game\"} | json message=\"message\" | line_format \"{{.message}}\" | json target=\"target\", event=\"event\" | target=\"bamdoodle::usage\" | event=\"round_finished\" [1d]))",
+          "legendFormat": "rounds",
+          "queryType": "range"
+        },
+        {
+          "refId": "C",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_SCALEWAY_LOGS}"
+          },
+          "expr": "sum(count_over_time({resource_type=\"serverless_container\", resource_name=~\"(.+-)?bamdoodle-game\"} | json message=\"message\" | line_format \"{{.message}}\" | json target=\"target\", event=\"event\" | target=\"bamdoodle::usage\" | event=\"room_created\" [1d]))",
+          "legendFormat": "rooms",
+          "queryType": "range"
+        }
+      ],
+      "interval": "1d"
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Players per round (average per day)",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_SCALEWAY_LOGS}"
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 4,
+        "w": 8,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_SCALEWAY_LOGS}"
+          },
+          "expr": "avg(avg_over_time({resource_type=\"serverless_container\", resource_name=~\"(.+-)?bamdoodle-game\"} | json message=\"message\" | line_format \"{{.message}}\" | json target=\"target\", event=\"event\", players=\"players\" | target=\"bamdoodle::usage\" | event=\"round_finished\" | unwrap players [1d]))",
+          "legendFormat": "players",
+          "queryType": "range"
+        }
+      ],
+      "interval": "1d"
+    },
+    {
+      "id": 7,
+      "type": "piechart",
+      "title": "Rounds by language",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_SCALEWAY_LOGS}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 12,
+        "w": 6,
+        "h": 7
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_SCALEWAY_LOGS}"
+          },
+          "expr": "sum by (language) (count_over_time({resource_type=\"serverless_container\", resource_name=~\"(.+-)?bamdoodle-game\"} | json message=\"message\" | line_format \"{{.message}}\" | json target=\"target\", event=\"event\", language=\"language\" | target=\"bamdoodle::usage\" | event=\"round_finished\" [$__range]))",
+          "legendFormat": "{{language}}",
+          "queryType": "range"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "values": false
+        }
+      },
+      "interval": "1h"
+    },
+    {
+      "id": 8,
+      "type": "piechart",
+      "title": "Rounds by mode",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_SCALEWAY_LOGS}"
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 12,
+        "w": 6,
+        "h": 7
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_SCALEWAY_LOGS}"
+          },
+          "expr": "sum by (mode) (count_over_time({resource_type=\"serverless_container\", resource_name=~\"(.+-)?bamdoodle-game\"} | json message=\"message\" | line_format \"{{.message}}\" | json target=\"target\", event=\"event\", mode=\"mode\" | target=\"bamdoodle::usage\" | event=\"round_finished\" [$__range]))",
+          "legendFormat": "{{mode}}",
+          "queryType": "range"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "values": false
+        }
+      },
+      "interval": "1h"
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "Bamboozler caught by everyone, or guessed",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_SCALEWAY_LOGS}"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 12,
+        "w": 12,
+        "h": 7
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_SCALEWAY_LOGS}"
+          },
+          "expr": "sum(count_over_time({resource_type=\"serverless_container\", resource_name=~\"(.+-)?bamdoodle-game\"} | json message=\"message\" | line_format \"{{.message}}\" | json target=\"target\", event=\"event\", caught_by_all=\"caught_by_all\" | target=\"bamdoodle::usage\" | event=\"round_finished\" | caught_by_all=\"true\" [1d]))",
+          "legendFormat": "caught by everyone",
+          "queryType": "range"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_SCALEWAY_LOGS}"
+          },
+          "expr": "sum(count_over_time({resource_type=\"serverless_container\", resource_name=~\"(.+-)?bamdoodle-game\"} | json message=\"message\" | line_format \"{{.message}}\" | json target=\"target\", event=\"event\", guessed=\"guessed\" | target=\"bamdoodle::usage\" | event=\"round_finished\" | guessed=\"true\" [1d]))",
+          "legendFormat": "guessed the word",
+          "queryType": "range"
+        }
+      ],
+      "interval": "1d"
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "Errors per hour",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_SCALEWAY_LOGS}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 19,
+        "w": 12,
+        "h": 7
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_SCALEWAY_LOGS}"
+          },
+          "expr": "sum(count_over_time({resource_type=\"serverless_container\", resource_name=~\"(.+-)?bamdoodle-game\"} | json message=\"message\" | line_format \"{{.message}}\" | json target=\"target\" | target=\"bamdoodle::client_error\" [1h]))",
+          "legendFormat": "browser",
+          "queryType": "range"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_SCALEWAY_LOGS}"
+          },
+          "expr": "sum(count_over_time({resource_type=\"serverless_container\", resource_name=~\"(.+-)?bamdoodle-game\"} | json message=\"message\" | line_format \"{{.message}}\" | json level=\"level\" | level=\"ERROR\" [1h]))",
+          "legendFormat": "server",
+          "queryType": "range"
+        }
+      ],
+      "interval": "1h"
+    },
+    {
+      "id": 11,
+      "type": "logs",
+      "title": "Latest browser errors",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_SCALEWAY_LOGS}"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 19,
+        "w": 12,
+        "h": 7
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_SCALEWAY_LOGS}"
+          },
+          "expr": "{resource_type=\"serverless_container\", resource_name=~\"(.+-)?bamdoodle-game\"} | json message=\"message\" | line_format \"{{.message}}\" | json target=\"target\", version=\"version\", page=\"page\", error=\"error\", browser=\"browser\" | target=\"bamdoodle::client_error\" | line_format \"{{.version}} {{.page}}: {{.error}} ({{.browser}})\"",
+          "legendFormat": "",
+          "queryType": "range"
+        }
+      ]
+    }
+  ],
+  "description": "Anonymous usage and errors from the game server's logs (decision 0005). Import in Cockpit's Grafana: Dashboards > New > Import."
+}

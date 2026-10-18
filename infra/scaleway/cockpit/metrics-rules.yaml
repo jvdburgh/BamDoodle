@@ -1,0 +1,12 @@
+# Alert rules on the container's metrics (Mimir, the "Scaleway Metrics" data source). `just cockpit` pushes them.
+name: bamdoodle-metrics
+interval: 1m
+rules:
+  - alert: BamDoodleContainerError
+    expr: serverless_container_status{status="error", resource_name=~"(.+-)?bamdoodle-game"} == 1
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "The BamDoodle container is in error"
+      description: "Scaleway reports the container {{ $labels.resource_name }} in error. Check the console for why."

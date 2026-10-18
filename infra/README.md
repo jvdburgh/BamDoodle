@@ -189,6 +189,39 @@ Put `custom_hostnames = ["bamdoodle.io"]` in `infra/scaleway/terraform.tfvars` (
 To add www later, add a `www` CNAME to the same value and `"www.bamdoodle.io"` to the list. To move DNS to an EU
 provider too, Scaleway Domains & DNS can host the zone (about €5 a month).
 
+## Usage, errors and alerts
+
+Anonymous usage counts and error reports in the container's own logs, read in Scaleway Cockpit
+([decision 0005](../docs/decisions/0005-usage-and-errors.md)). About €1 a month: €0.015 a day per alert rule (three)
+plus cents of log storage. Set up once; both steps are safe to run again.
+
+1. In `infra/scaleway/terraform.tfvars`, set `alert_email`, `alert_phone` (optional, for SMS) and `budget_id` (the
+   organization's budget: Billing > Budget, or `GET /billing/v2/budgets`), then `terraform apply` from
+   `infra/scaleway`. That turns on Cockpit's alert manager, emailing `alert_email`, and adds a 100 % step to the
+   budget's warnings (it already has 50 % and 75 %). Scaleway budgets warn; they never stop anything.
+2. From the repository root:
+
+   ```bash
+   just cockpit
+   ```
+
+   It keeps the Scaleway Logs and Metrics 365 days (up to 1825 is possible) and pushes the alert rules in
+   `infra/scaleway/cockpit/` (server errors and panics, the container in error, five or more browser errors in 15
+   minutes). Change a rule in its YAML and run it again.
+3. The dashboard: open Cockpit's Grafana (Cockpit > Open dashboards, signing in with your Scaleway account),
+   Dashboards > New > Import, upload `infra/scaleway/cockpit/usage-dashboard.json` and pick **Scaleway Logs** as the
+   data source. It shows games, rounds, rooms, players per round, language and mode, how often the bamboozler is
+   caught, and errors.
+
+To look at the raw lines: Grafana > Explore > Scaleway Logs, with
+`{resource_type="serverless_container"} | json message="message" | line_format "{{.message}}" | json`, then filter
+on `target="bamdoodle::usage"`, `target="bamdoodle::client_error"` or `level="ERROR"`.
+
+**Spam and cost:** the container is a fixed size and Scaleway bills it by time, not by request, so traffic can't raise
+its cost. The only thing that grows with use is log storage, and the server writes at most 60 lines a minute
+whatever it's sent (`LOG_LINES_PER_MINUTE`): even a year-long flood stays under about €1.50 a month of storage. The
+budget alerts (50 %, 75 %, 100 % of the organization's monthly limit) catch anything else.
+
 ## Later
 
 - Infra changes: edit `infra/scaleway/*.tf`, then `terraform apply` from `infra/scaleway`.

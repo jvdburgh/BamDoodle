@@ -12,6 +12,7 @@ choices get a short record in [decisions/](decisions/).
  │ canvas + per-player    │   JSON messages   │  ├─ /ws  → player connection     │
  │ layers, mini-maps      │                   │  ├─ /api/health, /api/version    │
  │                        │                   │  ├─ /api/room-defaults           │
+ │                        │                   │  ├─ /api/client-error            │
  └────────────────────────┘                   │  └─ static files (web/dist)      │
                                               │ Room registry (in memory)        │
                                               │  └─ one task per room: rules,    │
@@ -223,10 +224,30 @@ Conventions (see AGENTS.md):
   revalidated. Only the web app's own routes get `index.html`; anything that looks like a file, and unknown `/api/`
   or `/assets/` paths, is a 404.
 
+## Usage and errors
+
+[Decision 0005](decisions/0005-usage-and-errors.md): anonymous counts and error reports in our own logs, read in
+Scaleway Cockpit. No cookies, no third-party script, nothing that points at a person.
+
+- **Logs:** in the image (`LOG_FORMAT=json`) the server writes one JSON object per line; Scaleway wraps each in
+  `{"resource_instance", "message"}`, so a Cockpit (Loki) query unwraps twice, extracting only the fields it needs:
+  `{resource_type="serverless_container"} | json message="message" | line_format "{{.message}}" | json event="event"`.
+  At most 60 lines a minute (`LOG_LINES_PER_MINUTE`, `server/src/logging.rs`): the one cost that grows with use is
+  log storage, so whatever anyone sends, it stays capped.
+- **Usage events** (`server/src/usage.rs`, `target="bamdoodle::usage"`): `room_created` (rooms open), `round_finished`
+  (round of rounds, game over, players, how many caught the bamboozler, guessed, mode, turns, language, number of
+  categories) and `room_closed` (unused, empty or idle, and minutes open).
+- **Server errors:** anything at `ERROR`, including panics (`bamdoodle::panic`, from a panic hook in `main.rs`).
+- **Browser errors:** `ErrorReportUtils.install()` (`web/src/app/errorReport.utils.ts`, before the app starts)
+  sends uncaught errors and rejected promises to `POST /api/client-error`: each different one once, at most five per
+  visit, only the stack frames from our own site (none: not sent), room codes in addresses as `CODE`. The server
+  cuts them to size, takes 10 a minute in total and logs them as `bamdoodle::client_error` with the release, the
+  screen (`start`, `join`, `watch`, `lab`) and the user agent, never the IP address or room code.
+- **Cockpit:** logs kept a year, alerts by email for server errors, a container in error and bursts of browser
+  errors, and a usage dashboard. The setup is in [infra/README.md](../infra/README.md) ("Usage, errors and alerts").
+
 ## Not now (follow-ups)
 
-- Analytics, if any: EU-hosted and cookie-free (Plausible or self-hosted Umami), or nothing.
-- Error tracking: GlitchTip (open source) rather than Sentry.
 - PWA install, a native Android app (the server doesn't care what the client is).
 - Own colours per player on the wire (only in the lab so far), a limit on rooms per IP address.
 - A database, only when there's something worth keeping (stats, custom word packs).

@@ -742,6 +742,7 @@ impl Room {
             )
         });
         let awards = score(&round, guess_correct);
+        let players = round.turn_order.len();
         for award in &awards {
             if let Some(player) = self.player_mut(award.player_id) {
                 player.score += award.points;
@@ -760,6 +761,7 @@ impl Room {
             awards,
             scores: self.players.iter().map(summary).collect(),
         };
+        crate::usage::round_finished(&result, &self.settings, players);
         self.last_strokes = round.strokes.iter().map(stroke_view).collect();
         // The seat grace starts when the round ends, not when they dropped out during it.
         for player in &mut self.players {

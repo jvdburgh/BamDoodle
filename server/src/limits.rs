@@ -57,3 +57,13 @@ pub const HOST_GRACE: Duration = Duration::from_secs(15);
 /// A room where nobody has done anything (joined, drawn, voted, changed settings) for this long is closed, even with
 /// tabs still open.
 pub const ROOM_IDLE_LIMIT: Duration = Duration::from_secs(30 * 60);
+/// Browser error reports (`/api/client-error`) the whole server takes per minute; a broken release in every tab
+/// shouldn't flood the logs. Longer texts are cut to these lengths.
+pub const CLIENT_ERRORS_PER_MINUTE: u32 = 10;
+pub const CLIENT_ERROR_BYTES: usize = 8 * 1024;
+pub const CLIENT_ERROR_MESSAGE_CHARS: usize = 300;
+pub const CLIENT_ERROR_STACK_CHARS: usize = 2_000;
+pub const CLIENT_ERROR_AGENT_CHARS: usize = 200;
+/// Lines the server logs per minute, at most, whatever anyone sends: the log is the one cost that grows with use
+/// (decision 0005). A game logs a handful; past the budget, lines are dropped until the minute is over.
+pub const LOG_LINES_PER_MINUTE: u32 = 60;

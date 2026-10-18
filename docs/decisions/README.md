@@ -10,3 +10,4 @@ Decision, Consequences. Superseding a decision means a new record that links the
 | [0002](0002-in-memory-state.md) | Game state in memory, no database | accepted |
 | [0003](0003-hosting.md) | Scaleway Serverless Containers, Instance as fallback | accepted, to verify |
 | [0004](0004-licence.md) | AGPL-3.0 for code, brand reserved | accepted |
+| [0005](0005-usage-and-errors.md) | Anonymous usage counts and error reports, in Scaleway Cockpit | accepted |

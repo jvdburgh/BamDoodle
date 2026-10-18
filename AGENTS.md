@@ -96,7 +96,9 @@ Use `just` (it wraps cargo and pnpm the same way CI does):
 
 - Mention or compare with other games by name in code, copy or docs.
 - Load fonts or scripts from Google, Adobe or other third-party CDNs. Self-host through npm.
-- Add analytics, tracking, ads or accounts.
+- Add tracking, ads or accounts, or any analytics beyond the anonymous usage events and error reports in our own
+  logs ([decision 0005](docs/decisions/0005-usage-and-errors.md)): no names, room codes, words, IP addresses, cookies
+  or IDs across visits, and no third-party analytics or error trackers.
 - Add non-EU services. GitHub (and Codeberg) are the accepted exceptions.
 - Hand-edit `web/src/protocol/generated/` or the lockfiles (`pnpm-lock.yaml`, `server/Cargo.lock`).
 - Change `LICENSE` or anything in `brand/`: propose it to the maintainer.

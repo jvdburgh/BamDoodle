@@ -20,7 +20,7 @@ A multiplayer drawing and bluffing party game for your phone. Everyone draws the
 canvas, taking turns. Everyone except the **bamboozler**: they don't know the word and bluff their way through, while
 the rest try to find out who's sketchy.
 
-Free, with no accounts, no ads and nothing to unlock. Open the site on your phones, share a room code and play: around
+Free, with no accounts, no ads, no cookies and nothing to unlock. Open the site on your phones, share a room code and play: around
 the table, on a video call, or with the drawing on the big screen at a party.
 
 ## How to play
@@ -80,6 +80,8 @@ one container on Scaleway in Amsterdam.
 - [Decisions](docs/decisions/): why it's built this way
 - [Brand](docs/brand.md): colours, fonts, sound and feel
 - [Deploying](infra/README.md): the Scaleway setup and how a release goes out
+- [Usage and errors](docs/decisions/0005-usage-and-errors.md): the anonymous counts and error reports we keep, and
+  what we never collect
 
 ### Run your own
 
