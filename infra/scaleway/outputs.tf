@@ -9,6 +9,6 @@ output "container_id" {
 }
 
 output "container_endpoint" {
-  description = "Scaleway's own hostname for the container: for smoke tests, and the CNAME target for the custom domain."
-  value       = scaleway_container.game.public_endpoint
+  description = "Scaleway's own hostname for the container, without https://: for smoke tests, and the CNAME target for the custom domain."
+  value       = trimprefix(scaleway_container.game.public_endpoint, "https://")
 }
