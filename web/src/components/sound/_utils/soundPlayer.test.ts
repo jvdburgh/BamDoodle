@@ -1,11 +1,32 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { SoundCue } from "@/components/sound/_utils/soundCues.utils";
 
-type FakeSource = { start: ReturnType<typeof vi.fn>; stop: ReturnType<typeof vi.fn>; startedAt: number | null };
+const RATE = 1000;
 
-/** A small stand-in for the Web Audio graph: a clock, gains that accept automation, sources that record start/stop. */
+/** 1 s of silence, then 52 s of music, then silence: like the real track, which ends with a quiet tail. */
+function trackSamples() {
+  const samples = new Float32Array(60 * RATE);
+  for (let i = 1 * RATE; i < 53 * RATE; i++) samples[i] = Math.sin(i) * 0.3;
+  return samples;
+}
+
+type FakeParam = { value: number; setTargetAtTime: ReturnType<typeof vi.fn> };
+type FakeSource = {
+  buffer: unknown;
+  loop: boolean;
+  loopStart: number;
+  loopEnd: number;
+  start: ReturnType<typeof vi.fn>;
+  stop: ReturnType<typeof vi.fn>;
+};
+
+/** A small stand-in for the Web Audio graph: a clock, gains that record automation, sources that record start/stop. */
 function fakeAudio() {
   const sources: FakeSource[] = [];
-  const param = () => ({
+  const gains: FakeParam[] = [];
+  const contexts: { state: string; resume: ReturnType<typeof vi.fn> }[] = [];
+  const track = { duration: 60, sampleRate: RATE, getChannelData: () => trackSamples() };
+  const param = (): FakeParam & Record<string, unknown> => ({
     value: 0,
     setTargetAtTime: vi.fn(),
     setValueAtTime: vi.fn(),
@@ -15,34 +36,39 @@ function fakeAudio() {
   });
   const node = () => ({ connect: (next: unknown) => next, disconnect: vi.fn() });
   class FakeAudioContext {
+    constructor() {
+      contexts.push(this);
+    }
     state = "running";
     currentTime = 0;
     sampleRate = 44_100;
     destination = {};
-    resume = () => Promise.resolve();
-    createGain = () => ({ ...node(), gain: param() });
+    resume = vi.fn(() => {
+      this.state = "running";
+      return Promise.resolve();
+    });
+    createGain = () => {
+      const gain = param();
+      gains.push(gain);
+      return { ...node(), gain };
+    };
+    createOscillator = () => ({ ...node(), type: "", frequency: param(), start: vi.fn(), stop: vi.fn() });
+    createBiquadFilter = () => ({ ...node(), type: "", frequency: param(), Q: param() });
+    createBuffer = (_channels: number, length: number) => ({ getChannelData: () => new Float32Array(length) });
     createBufferSource = () => {
-      const source: FakeSource & Record<string, unknown> = {
-        ...node(),
-        buffer: null,
-        onended: null,
-        startedAt: null,
-        start: vi.fn((at: number) => {
-          source.startedAt = at;
-        }),
-        stop: vi.fn(),
-      };
+      const source = { ...node(), buffer: null, loop: false, loopStart: 0, loopEnd: 0, start: vi.fn(), stop: vi.fn() };
       sources.push(source);
       return source;
     };
-    decodeAudioData = () => Promise.resolve({ duration: 60 });
+    decodeAudioData = () => Promise.resolve(track);
   }
-  return { sources, FakeAudioContext };
+  const musicSources = () => sources.filter((source) => source.buffer === track);
+  return { FakeAudioContext, musicSources, gains, contexts };
 }
 
 describe("SoundPlayer music", () => {
   let audio: ReturnType<typeof fakeAudio>;
-  let unlock: () => void;
+  let tap: () => void;
   let fetchMusic: ReturnType<typeof vi.fn>;
 
   const load = async () => {
@@ -50,17 +76,22 @@ describe("SoundPlayer music", () => {
     const { SoundPlayer } = await import("@/components/sound/_utils/soundPlayer.utils");
     return SoundPlayer;
   };
+  /** The level the music's own output was last sent to. */
+  const musicLevel = () => {
+    const output = audio.gains.find((gain) => gain.setTargetAtTime.mock.calls.length > 0);
+    return output?.setTargetAtTime.mock.lastCall?.[0] as number | undefined;
+  };
 
   beforeEach(() => {
     vi.useFakeTimers();
     audio = fakeAudio();
     const store = new Map<string, string>();
+    const Context = audio.FakeAudioContext;
     vi.stubGlobal("window", {
-      AudioContext: audio.FakeAudioContext,
+      AudioContext: Context,
       addEventListener: (type: string, listener: () => void) => {
-        if (type === "pointerup") unlock = listener;
+        if (type === "pointerup") tap = listener;
       },
-      removeEventListener: () => {},
       setTimeout,
       clearTimeout,
       localStorage: {
@@ -69,7 +100,7 @@ describe("SoundPlayer music", () => {
         removeItem: (key: string) => store.delete(key),
       },
     });
-    vi.stubGlobal("AudioContext", audio.FakeAudioContext);
+    vi.stubGlobal("AudioContext", Context);
     fetchMusic = vi.fn(() => Promise.resolve({ arrayBuffer: () => Promise.resolve(new ArrayBuffer(8)) }));
     vi.stubGlobal("fetch", fetchMusic);
   });
@@ -79,77 +110,118 @@ describe("SoundPlayer music", () => {
     vi.unstubAllGlobals();
   });
 
-  it("waits for the first tap, then starts music that was wanted before it", async () => {
+  const screen = { playing: true, ducked: false, byDefault: true };
+
+  it("waits for the first tap, then loops the track's audible span with no gap", async () => {
     const player = await load();
-    player.setMusicWanted(true, true);
+    player.setMusic(screen);
     await vi.advanceTimersByTimeAsync(10);
-    expect(audio.sources).toHaveLength(0);
-    unlock();
+    expect(audio.musicSources()).toHaveLength(0);
+    tap();
     await vi.advanceTimersByTimeAsync(10);
-    expect(audio.sources).toHaveLength(1);
+    const [music] = audio.musicSources();
+    expect(music?.loop).toBe(true);
+    expect(music?.loopStart).toBeCloseTo(1, 1);
+    expect(music?.loopEnd).toBeCloseTo(53, 1);
+    expect(music?.start).toHaveBeenCalledWith(expect.any(Number), music?.loopStart);
+  });
+
+  it("keeps playing and looping while sound effects play", async () => {
+    const player = await load();
+    tap();
+    player.setMusic(screen);
+    await vi.advanceTimersByTimeAsync(10);
+    const level = musicLevel();
+    const cues: SoundCue[] = ["start", "turn", "yourTurn", "tick", "voteTick", "timeUp", "reveal", "pick", "vote"];
+    for (const cue of cues) player.play(cue);
+    player.play("scribble");
+    await vi.advanceTimersByTimeAsync(120_000);
+
+    const [music] = audio.musicSources();
+    expect(audio.musicSources()).toHaveLength(1);
+    expect(music?.stop).not.toHaveBeenCalled();
+    expect(music?.loop).toBe(true);
+    expect(musicLevel()).toBe(level);
+    expect(level).toBeGreaterThan(0);
+  });
+
+  it("steps back while someone draws, without stopping, and comes back after", async () => {
+    const player = await load();
+    tap();
+    player.setMusic(screen);
+    await vi.advanceTimersByTimeAsync(10);
+    const full = musicLevel()!;
+    player.setMusic({ ...screen, ducked: true });
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect(musicLevel()).toBeCloseTo(full * 0.35);
+    player.setMusic(screen);
+    expect(musicLevel()).toBe(full);
+    expect(audio.musicSources()).toHaveLength(1);
+    expect(audio.musicSources()[0]?.stop).not.toHaveBeenCalled();
   });
 
   it("stays silent on a phone until switched on", async () => {
     const player = await load();
-    unlock();
-    player.setMusicWanted(true, false);
+    tap();
+    player.setMusic({ ...screen, byDefault: false });
     await vi.advanceTimersByTimeAsync(10);
-    expect(audio.sources).toHaveLength(0);
+    expect(audio.musicSources()).toHaveLength(0);
     player.setMusicOn(true);
     await vi.advanceTimersByTimeAsync(10);
-    expect(audio.sources).toHaveLength(1);
+    expect(audio.musicSources()).toHaveLength(1);
   });
 
-  it("fades out and stops when no longer wanted, but keeps the loop if wanted again during the fade", async () => {
+  it("fades out and stops when switched off, but keeps the same loop if switched on during the fade", async () => {
     const player = await load();
-    unlock();
-    player.setMusicWanted(true, true);
+    tap();
+    player.setMusic(screen);
     await vi.advanceTimersByTimeAsync(10);
-    const [first] = audio.sources;
+    const [music] = audio.musicSources();
 
-    player.setMusicWanted(false, true);
+    player.setMusicOn(false);
     await vi.advanceTimersByTimeAsync(1000);
-    player.setMusicWanted(true, true);
+    player.setMusicOn(true);
     await vi.advanceTimersByTimeAsync(5000);
-    expect(first?.stop).not.toHaveBeenCalled();
-    expect(audio.sources).toHaveLength(1);
+    expect(music?.stop).not.toHaveBeenCalled();
+    expect(audio.musicSources()).toHaveLength(1);
 
-    player.setMusicWanted(false, true);
+    player.setMusicOn(false);
     await vi.advanceTimersByTimeAsync(3000);
-    expect(first?.stop).toHaveBeenCalled();
+    expect(music?.stop).toHaveBeenCalled();
   });
 
-  it("never starts a loop when switched off while the track loads", async () => {
+  it("never starts when switched off while the track loads", async () => {
     const player = await load();
-    unlock();
-    player.setMusicWanted(true, true);
+    tap();
+    player.setMusic(screen);
     player.setMusicOn(false);
     await vi.advanceTimersByTimeAsync(10);
-    expect(audio.sources).toHaveLength(0);
+    expect(audio.musicSources()).toHaveLength(0);
   });
 
-  it("starts the next pass where this one starts fading out", async () => {
+  it("resumes audio the browser suspended, on the next tap", async () => {
     const player = await load();
-    unlock();
-    player.setMusicWanted(true, true);
+    tap();
+    player.setMusic(screen);
     await vi.advanceTimersByTimeAsync(10);
-    expect(audio.sources).toHaveLength(1);
-    await vi.advanceTimersByTimeAsync(57_000);
-    expect(audio.sources).toHaveLength(2);
-    expect(audio.sources[1]?.startedAt).toBeCloseTo(0.05 + 60 - 3);
+    const [context] = audio.contexts;
+    context!.state = "suspended";
+    context!.resume.mockClear();
+    tap();
+    expect(context!.resume).toHaveBeenCalled();
+    expect(context!.state).toBe("running");
   });
 
   it("tries the track again after a failed load", async () => {
     fetchMusic.mockImplementationOnce(() => Promise.reject(new Error("offline")));
     const player = await load();
-    unlock();
-    player.setMusicWanted(true, true);
+    tap();
+    player.setMusic(screen);
     await vi.advanceTimersByTimeAsync(10);
-    expect(audio.sources).toHaveLength(0);
-    player.setMusicWanted(false, true);
-    player.setMusicWanted(true, true);
+    expect(audio.musicSources()).toHaveLength(0);
+    player.setMusic({ ...screen, ducked: true });
     await vi.advanceTimersByTimeAsync(10);
     expect(fetchMusic).toHaveBeenCalledTimes(2);
-    expect(audio.sources).toHaveLength(1);
+    expect(audio.musicSources()).toHaveLength(1);
   });
 });

@@ -4,7 +4,6 @@ import { useRoomFeed } from "@/components/room/_hooks/roomFeed.hook";
 import { useTicker } from "@/components/room/_hooks/ticker.hook";
 import type { Attribution, RoomViewState } from "@/components/room/_types/room.types";
 import { RoomViewUtils } from "@/components/room/_utils/roomView.utils";
-import { usePencilSound } from "@/components/sound/_hooks/pencilSound.hook";
 import { RoomStateUtils } from "@/protocol/roomState.utils";
 
 /** A turned-down request stays on screen this long. */
@@ -27,7 +26,6 @@ export function useRoomView(state: RoomViewState, colours: Attribution) {
   const families = useMemo(() => RoomViewUtils.families(players, colours), [players, colours]);
   const identities = useMemo(() => RoomViewUtils.identities(families), [families]);
   const drawing = useRoomDrawing(round);
-  usePencilSound(drawing);
   const feed = useRoomFeed(round, now);
 
   return {

@@ -34,7 +34,7 @@ export const MusicOffByDefaultOnAPhone: Story = {
   args: { channel: "music" },
   beforeEach: () => {
     SoundPlayer.clearMusicChoice();
-    SoundPlayer.setMusicWanted(false, false);
+    SoundPlayer.setMusic({ playing: false, ducked: false, byDefault: false });
     return () => SoundPlayer.clearMusicChoice();
   },
   play: async ({ canvas, userEvent }) => {
@@ -53,10 +53,10 @@ export const MusicOnByDefaultOnTheHostScreen: Story = {
   args: { channel: "music" },
   beforeEach: () => {
     SoundPlayer.clearMusicChoice();
-    SoundPlayer.setMusicWanted(false, true);
+    SoundPlayer.setMusic({ playing: false, ducked: false, byDefault: true });
     return () => {
       SoundPlayer.clearMusicChoice();
-      SoundPlayer.setMusicWanted(false, false);
+      SoundPlayer.setMusic({ playing: false, ducked: false, byDefault: false });
     };
   },
   play: async ({ canvas, userEvent }) => {

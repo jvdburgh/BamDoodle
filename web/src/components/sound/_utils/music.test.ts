@@ -1,18 +1,33 @@
 import { describe, expect, it } from "vitest";
 import { MusicUtils } from "@/components/sound/_utils/music.utils";
 
-describe("MusicUtils.wanted", () => {
-  it("plays in the lobby and between rounds, not while drawing or voting", () => {
-    expect(MusicUtils.wanted("lobby")).toBe(true);
-    expect(MusicUtils.wanted("guessing")).toBe(true);
-    expect(MusicUtils.wanted("finished")).toBe(true);
-    expect(MusicUtils.wanted("drawing")).toBe(false);
-    expect(MusicUtils.wanted("voting")).toBe(false);
+describe("MusicUtils.ducked", () => {
+  it("steps back while drawing or voting, full in the lobby and between rounds", () => {
+    expect(MusicUtils.ducked("drawing")).toBe(true);
+    expect(MusicUtils.ducked("voting")).toBe(true);
+    expect(MusicUtils.ducked("lobby")).toBe(false);
+    expect(MusicUtils.ducked("guessing")).toBe(false);
+    expect(MusicUtils.ducked("finished")).toBe(false);
   });
 });
 
-describe("MusicUtils.pass", () => {
-  it("crossfades: the next pass starts as this one starts fading out", () => {
-    expect(MusicUtils.pass(10, 60, 3)).toEqual({ at: 10, fadedIn: 13, fadeOut: 67, end: 70, next: 67 });
+describe("MusicUtils.loopBounds", () => {
+  const rate = 1000;
+  /** 1 s of silence, 5 s of music, a 1 s whisper of a tail, 1 s of silence. */
+  const track = () => {
+    const samples = new Float32Array(8 * rate);
+    for (let i = 1 * rate; i < 6 * rate; i++) samples[i] = Math.sin(i) * 0.3;
+    for (let i = 6 * rate; i < 7 * rate; i++) samples[i] = Math.sin(i) * 0.005;
+    return samples;
+  };
+
+  it("loops from the first sound to the end of the last audible stretch", () => {
+    const { start, end } = MusicUtils.loopBounds(track(), rate);
+    expect(start).toBeCloseTo(1, 2);
+    expect(end).toBeCloseTo(6, 1);
+  });
+
+  it("loops the whole track when it's all silence", () => {
+    expect(MusicUtils.loopBounds(new Float32Array(rate), rate)).toEqual({ start: 0, end: 1 });
   });
 });

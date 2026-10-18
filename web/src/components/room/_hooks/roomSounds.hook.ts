@@ -9,12 +9,13 @@ import { SoundPlayer } from "@/components/sound/_utils/soundPlayer.utils";
 import { RoomStateUtils } from "@/protocol/roomState.utils";
 
 /**
- * The room's sounds on this device: turns, ticks, time's up, the reveal, the final fanfare, and the music between
- * rounds (`musicByDefault`: on unless switched off, for the host screen and the lab). Mount once per room.
+ * The room's sounds on this device: turns, ticks, time's up, the reveal, the final fanfare, and the music, softer while
+ * someone draws or votes (`musicByDefault`: on unless switched off, for the host screen and the lab). Mount once per
+ * room.
  */
 export function useRoomSounds(state: RoomViewState, { musicByDefault = false } = {}) {
   const { phase } = state.room.phase;
-  useMusic(MusicUtils.wanted(phase), musicByDefault);
+  useMusic(MusicUtils.ducked(phase), musicByDefault);
   const round = RoomStateUtils.round(state);
   const [now, setNow] = useState(Date.now);
   useTicker(phase === "drawing" || phase === "voting", setNow, 250);

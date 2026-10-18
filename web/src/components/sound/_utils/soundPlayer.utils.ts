@@ -13,8 +13,8 @@ const MUSIC_KEY = "bamdoodle.music";
 const MASTER_GAIN = 0.22;
 const MUSIC_SRC = "/sounds/quirky-detective.m4a";
 const MUSIC_GAIN = 0.14;
-/** Seconds of crossfade where the loop meets itself. */
-const MUSIC_OVERLAP_S = 3;
+/** The music's level while someone draws or votes, as a share of its full level. */
+const MUSIC_DUCKED = 0.35;
 
 type Note = { frequency: number; at: number; length: number; type?: OscillatorType; gain?: number };
 
@@ -92,23 +92,25 @@ function readMusicChoice(): boolean | null {
 }
 
 /**
- * Starts (or resumes) audio inside a user gesture. `pointerup` counts as one on touch screens where `pointerdown`
- * doesn't, and iOS only resumes a context from within the gesture itself; keep listening until it's running.
+ * Starts audio inside a user gesture, and resumes it whenever the browser suspended it (a locked phone, a call, a
+ * backgrounded tab): `pointerup` counts as a gesture on touch screens where `pointerdown` doesn't, and iOS only
+ * resumes a context from within the gesture itself, so these listeners stay for the whole visit.
  */
 function unlock() {
   if (!("AudioContext" in window)) return;
-  context ??= new AudioContext();
-  if (context.state !== "running") void context.resume().then(updateMusic);
-  if (context.state === "running") {
+  if (!context) {
+    context = new AudioContext();
     updateMusic();
-    window.removeEventListener("pointerup", unlock, true);
-    window.removeEventListener("keydown", unlock, true);
   }
+  if (context.state !== "running") void context.resume().then(updateMusic);
 }
 
 if (typeof window !== "undefined") {
   window.addEventListener("pointerup", unlock, true);
   window.addEventListener("keydown", unlock, true);
+  window.addEventListener("visibilitychange", () => {
+    if (context && document.visibilityState === "visible") unlock();
+  });
 }
 
 function tone(audio: AudioContext, output: AudioNode, { frequency, at, length, type = "triangle", gain = 1 }: Note) {
@@ -147,71 +149,17 @@ function scratch(audio: AudioContext, output: AudioNode) {
 }
 
 /**
- * The pencil on paper while anyone draws: one looping bed of grainy, band-passed noise whose level and brightness
- * follow the pen's speed, fading out by itself when points stop coming. Soft on purpose; it's texture, not a cue.
- */
-const PENCIL_GAIN = 0.5;
-const PENCIL_FADE_S = 0.09;
-let pencil: { gain: GainNode; filter: BiquadFilterNode } | null = null;
-
-function pencilBed(audio: AudioContext) {
-  const seconds = 2;
-  const buffer = audio.createBuffer(1, audio.sampleRate * seconds, audio.sampleRate);
-  const data = buffer.getChannelData(0);
-  let grain = 0;
-  for (let i = 0; i < data.length; i++) {
-    if (i % 64 === 0) grain = 0.35 + Math.random() * 0.65;
-    data[i] = (Math.random() * 2 - 1) * grain;
-  }
-  const source = audio.createBufferSource();
-  source.buffer = buffer;
-  source.loop = true;
-  const filter = audio.createBiquadFilter();
-  filter.type = "bandpass";
-  filter.Q.value = 0.7;
-  filter.frequency.value = 2800;
-  const soften = audio.createBiquadFilter();
-  soften.type = "highshelf";
-  soften.frequency.value = 6000;
-  soften.gain.value = -12;
-  const gain = audio.createGain();
-  gain.gain.value = 0;
-  const master = audio.createGain();
-  master.gain.value = MASTER_GAIN;
-  source.connect(filter).connect(soften).connect(gain).connect(master).connect(audio.destination);
-  source.start();
-  return { gain, filter };
-}
-
-/** Points came in at this speed (canvas widths per second); call it for every batch, from any player's pen. */
-function pencilMove(speed: number) {
-  if (muted || !context || context.state !== "running") return;
-  pencil ??= pencilBed(context);
-  const level = Math.min(1, 0.25 + speed * 0.6);
-  const now = context.currentTime;
-  pencil.gain.gain.cancelScheduledValues(now);
-  pencil.gain.gain.setTargetAtTime(PENCIL_GAIN * level, now, 0.015);
-  pencil.gain.gain.setTargetAtTime(0, now + PENCIL_FADE_S, 0.04);
-  pencil.filter.frequency.setTargetAtTime(2200 + level * 1600, now, 0.03);
-}
-
-/** The pen lifted: fade out now instead of waiting for the next silence. */
-function pencilStop() {
-  if (!pencil || !context) return;
-  const now = context.currentTime;
-  pencil.gain.gain.cancelScheduledValues(now);
-  pencil.gain.gain.setTargetAtTime(0, now, 0.03);
-}
-
-/**
- * Background music: a crossfaded loop of one track, fading in when this screen wants music and it's switched on,
- * fading out otherwise (while someone draws or votes). Off by default on a player's phone, so a table of phones
- * doesn't play it out of step; on by default on the host screen. The choice is remembered per device.
+ * Background music: one source looping the track's audible span natively (no timers, so no gap and no stop when a
+ * hidden tab throttles them). It plays while a screen with music is open and it's switched on, steps back while
+ * someone draws or votes, and never stops for a sound effect: effects play through their own nodes. Off by default on
+ * a player's phone, so a table of phones doesn't play it out of step; on by default on the host screen. The choice is
+ * remembered per device.
  */
 let musicByDefault = false;
-let musicWanted = false;
-let musicTrack: Promise<AudioBuffer | null> | null = null;
-let musicLoop: { output: GainNode; sources: AudioBufferSourceNode[]; timer: number; stopTimer: number } | null = null;
+let musicScreen = false;
+let musicDucked = false;
+let musicTrack: Promise<{ buffer: AudioBuffer; start: number; end: number } | null> | null = null;
+let music: { output: GainNode; source: AudioBufferSourceNode; stopTimer: number } | null = null;
 
 const musicOn = () => musicChoice ?? musicByDefault;
 
@@ -219,6 +167,7 @@ function loadMusic(audio: AudioContext) {
   musicTrack ??= fetch(MUSIC_SRC)
     .then((response) => response.arrayBuffer())
     .then((data) => audio.decodeAudioData(data))
+    .then((buffer) => ({ buffer, ...MusicUtils.loopBounds(buffer.getChannelData(0), buffer.sampleRate) }))
     .catch(() => {
       musicTrack = null;
       return null;
@@ -226,81 +175,47 @@ function loadMusic(audio: AudioContext) {
   return musicTrack;
 }
 
-function playPass(audio: AudioContext, track: AudioBuffer, at: number) {
-  if (!musicLoop) return;
-  const loop = musicLoop;
-  const pass = MusicUtils.pass(at, track.duration, MUSIC_OVERLAP_S);
-  const source = audio.createBufferSource();
-  source.buffer = track;
-  const envelope = audio.createGain();
-  envelope.gain.setValueAtTime(0, pass.at);
-  envelope.gain.linearRampToValueAtTime(1, pass.fadedIn);
-  envelope.gain.setValueAtTime(1, pass.fadeOut);
-  envelope.gain.linearRampToValueAtTime(0, pass.end);
-  source.connect(envelope).connect(loop.output);
-  source.start(pass.at);
-  source.onended = () => {
-    loop.sources = loop.sources.filter((playing) => playing !== source);
-  };
-  loop.sources.push(source);
-  loop.timer = window.setTimeout(
-    () => playPass(audio, track, pass.next),
-    Math.max(0, (pass.next - audio.currentTime - 1) * 1000),
-  );
-}
-
 function stopMusic() {
-  if (!musicLoop) return;
-  window.clearTimeout(musicLoop.timer);
-  window.clearTimeout(musicLoop.stopTimer);
-  for (const source of musicLoop.sources) source.stop();
-  musicLoop.output.disconnect();
-  musicLoop = null;
+  if (!music) return;
+  window.clearTimeout(music.stopTimer);
+  music.source.stop();
+  music.output.disconnect();
+  music = null;
 }
 
 function updateMusic() {
   const audio = context;
   if (!audio || audio.state !== "running") return;
-  const audible = musicOn() && musicWanted;
-  if (!audible) {
-    if (!musicLoop) return;
-    musicLoop.output.gain.setTargetAtTime(0, audio.currentTime, 0.4);
-    window.clearTimeout(musicLoop.stopTimer);
-    musicLoop.stopTimer = window.setTimeout(stopMusic, 3000);
+  const level = musicOn() && musicScreen ? MUSIC_GAIN * (musicDucked ? MUSIC_DUCKED : 1) : 0;
+  if (music) {
+    window.clearTimeout(music.stopTimer);
+    music.output.gain.setTargetAtTime(level, audio.currentTime, level > 0 ? 0.6 : 0.4);
+    if (level === 0) music.stopTimer = window.setTimeout(stopMusic, 3000);
     return;
   }
-  if (musicLoop) {
-    window.clearTimeout(musicLoop.stopTimer);
-    musicLoop.output.gain.setTargetAtTime(MUSIC_GAIN, audio.currentTime, 0.8);
-    return;
-  }
+  if (level === 0) return;
   void loadMusic(audio).then((track) => {
-    if (!track || musicLoop || !musicOn() || !musicWanted) return;
+    if (!track || music || !musicOn() || !musicScreen) return;
     const output = audio.createGain();
     output.gain.value = 0;
     output.connect(audio.destination);
-    musicLoop = { output, sources: [], timer: 0, stopTimer: 0 };
-    output.gain.setTargetAtTime(MUSIC_GAIN, audio.currentTime, 0.8);
-    playPass(audio, track, audio.currentTime + 0.05);
+    const source = audio.createBufferSource();
+    source.buffer = track.buffer;
+    source.loop = true;
+    source.loopStart = track.start;
+    source.loopEnd = track.end;
+    source.connect(output);
+    source.start(audio.currentTime + 0.05, track.start);
+    music = { output, source, stopTimer: 0 };
+    updateMusic();
   });
 }
 
-/** Forget this device's music choice, back to the screen's default. */
-function clearMusicChoice() {
-  musicChoice = null;
-  try {
-    window.localStorage.removeItem(MUSIC_KEY);
-  } catch {
-    // Nothing remembered to forget.
-  }
-  for (const listener of listeners) listener();
-  updateMusic();
-}
-
-/** What this screen wants now (no music while drawing or voting), and whether it plays music unless told not to. */
-function setMusicWanted(wanted: boolean, byDefault: boolean) {
+/** Whether this screen has music, whether it steps back right now, and whether it plays unless switched off. */
+function setMusic({ playing, ducked, byDefault }: { playing: boolean; ducked: boolean; byDefault: boolean }) {
   const changedDefault = musicByDefault !== byDefault;
-  musicWanted = wanted;
+  musicScreen = playing;
+  musicDucked = ducked;
   musicByDefault = byDefault;
   if (changedDefault) for (const listener of listeners) listener();
   updateMusic();
@@ -317,6 +232,18 @@ function setMusicOn(next: boolean) {
   updateMusic();
 }
 
+/** Forget this device's music choice, back to the screen's default. */
+function clearMusicChoice() {
+  musicChoice = null;
+  try {
+    window.localStorage.removeItem(MUSIC_KEY);
+  } catch {
+    // Nothing remembered to forget.
+  }
+  for (const listener of listeners) listener();
+  updateMusic();
+}
+
 function play(cue: SoundCue) {
   if (muted || !context || context.state !== "running") return;
   const master = context.createGain();
@@ -328,7 +255,6 @@ function play(cue: SoundCue) {
 
 function setMuted(next: boolean) {
   muted = next;
-  if (muted) pencilStop();
   try {
     window.localStorage.setItem(STORAGE_KEY, next ? "1" : "0");
   } catch {
@@ -346,13 +272,11 @@ function subscribe(listener: () => void) {
 
 export const SoundPlayer = {
   play,
-  pencilMove,
-  pencilStop,
   isMuted: () => muted,
   setMuted,
   isMusicOn: musicOn,
   setMusicOn,
   clearMusicChoice,
-  setMusicWanted,
+  setMusic,
   subscribe,
 };

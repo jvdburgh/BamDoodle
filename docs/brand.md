@@ -52,16 +52,15 @@ Every sound effect is synthesised in the browser with the Web Audio API (`web/sr
 and square-wave notes and filtered noise. No effect files, so nothing to license, credit or download.
 Cues: a start jingle, a blip per turn (brighter when it's yours), ticks in the last 3 seconds of a turn and the last 5
 of the vote, a falling chime when time's up, and small sounds for picking a colour, finishing a stroke and voting.
-While anyone draws, a very soft pencil-on-paper bed (grainy band-passed noise) follows the stroke: louder and
-brighter as the pen moves faster, fading out as soon as points stop or the stroke ends.
 Quiet by default, silent until the first tap (browsers require it), and a mute toggle remembered per device.
 
 **Music:** one quirky detective loop (Pixabay, re-encoded to 96 kbps AAC in `web/public/sounds/`). It is under the
-Pixabay Content License, not the AGPL; `web/public/sounds/NOTICE` says so, for forks. It plays softly in the lobby and
-between rounds, crossfading into itself, and fades out while someone draws or votes so the pencil and the ticks stay
-clear. It has its own Music toggle next to the sound toggle, remembered per device: on by default on the host screen
+Pixabay Content License, not the AGPL; `web/public/sounds/NOTICE` says so, for forks. It loops the track's audible span
+seamlessly (the silence before and the quiet tail after are left out) and keeps playing for as long as the room is
+open: softer while someone draws or votes, so the ticks and cues stay clear, and never stopped or restarted by a sound
+effect. It has its own Music toggle next to the sound toggle, remembered per device: on by default on the host screen
 and in the lab, off by default on players' phones, so a table full of phones doesn't play it out of step. Like every
-sound, it waits for the first tap.
+sound, it waits for the first tap, and it picks up again after the browser suspends audio (a locked phone, a call).
 
 ## Feel
 
