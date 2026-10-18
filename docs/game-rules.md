@@ -30,8 +30,10 @@ goal for now.
 
 ## A round
 
-1. **Lobby.** Players join with a room code or link, pick a nickname and draw or tweak their avatar while they
-   wait. The host picks the mode, the word pack (and whether the adults pack is on) and starts the round.
+1. **Lobby.** The start page offers two things: **Create a room** or **Join a room**. Creating asks for a nickname
+   and the room settings; joining asks for the four-letter room code (shown as "Join at bamdoodle.io with code …" on
+   the host's screen) and a nickname, or skips the code when you open a shared link. Players draw or tweak their
+   avatar while they wait. The host picks the mode, the word pack (and whether the adults pack is on) and starts the round.
 2. **Secret.** The server picks a word from the pack and tells each player their role.
 3. **Drawing.** Players take turns on the shared canvas in a fixed order shown on screen. The player whose turn it
    is is highlighted, and their strokes appear live for everyone.
@@ -61,11 +63,13 @@ Everyone can use every colour: there is nothing to unlock, ever. To still see wh
 - **Live highlight:** the active drawer is clearly marked while they draw: a ring around their avatar in the turn
   order, their name in the turn bar, and a name tag that follows their pen tip on the canvas.
 - **Mini-maps:** next to each player's name, a small canvas shows only *their* strokes. Always visible, on phones too.
+- **Pen tag:** a small chip with the drawer's avatar and name rides on their pen tip on every screen.
 - **Magnifying glass (spotlight):** click a player (or their mini-map) to highlight their strokes on the main
   canvas while the rest fades back to grey. Click again or press Esc to show everyone. Hovering a player with a mouse
   previews their spotlight without pinning it.
 
-If playtests show this isn't enough, a fallback is one colour family per player. We try the free palette first.
+If playtests show this isn't enough, a fallback is one colour family per player (five shades each). We try the free
+palette first; the playground (the app's "Lab" panel) switches between both so we can compare.
 
 ## Points (starting point, tune in playtests)
 
