@@ -1,10 +1,11 @@
 import { ScribbleUtils } from "@/components/brand/_utils/scribble.utils";
 import type { StrokePoint } from "@/components/canvas/_types/stroke.types";
 import { CanvasTools, type CanvasColour } from "@/components/canvas/_utils/canvasTools.utils";
+import type { BrushSize } from "@/protocol/generated/BrushSize";
 
-/** Stand-ins for the other players in the prototype, until there is a server to bring their real strokes. */
+/** Stand-ins for the other players in the lab, where no server brings their real strokes. */
 
-export type BotStroke = { color: string; size: number; points: StrokePoint[] };
+export type BotStroke = { color: string; size: BrushSize; points: StrokePoint[] };
 
 const BLACK = "#000000";
 const visibleOnPaper = CanvasTools.colours.filter((colour) => !["White", "Cloud"].includes(colour.name));
@@ -41,7 +42,7 @@ function stroke(rand: () => number, family?: CanvasColour[]): BotStroke {
 
   return {
     color: family ? pickFrom(family).value : rand() < 0.5 ? BLACK : pickFrom(visibleOnPaper).value,
-    size: pickFrom(CanvasTools.brushes.slice(0, 2)).size,
+    size: pickFrom(CanvasTools.brushes.slice(0, 2)).id,
     points: raw.map(([x = 0, y = 0]) => [Math.min(1, Math.max(0, x)), Math.min(1, Math.max(0, y)), 0.5]),
   };
 }

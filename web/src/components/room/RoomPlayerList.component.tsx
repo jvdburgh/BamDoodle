@@ -10,30 +10,30 @@ import type { RoomPlayer } from "@/components/room/_types/room.types";
  */
 export type RoomPlayerAction = {
   kind: "suspect" | "vote";
-  chosenId: string | null;
-  onChoose: (id: string | null) => void;
+  chosenId: number | null;
+  onChoose: (id: number | null) => void;
 };
 
 type RoomPlayerListProps = {
   players: RoomPlayer[];
   drawing: Drawing;
   /** The player at this screen, marked "you"; null on the host screen. */
-  youId: string | null;
-  activeId: string | null;
-  nextId: string | null;
-  spotlightId: string | null;
-  onSpotlight: (playerId: string | null) => void;
+  youId: number | null;
+  activeId: number | null;
+  nextId: number | null;
+  spotlightId: number | null;
+  onSpotlight: (playerId: number | null) => void;
   /** Hovering a player previews their spotlight without pinning it. */
-  onPeek: (playerId: string | null) => void;
+  onPeek: (playerId: number | null) => void;
   action?: RoomPlayerAction;
   /** Your locked final vote, shown as a badge. */
-  yourVoteId?: string | null;
+  yourVoteId?: number | null;
   /** Identity colour per player, when players have one (shade families). */
-  colours?: Record<string, string>;
+  colours?: Record<number, string>;
   /** How many players suspect each player right now (public while drawing). */
-  suspectedBy?: Record<string, number>;
+  suspectedBy?: Record<number, number>;
   /** Who has locked a final vote (not for whom). */
-  votedIds?: string[];
+  votedIds?: number[];
   /**
    * "grid": two or three columns of cards on a phone, and one column of wide cards in a laptop's `room` container;
    * "row": everyone in one row (host screen).

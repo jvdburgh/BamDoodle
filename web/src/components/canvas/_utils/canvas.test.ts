@@ -51,7 +51,7 @@ describe("CanvasUtils.simplify", () => {
 describe("CanvasUtils.strokeToPath", () => {
   const stroke: Stroke = {
     id: "s1",
-    playerId: "p1",
+    playerId: 1,
     color: "#000000",
     size: 0.01,
     hasPressure: false,

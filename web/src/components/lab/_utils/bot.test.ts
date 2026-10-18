@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { ScribbleUtils } from "@/components/brand/_utils/scribble.utils";
 import { CanvasTools } from "@/components/canvas/_utils/canvasTools.utils";
-import { BotUtils } from "@/components/room/_utils/bot.utils";
+import { BotUtils } from "@/components/lab/_utils/bot.utils";
 
 const strokes = (seed: number, count: number) => {
   const rand = ScribbleUtils.random(seed);
@@ -36,7 +36,7 @@ describe("BotUtils.stroke", () => {
   });
 
   it("uses the fine or medium brush", () => {
-    const sizes = CanvasTools.brushes.slice(0, 2).map((brush) => brush.size);
+    const sizes = CanvasTools.brushes.slice(0, 2).map((brush) => brush.id);
     for (const stroke of strokes(3, 50)) expect(sizes).toContain(stroke.size);
   });
 

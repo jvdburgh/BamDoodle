@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { WordPack } from "@/components/room/_types/room.types";
-import { WordsUtils } from "@/components/room/_utils/words.utils";
+import type { WordPack } from "@/components/lab/_types/lab.types";
+import { WordsUtils } from "@/components/lab/_utils/words.utils";
 
 const all: WordPack[] = [
   { language: "en", name: "Animals", adult: false, words: ["cat", "dog"] },
@@ -10,9 +10,8 @@ const all: WordPack[] = [
 ];
 
 describe("WordsUtils", () => {
-  it("starts with every category of the language except the 18+ ones", () => {
-    expect(WordsUtils.defaults(all, "en")).toEqual(["Animals", "Food"]);
-    expect(WordsUtils.defaults(all, "nl")).toEqual(["Dieren"]);
+  it("lists the categories with their word counts, the way the server does", () => {
+    expect(WordsUtils.catalogue(all)[0]).toEqual({ language: "en", name: "Animals", adult: false, words: 2 });
   });
 
   it("drops names from another language and falls back to the defaults when nothing is left", () => {

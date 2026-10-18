@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, type ReactNode } from "react";
 import { useCanvasSize } from "@/components/canvas/_hooks/canvasSize.hook";
 import { useFrame } from "@/components/canvas/_hooks/frame.hook";
 import { usePointerStroke } from "@/components/canvas/_hooks/pointerStroke.hook";
-import type { Stroke } from "@/components/canvas/_types/stroke.types";
+import type { Stroke, StrokePoint } from "@/components/canvas/_types/stroke.types";
 import type { Drawing } from "@/components/canvas/_utils/drawing.utils";
 
 const FADED_ALPHA = 0.14;
@@ -10,16 +10,19 @@ const FADED_ALPHA = 0.14;
 type CanvasBoardProps = {
   drawing: Drawing;
   /** Player ids in the order their layers are stacked. */
-  order: string[];
+  order: number[];
   /** Who draws with the next stroke; null locks the canvas. */
-  activePlayerId: string | null;
+  activePlayerId: number | null;
   color: string;
   brushSize: number;
   /** Whose strokes stand out while everyone else's fade back. */
-  spotlightId?: string | null;
+  spotlightId?: number | null;
   label: string;
   /** Follows the pen tip while a stroke is being drawn, so everyone sees who is drawing. */
   penTag?: ReactNode;
+  /** The stroke's first point, then every batch of points as the pen moves: for sending them on while drawing. */
+  onStrokeBegin?: (stroke: Stroke) => void;
+  onStrokeExtend?: (points: StrokePoint[]) => void;
   onStrokeEnd?: (stroke: Stroke) => void;
   /** Overlays on top of the paper (start card, turn call-out). */
   children?: ReactNode;
@@ -34,6 +37,8 @@ export function CanvasBoard({
   spotlightId = null,
   label,
   penTag,
+  onStrokeBegin,
+  onStrokeExtend,
   onStrokeEnd,
   children,
 }: CanvasBoardProps) {
@@ -99,9 +104,15 @@ export function CanvasBoard({
   const { handlers, isDrawing, stop } = usePointerStroke({
     enabled: activePlayerId !== null,
     onBegin: (point, hasPressure) => {
-      if (activePlayerId) drawing.begin({ playerId: activePlayerId, color, size: brushSize, hasPressure }, point);
+      if (activePlayerId === null) return;
+      drawing.begin({ playerId: activePlayerId, color, size: brushSize, hasPressure }, point);
+      const live = drawing.live();
+      if (live) onStrokeBegin?.({ ...live, points: [...live.points] });
     },
-    onExtend: (points) => drawing.extend(points),
+    onExtend: (points) => {
+      drawing.extend(points);
+      onStrokeExtend?.(points);
+    },
     onEnd: () => {
       const stroke = drawing.end();
       if (stroke) onStrokeEnd?.(stroke);
@@ -124,7 +135,7 @@ export function CanvasBoard({
         ref={canvasRef}
         role="img"
         aria-label={label}
-        className={`absolute inset-0 size-full touch-none ${activePlayerId ? "cursor-crosshair" : "cursor-default"}`}
+        className={`absolute inset-0 size-full touch-none ${activePlayerId !== null ? "cursor-crosshair" : "cursor-default"}`}
         {...handlers}
       />
       <div ref={tagRef} hidden className="pointer-events-none absolute translate-x-3 -translate-y-[calc(100%+6px)]">

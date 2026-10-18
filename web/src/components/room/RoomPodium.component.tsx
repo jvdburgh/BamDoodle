@@ -3,13 +3,13 @@ import { AvatarDoodle } from "@/components/avatar/AvatarDoodle.component";
 import { BrandStyles } from "@/components/brand/_utils/brandStyles.utils";
 import { RoomConfetti } from "@/components/room/RoomConfetti.component";
 import type { RoomPlayer } from "@/components/room/_types/room.types";
-import { ScoreUtils } from "@/components/room/_utils/score.utils";
+import { RoomViewUtils } from "@/components/room/_utils/roomView.utils";
 
 type RoomPodiumProps = {
   players: RoomPlayer[];
-  totals: Record<string, number>;
-  youId?: string | null;
-  colours?: Record<string, string>;
+  totals: Record<number, number>;
+  youId?: number | null;
+  colours?: Record<number, string>;
   /** Only the host starts a new game; leave out for everyone else. */
   onNewGame?: () => void;
   /** Bigger for the host screen. */
@@ -24,11 +24,11 @@ const rises = [900, 450, 0];
 
 /** The end of the game: a podium rising, confetti for the winner and everyone's final score (the fanfare is a room cue). */
 export function RoomPodium({ players, totals, youId = null, colours, onNewGame, big = false }: RoomPodiumProps) {
-  const standings = ScoreUtils.standings(
+  const standings = RoomViewUtils.standings(
     totals,
     players.map((player) => player.id),
   );
-  const playerOf = (id: string) => players.find((player) => player.id === id);
+  const playerOf = (id: number) => players.find((player) => player.id === id);
   const headingId = useId();
 
   const winners = standings.filter((standing) => standing.place === 1).map((standing) => playerOf(standing.playerId));

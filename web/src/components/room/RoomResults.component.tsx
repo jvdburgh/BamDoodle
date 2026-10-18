@@ -1,19 +1,20 @@
 import { AvatarDoodle } from "@/components/avatar/AvatarDoodle.component";
 import { BrandStyles } from "@/components/brand/_utils/brandStyles.utils";
 import type { RoomPlayer } from "@/components/room/_types/room.types";
-import { ScoreUtils, type RoundScore } from "@/components/room/_utils/score.utils";
+import type { RoundScore } from "@/components/room/_types/room.types";
+import { RoomViewUtils } from "@/components/room/_utils/roomView.utils";
 
 type RoomResultsProps = {
   players: RoomPlayer[];
-  bamboozlerId: string;
+  bamboozlerId: number;
   word: string;
   guess: { text: string; right: boolean } | null;
-  scores: Record<string, RoundScore>;
-  totals: Record<string, number>;
+  scores: Record<number, RoundScore>;
+  totals: Record<number, number>;
   roundNumber: number;
   rounds: number;
-  youId?: string | null;
-  colours?: Record<string, string>;
+  youId?: number | null;
+  colours?: Record<number, string>;
   /** Only the host moves the game on; leave out for everyone else. */
   onNext?: () => void;
   big?: boolean;
@@ -36,7 +37,7 @@ export function RoomResults({
 }: RoomResultsProps) {
   const bamboozler = players.find((player) => player.id === bamboozlerId);
   const who = bamboozler?.id === youId ? "You" : (bamboozler?.name ?? "The bamboozler");
-  const standings = ScoreUtils.standings(
+  const standings = RoomViewUtils.standings(
     totals,
     players.map((player) => player.id),
   );

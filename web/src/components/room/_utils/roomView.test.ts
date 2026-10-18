@@ -1,0 +1,134 @@
+import { describe, expect, it } from "vitest";
+import { RoomViewUtils } from "@/components/room/_utils/roomView.utils";
+import type { RoundResult } from "@/protocol/generated/RoundResult";
+import type { RoundView } from "@/protocol/generated/RoundView";
+
+const room = {
+  code: "BKZW",
+  players: [
+    { id: 1, name: "Pip", score: 0, connected: true },
+    { id: 2, name: "Juno", score: 3, connected: true },
+    { id: 3, name: "Mo", score: 1, connected: false },
+  ],
+};
+const players = RoomViewUtils.players(room);
+
+const round = (patch: Partial<RoundView> = {}): RoundView => ({
+  number: 1,
+  rounds: 5,
+  category: "Animals",
+  word: "giraffe",
+  role: "artist",
+  turnOrder: [3, 1, 2],
+  activePlayerId: 3,
+  turnRemainingMs: 15_000,
+  turn: 1,
+  turnsPerPlayer: 2,
+  strokes: [],
+  suspicions: [],
+  voted: [],
+  yourVote: null,
+  ...patch,
+});
+
+describe("RoomViewUtils.players", () => {
+  it("gives every player the same face on every device", () => {
+    expect(players.map((player) => player.name)).toEqual(["Pip", "Juno", "Mo"]);
+    expect(RoomViewUtils.players(room)).toEqual(players);
+    expect(players[0]?.avatarSeed).not.toBe(players[1]?.avatarSeed);
+    expect(players[0]?.avatar.length).toBeGreaterThan(0);
+  });
+});
+
+describe("RoomViewUtils turns", () => {
+  it("finds who draws now and who is next in the turn order", () => {
+    expect(RoomViewUtils.active(round(), players)?.name).toBe("Mo");
+    expect(RoomViewUtils.next(round(), players)?.name).toBe("Pip");
+    // Mo's phone is away, so after Juno the next turn is Pip's.
+    expect(RoomViewUtils.next(round({ activePlayerId: 2 }), players)?.name).toBe("Pip");
+  });
+
+  it("skips players who are away, as the server does", () => {
+    const away = players.map((player) => (player.id === 1 ? { ...player, connected: false } : player));
+    expect(RoomViewUtils.next(round(), away)?.name).toBe("Juno");
+    expect(RoomViewUtils.next(round({ activePlayerId: 2, turn: 2 }), away)).toBeUndefined();
+  });
+
+  it("has nobody next on the very last turn", () => {
+    expect(RoomViewUtils.next(round({ activePlayerId: 2, turn: 2 }), players)).toBeUndefined();
+    expect(RoomViewUtils.next(round({ activePlayerId: null }), players)).toBeUndefined();
+  });
+
+  it("counts turns so every turn has its own number", () => {
+    const counts = [
+      round(),
+      round({ activePlayerId: 1 }),
+      round({ activePlayerId: 2 }),
+      round({ activePlayerId: 3, turn: 2 }),
+    ].map(RoomViewUtils.turnCount);
+    expect(counts).toEqual([1, 2, 3, 4]);
+    expect(RoomViewUtils.turnCount(null)).toBe(0);
+  });
+});
+
+describe("RoomViewUtils.suspectedBy and votes", () => {
+  it("counts how many suspect each player", () => {
+    const suspicions = [
+      { playerId: 1, suspectId: 3 },
+      { playerId: 2, suspectId: 3 },
+      { playerId: 3, suspectId: 1 },
+    ];
+    expect(RoomViewUtils.suspectedBy(round({ suspicions }))).toEqual({ 3: 2, 1: 1 });
+  });
+
+  it("maps votes by voter", () => {
+    expect(RoomViewUtils.votes([{ voterId: 1, suspectId: 3 }])).toEqual({ 1: 3 });
+  });
+});
+
+describe("RoomViewUtils results", () => {
+  const result: RoundResult = {
+    number: 1,
+    rounds: 5,
+    gameOver: false,
+    category: "Animals",
+    word: "giraffe",
+    bamboozlerId: 3,
+    guess: "giraffe",
+    guessCorrect: true,
+    votes: [],
+    awards: [
+      { playerId: 1, reason: "caughtTheBamboozler", points: 1 },
+      { playerId: 3, reason: "guessedTheWord", points: 1 },
+      { playerId: 3, reason: "stayedHidden", points: 1 },
+    ],
+    scores: room.players,
+  };
+
+  it("adds up each player's awards; an award means they got it right", () => {
+    expect(RoomViewUtils.roundScores(result)).toEqual({
+      1: { points: 1, right: true },
+      2: { points: 0, right: false },
+      3: { points: 2, right: true },
+    });
+  });
+
+  it("ranks highest first and lets ties share a place", () => {
+    expect(RoomViewUtils.standings({ 1: 2, 2: 5, 3: 2, 4: 1 }, [1, 2, 3, 4])).toEqual([
+      { playerId: 2, total: 5, place: 1 },
+      { playerId: 1, total: 2, place: 2 },
+      { playerId: 3, total: 2, place: 2 },
+      { playerId: 4, total: 1, place: 4 },
+    ]);
+    expect(RoomViewUtils.totals(room.players)).toEqual({ 1: 0, 2: 3, 3: 1 });
+  });
+});
+
+describe("RoomViewUtils.families", () => {
+  it("gives each seat its own shade family only with own colours", () => {
+    expect(RoomViewUtils.families(players, "free")).toBeNull();
+    const families = RoomViewUtils.families(players, "shades");
+    expect(families?.[2]?.[2]?.name).toBe("Lagoon 3");
+    expect(RoomViewUtils.identities(families ?? null)?.[2]).toBe(families?.[2]?.[2]?.value);
+  });
+});

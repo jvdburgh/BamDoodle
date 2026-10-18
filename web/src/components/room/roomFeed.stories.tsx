@@ -9,9 +9,9 @@ const meta = {
   args: {
     players: playersFixture,
     lines: [
-      { id: 1, at: 0, kind: "suspect", voterId: "pip", suspectId: "mo", beforeId: null },
-      { id: 2, at: 0, kind: "suspect", voterId: "juno", suspectId: "pip", beforeId: "mo" },
-      { id: 3, at: 0, kind: "voted", voterId: "rafa" },
+      { id: 1, at: 0, kind: "suspect", voterId: 1, suspectId: 3, beforeId: null },
+      { id: 2, at: 0, kind: "suspect", voterId: 2, suspectId: 1, beforeId: 3 },
+      { id: 3, at: 0, kind: "voted", voterId: 5 },
     ],
   },
 } satisfies Meta<typeof RoomFeed>;
@@ -20,7 +20,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const OnAPhone: Story = {
-  args: { youId: "juno" },
+  args: { youId: 2 },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("list", { name: "Table talk" })).toHaveAttribute("aria-live", "polite");
     await expect(canvas.getByText("Pip thinks Mo is sketchy")).toBeInTheDocument();

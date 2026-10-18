@@ -14,7 +14,7 @@ const meta = {
     ),
   ],
   argTypes: { drawing: { control: false } },
-  args: { drawing: drawingFixture(), playerId: "kiki", label: "Kiki’s lines" },
+  args: { drawing: drawingFixture(), playerId: 4, label: "Kiki’s lines" },
 } satisfies Meta<typeof CanvasMiniMap>;
 
 export default meta;
@@ -35,7 +35,7 @@ export const OnePlayer: Story = {
 };
 
 export const NothingDrawnYet: Story = {
-  args: { playerId: "nobody", label: "Nobody’s lines" },
+  args: { playerId: 99, label: "Nobody’s lines" },
   play: async ({ canvas }) => {
     const map = canvas.getByRole("img", { name: "Nobody’s lines" }) as HTMLCanvasElement;
     await new Promise((resolve) => requestAnimationFrame(resolve));

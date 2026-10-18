@@ -9,8 +9,8 @@ const meta = {
   parameters: { layout: "fullscreen" },
   args: {
     players: playersFixture,
-    totals: { pip: 4, juno: 7, mo: 5, kiki: 2, rafa: 5, tess: 1 },
-    youId: "juno",
+    totals: { 1: 4, 2: 7, 3: 5, 4: 2, 5: 5, 6: 1 },
+    youId: 2,
     onNewGame: fn(),
   },
 } satisfies Meta<typeof RoomPodium>;
@@ -30,7 +30,7 @@ export const YouWin: Story = {
 };
 
 export const Tie: Story = {
-  args: { totals: { pip: 3, juno: 3, mo: 1 }, players: playersFixture.slice(0, 3) },
+  args: { totals: { 1: 3, 2: 3, 3: 1 }, players: playersFixture.slice(0, 3) },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("heading", { name: "It’s a tie!" })).toBeInTheDocument();
   },

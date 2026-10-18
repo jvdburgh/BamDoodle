@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { BrandStyles } from "@/components/brand/_utils/brandStyles.utils";
-import { RoundUtils } from "@/components/room/_utils/round.utils";
+import { ClockUtils } from "@/components/room/_utils/clock.utils";
 
 type RoomGuessProps = {
   bamboozlerName: string;
@@ -32,7 +32,7 @@ export function RoomGuess({ bamboozlerName, yours, msLeft, onGuess }: RoomGuessP
       </p>
       <p className="font-display text-xl text-white/70 tabular-nums">
         <span className="sr-only">Time left to guess: </span>
-        {RoundUtils.formatClock(msLeft)}
+        {ClockUtils.format(msLeft)}
       </p>
       {yours && (
         <form onSubmit={submit} className="flex w-full max-w-sm gap-2">

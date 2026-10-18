@@ -1,13 +1,14 @@
 import { describe, expect, it } from "vitest";
-import type { RoomSetup } from "@/components/room/_types/room.types";
-import { RoundUtils } from "@/components/room/_utils/round.utils";
+import type { RoomSetup } from "@/components/lab/_types/lab.types";
+import { RoundUtils } from "@/components/lab/_utils/round.utils";
 
-const players = ["pip", "juno", "mo"];
+const [pip, juno, mo] = [1, 2, 3];
+const players = [pip, juno, mo];
 const TURN = 10_000;
 
 const drawing = (mode: "oneStroke" | "timed" = "timed", laps = 2) =>
   RoundUtils.start(
-    RoundUtils.create({ mode, turnMs: TURN, totalTurns: laps * players.length, bamboozlerId: "mo" }),
+    RoundUtils.create({ mode, turnMs: TURN, totalTurns: laps * players.length, bamboozlerId: mo }),
     1_000,
   );
 
@@ -61,58 +62,50 @@ describe("RoundUtils: drawing", () => {
 
 describe("RoundUtils: suspicions and votes", () => {
   it("lets players change who they suspect while drawing", () => {
-    let round = RoundUtils.suspect(drawing(), "pip", "mo");
-    round = RoundUtils.suspect(round, "pip", "juno");
-    expect(round.suspicions).toEqual({ pip: "juno" });
-    expect(RoundUtils.suspect(round, "pip", null).suspicions).toEqual({});
+    let round = RoundUtils.suspect(drawing(), pip, mo);
+    round = RoundUtils.suspect(round, pip, juno);
+    expect(round.suspicions).toEqual({ [pip]: juno });
+    expect(RoundUtils.suspect(round, pip, null).suspicions).toEqual({});
   });
 
   it("ignores suspecting yourself, the same suspect twice, or suspecting outside the drawing", () => {
-    const round = RoundUtils.suspect(drawing(), "pip", "mo");
-    expect(RoundUtils.suspect(round, "pip", "pip")).toBe(round);
-    expect(RoundUtils.suspect(round, "pip", "mo")).toBe(round);
-    expect(RoundUtils.suspect(voting(), "pip", "mo").suspicions).toEqual({});
-  });
-
-  it("counts how many suspect each player, while drawing only", () => {
-    let round = RoundUtils.suspect(drawing(), "pip", "mo");
-    round = RoundUtils.suspect(round, "juno", "mo");
-    expect(RoundUtils.suspectedBy(round)).toEqual({ mo: 2 });
-    expect(RoundUtils.suspectedBy(voting())).toEqual({});
+    const round = RoundUtils.suspect(drawing(), pip, mo);
+    expect(RoundUtils.suspect(round, pip, pip)).toBe(round);
+    expect(RoundUtils.suspect(round, pip, mo)).toBe(round);
+    expect(RoundUtils.suspect(voting(), pip, mo).suspicions).toEqual({});
   });
 
   it("locks a vote once and only during the vote", () => {
-    const round = RoundUtils.castVote(voting(), "pip", "mo", players, 32_000);
-    expect(round.votes).toEqual({ pip: "mo" });
-    expect(RoundUtils.castVote(round, "pip", "juno", players, 33_000)).toBe(round);
+    const round = RoundUtils.castVote(voting(), pip, mo, players, 32_000);
+    expect(round.votes).toEqual({ [pip]: mo });
+    expect(RoundUtils.castVote(round, pip, juno, players, 33_000)).toBe(round);
     const notYet = drawing();
-    expect(RoundUtils.castVote(notYet, "pip", "mo", players, 2_000)).toBe(notYet);
+    expect(RoundUtils.castVote(notYet, pip, mo, players, 2_000)).toBe(notYet);
   });
 
-  it("reveals as soon as everyone has voted", () => {
+  it("reveals and lets the bamboozler guess as soon as everyone has voted", () => {
     let round = voting();
-    round = RoundUtils.castVote(round, "pip", "mo", players, 32_000);
-    round = RoundUtils.castVote(round, "juno", "mo", players, 33_000);
-    round = RoundUtils.castVote(round, "mo", "pip", players, 34_000);
-    expect(round.phase).toBe("reveal");
+    round = RoundUtils.castVote(round, pip, mo, players, 32_000);
+    round = RoundUtils.castVote(round, juno, mo, players, 33_000);
+    round = RoundUtils.castVote(round, mo, pip, players, 34_000);
+    expect(round.phase).toBe("guess");
     expect(round.phaseStartedAt).toBe(34_000);
   });
 
   it("counts your last suspicion when you don't vote in time", () => {
-    let round = RoundUtils.suspect(drawing("timed", 1), "juno", "mo");
+    let round = RoundUtils.suspect(drawing("timed", 1), juno, mo);
     round = RoundUtils.tick(round, 1_000 + 3 * TURN);
-    round = RoundUtils.castVote(round, "pip", "juno", players, 32_000);
+    round = RoundUtils.castVote(round, pip, juno, players, 32_000);
     round = RoundUtils.tick(round, round.phaseStartedAt + RoundUtils.VOTE_MS);
-    expect(round.phase).toBe("reveal");
-    expect(round.votes).toEqual({ pip: "juno", juno: "mo" });
+    expect(round.phase).toBe("guess");
+    expect(round.votes).toEqual({ [pip]: juno, [juno]: mo });
   });
 });
 
-describe("RoundUtils: reveal, guess, results", () => {
-  const revealed = () => RoundUtils.tick(voting(), voting().phaseStartedAt + RoundUtils.VOTE_MS);
-  const guessing = () => RoundUtils.tick(revealed(), revealed().phaseStartedAt + RoundUtils.REVEAL_MS);
+describe("RoundUtils: reveal and guess, results", () => {
+  const guessing = () => RoundUtils.tick(voting(), voting().phaseStartedAt + RoundUtils.VOTE_MS);
 
-  it("moves from the reveal to the bamboozler's guess", () => {
+  it("reveals and moves to the bamboozler's guess when the vote's time is up", () => {
     expect(guessing().phase).toBe("guess");
   });
 
@@ -133,10 +126,10 @@ describe("RoundUtils: reveal, guess, results", () => {
   });
 
   it("catches up in one go after the page was hidden through the vote", () => {
-    const round = RoundUtils.suspect(drawing("timed", 1), "juno", "mo");
-    const later = RoundUtils.tick(round, 1_000 + 3 * TURN + RoundUtils.VOTE_MS + RoundUtils.REVEAL_MS + 1);
+    const round = RoundUtils.suspect(drawing("timed", 1), juno, mo);
+    const later = RoundUtils.tick(round, 1_000 + 3 * TURN + RoundUtils.VOTE_MS + 1);
     expect(later.phase).toBe("guess");
-    expect(later.votes).toEqual({ juno: "mo" });
+    expect(later.votes).toEqual({ [juno]: mo });
   });
 
   it("goes to the results without a guess when the bamboozler runs out of time", () => {
@@ -168,11 +161,5 @@ describe("RoundUtils: setup and clocks", () => {
     expect(RoundUtils.turnLeft(drawing(), 3_000)).toBe(TURN - 2_000);
     expect(RoundUtils.phaseLeft(voting(), voting().phaseStartedAt + 10_000)).toBe(20_000);
     expect(RoundUtils.phaseLeft(drawing(), 3_000)).toBe(0);
-  });
-
-  it("formats a countdown, rounding up", () => {
-    expect(RoundUtils.formatClock(60_000)).toBe("1:00");
-    expect(RoundUtils.formatClock(29_200)).toBe("0:30");
-    expect(RoundUtils.formatClock(0)).toBe("0:00");
   });
 });

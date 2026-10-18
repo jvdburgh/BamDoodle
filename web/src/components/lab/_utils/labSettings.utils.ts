@@ -1,23 +1,26 @@
-import type { Attribution, TurnMode, WordLanguage } from "@/components/room/_types/room.types";
-import { RoundUtils } from "@/components/room/_utils/round.utils";
+import type { Attribution } from "@/components/room/_types/room.types";
+import type { Language } from "@/protocol/generated/Language";
+import type { TurnMode } from "@/protocol/generated/TurnMode";
+import { RoundUtils } from "@/components/lab/_utils/round.utils";
+import { LobbySetupUtils } from "@/components/lobby/_utils/lobbySetup.utils";
 import type { Role } from "@/protocol/generated/Role";
 
 export type LabView = "player" | "host" | "both";
 
 /**
- * What the playground remembers per viewer; the non-default values also go in the URL so a link reproduces them.
+ * What the lab remembers per viewer; the non-default values also go in the URL so a link reproduces them.
  * The room settings (mode, turns per player, turn length, rounds, colours, language, categories) are chosen when creating a
  * room; the rest are testing switches in the Lab panel.
  */
 export type LabSettings = {
-  /** The create-or-join start page, the waiting room where you draw your avatar, or straight into the room. */
-  screen: "start" | "lobby" | "room";
+  /** The create-or-join start page, the room setup, the waiting room where you draw your avatar, or the room. */
+  screen: "start" | "setup" | "lobby" | "room";
   mode: TurnMode;
   turnsPerPlayer: number;
   turnSeconds: number;
   rounds: number;
   attribution: Attribution;
-  language: WordLanguage;
+  language: Language;
   /** Category names in play; empty means the language's defaults (everything but 18+). */
   categories: string[];
   view: LabView;
@@ -34,11 +37,11 @@ const defaults: LabSettings = {
 };
 
 const choices: { [K in keyof LabSettings]: readonly LabSettings[K][] } = {
-  screen: ["start", "lobby", "room"],
+  screen: ["start", "setup", "lobby", "room"],
   mode: ["oneStroke", "timed"],
-  turnsPerPlayer: RoundUtils.TURNS_PER_PLAYER_CHOICES,
-  turnSeconds: RoundUtils.TURN_SECOND_CHOICES,
-  rounds: RoundUtils.ROUND_CHOICES,
+  turnsPerPlayer: LobbySetupUtils.choices.turnsPerPlayer,
+  turnSeconds: LobbySetupUtils.choices.turnSeconds,
+  rounds: LobbySetupUtils.choices.rounds,
   attribution: ["free", "shades"],
   language: ["en", "nl"],
   categories: [],

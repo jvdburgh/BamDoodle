@@ -19,16 +19,16 @@ const meta = {
   args: {
     players: playersFixture.slice(0, 4),
     drawing: drawingFixture(),
-    youId: "juno",
-    activeId: "juno",
-    nextId: "mo",
+    youId: 2,
+    activeId: 2,
+    nextId: 3,
     spotlightId: null,
     onSpotlight: fn(),
     onPeek: fn(),
   },
   render: function Render(args) {
     const [spotlightId, setSpotlightId] = useState(args.spotlightId);
-    const [chosenId, setChosenId] = useState<string | null>(null);
+    const [chosenId, setChosenId] = useState<number | null>(null);
     return (
       <RoomPlayerList
         {...args}
@@ -75,7 +75,7 @@ export const Spotlight: Story = {
     const kiki = canvas.getByRole("button", { name: /Spotlight Kiki/ });
     await expect(kiki).toHaveAttribute("aria-pressed", "false");
     await userEvent.click(kiki);
-    await expect(args.onSpotlight).toHaveBeenLastCalledWith("kiki");
+    await expect(args.onSpotlight).toHaveBeenLastCalledWith(4);
     await expect(kiki).toHaveAttribute("aria-pressed", "true");
     await userEvent.click(kiki);
     await expect(args.onSpotlight).toHaveBeenLastCalledWith(null);
@@ -86,7 +86,7 @@ export const PeekOnHover: Story = {
   play: async ({ args, canvas, userEvent }) => {
     const mo = canvas.getByRole("button", { name: /Spotlight Mo/ });
     await userEvent.hover(mo);
-    await expect(args.onPeek).toHaveBeenLastCalledWith("mo");
+    await expect(args.onPeek).toHaveBeenLastCalledWith(3);
     await userEvent.unhover(mo);
     await expect(args.onPeek).toHaveBeenLastCalledWith(null);
   },
@@ -98,26 +98,26 @@ export const MarkAsSketchy: Story = {
     await expect(canvas.queryByRole("button", { name: /\(Juno\)/ })).toBeNull();
     const mo = canvas.getByRole("button", { name: /sketchy \(Mo\)/ });
     await userEvent.click(mo);
-    await expect(args.action?.onChoose).toHaveBeenLastCalledWith("mo");
+    await expect(args.action?.onChoose).toHaveBeenLastCalledWith(3);
     await expect(mo).toHaveAttribute("aria-pressed", "true");
     await expect(mo).toHaveTextContent("Marked sketchy");
     await userEvent.click(canvas.getByRole("button", { name: /sketchy \(Pip\)/ }));
-    await expect(args.action?.onChoose).toHaveBeenLastCalledWith("pip");
+    await expect(args.action?.onChoose).toHaveBeenLastCalledWith(1);
     await expect(mo).toHaveAttribute("aria-pressed", "false");
   },
 };
 
 export const PickInTheFinalVote: Story = {
-  args: { action: { kind: "vote", chosenId: null, onChoose: fn() }, votedIds: ["pip"] },
+  args: { action: { kind: "vote", chosenId: null, onChoose: fn() }, votedIds: [1] },
   play: async ({ args, canvas, userEvent }) => {
     await userEvent.click(canvas.getByRole("button", { name: "Pick (Kiki)" }));
-    await expect(args.action?.onChoose).toHaveBeenLastCalledWith("kiki");
+    await expect(args.action?.onChoose).toHaveBeenLastCalledWith(4);
     await expect(canvas.getByText("voted")).toBeVisible();
   },
 };
 
 export const HostRow: Story = {
-  args: { players: playersFixture, youId: null, layout: "row", suspectedBy: { mo: 2 } },
+  args: { players: playersFixture, youId: null, layout: "row", suspectedBy: { 3: 2 } },
   decorators: [
     (Story) => (
       <div className="w-[60rem]">

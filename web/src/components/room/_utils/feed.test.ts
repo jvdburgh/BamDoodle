@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { roundFixture } from "@/components/room/_fixtures/roomState.fixture";
 import { FeedUtils } from "@/components/room/_utils/feed.utils";
 
 const noor = { name: "Noor", you: false };
@@ -19,5 +20,34 @@ describe("FeedUtils", () => {
   it("says who has voted, never for whom", () => {
     expect(FeedUtils.voted(noor)).toBe("Noor has voted");
     expect(FeedUtils.voted(you)).toBe("You locked in your vote");
+  });
+});
+
+describe("FeedUtils.between", () => {
+  it("turns changed suspicions and new votes into lines", () => {
+    const before = roundFixture({
+      suspicions: [
+        { playerId: 1, suspectId: 3 },
+        { playerId: 2, suspectId: 4 },
+      ],
+    });
+    const after = roundFixture({
+      suspicions: [
+        { playerId: 1, suspectId: 4 },
+        { playerId: 2, suspectId: 4 },
+      ],
+      voted: [5],
+    });
+    expect(FeedUtils.between(before, after, 100, 7)).toEqual([
+      { id: 7, at: 100, voterId: 1, kind: "suspect", suspectId: 4, beforeId: 3 },
+      { id: 8, at: 100, voterId: 5, kind: "voted" },
+    ]);
+  });
+
+  it("notices a suspicion taken back", () => {
+    const before = roundFixture({ suspicions: [{ playerId: 1, suspectId: 3 }] });
+    expect(FeedUtils.between(before, roundFixture(), 0, 1)).toEqual([
+      { id: 1, at: 0, voterId: 1, kind: "suspect", suspectId: null, beforeId: 3 },
+    ]);
   });
 });

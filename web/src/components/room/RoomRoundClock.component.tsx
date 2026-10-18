@@ -1,4 +1,4 @@
-import { RoundUtils } from "@/components/room/_utils/round.utils";
+import { ClockUtils } from "@/components/room/_utils/clock.utils";
 
 type RoomRoundClockProps = {
   msLeft: number;
@@ -14,7 +14,7 @@ export function RoomRoundClock({ msLeft }: RoomRoundClockProps) {
       className={`font-display text-4xl leading-none tabular-nums transition-colors @4xl/room:text-5xl ${hurry ? "text-berry" : "text-white"}`}
     >
       <span className="sr-only">Round time left: </span>
-      {RoundUtils.formatClock(msLeft)}
+      {ClockUtils.format(msLeft)}
     </p>
   );
 }

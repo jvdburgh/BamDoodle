@@ -7,11 +7,16 @@ import type { StrokeView } from "@/protocol/generated/StrokeView";
 
 export type ConnectionStatus = "connecting" | "joined" | "reconnecting" | "failed" | "replaced" | "closed";
 
-/** Deadlines on this device's clock (`Date.now()` milliseconds), worked out from the server's "ms remaining". */
+/**
+ * A deadline on this device's clock (`Date.now()` milliseconds), worked out from the server's "ms remaining", and
+ * how long it ran from the start (or from when this device joined, mid-way).
+ */
+export type Countdown = { endsAt: number; totalMs: number };
+
 export type RoomTimers = {
-  turnEndsAt: number | null;
-  votingEndsAt: number | null;
-  guessEndsAt: number | null;
+  turn: Countdown | null;
+  voting: Countdown | null;
+  guess: Countdown | null;
 };
 
 export type RoomState = {
@@ -31,7 +36,9 @@ export type RoomState = {
 /** What the server answers a vote it didn't count; the pending vote is void then. */
 const voteRejections: ReadonlySet<RejectReason> = new Set(["alreadyVoted", "invalidVote", "wrongPhase"]);
 
-const noTimers: RoomTimers = { turnEndsAt: null, votingEndsAt: null, guessEndsAt: null };
+const noTimers: RoomTimers = { turn: null, voting: null, guess: null };
+
+const countdown = (now: number, ms: number): Countdown => ({ endsAt: now + ms, totalMs: ms });
 
 export const RoomStateUtils = {
   initial(): RoomState {
@@ -113,7 +120,7 @@ export const RoomStateUtils = {
             turnRemainingMs: message.durationMs,
             turn: message.turn,
           })),
-          timers: { ...state.timers, turnEndsAt: now + message.durationMs },
+          timers: { ...state.timers, turn: countdown(now, message.durationMs) },
         };
       case "strokeBegun":
         return updateRound(state, (round) => ({
@@ -208,11 +215,11 @@ function updateStroke(state: RoomState, strokeId: number, update: (stroke: Strok
 function timersFor(phase: PhaseView, now: number): RoomTimers {
   switch (phase.phase) {
     case "drawing":
-      return { ...noTimers, turnEndsAt: now + phase.round.turnRemainingMs };
+      return { ...noTimers, turn: countdown(now, phase.round.turnRemainingMs) };
     case "voting":
-      return { ...noTimers, votingEndsAt: now + phase.votingRemainingMs };
+      return { ...noTimers, voting: countdown(now, phase.votingRemainingMs) };
     case "guessing":
-      return { ...noTimers, guessEndsAt: now + phase.reveal.guessRemainingMs };
+      return { ...noTimers, guess: countdown(now, phase.reveal.guessRemainingMs) };
     case "lobby":
     case "finished":
       return noTimers;

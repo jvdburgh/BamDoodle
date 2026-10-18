@@ -47,8 +47,9 @@ All live state lives in the process ([decision 0002](decisions/0002-in-memory-st
   current time and returns the messages to send and to whom (everyone, one player, host screens). That's what the
   unit tests drive, one or more per rule in [game-rules.md](game-rules.md).
 - **Players** get a random session token when they join; the browser keeps it in `localStorage` and sends it to take
-  back the same seat (and score) after a refresh or a dropped connection. Nickname and avatar are client-side.
-  An avatar is a short list of strokes in the canvas's normalised point format, drawn in the lobby.
+  back the same seat (and score) after a refresh or a dropped connection. Avatars aren't on the wire
+  yet: every device seeds the same doodle face from the room code and player id. An avatar is a short list of strokes
+  in the canvas's normalised point format; drawing your own is in the lab for now.
 - **Cleanup:** a player who is gone between rounds loses their seat after 2 minutes; a room with no players
   connected closes after 5 minutes (30 seconds if nobody ever joined it). Host screens don't keep a room open.
 - **Words** come from `words/<language>/<pack>.toml`, loaded at startup (`WORDS_DIR`). Players pick categories, not
@@ -145,14 +146,33 @@ and solve problems we don't have).
 No canvas framework (Konva, Fabric, Pixi): per-player layers are plain offscreen canvases, and those libraries add
 weight without helping freehand strokes. tldraw is out: its licence isn't open source.
 
-### The playground (for now, at "/")
+### Screens and routes
 
-Until the screens are wired to `web/src/protocol/`, the app at "/" is a hot-seat playground: one device plays one
-seat and simulated players do the rest (draw, suspect, vote, guess). It mirrors the server's round flow and scoring
-in `components/room/_utils/` and `_hooks/roomSimulation.hook.ts` only to drive the UI; the server stays the referee,
-and those copies go once the views render server state. A "Lab" panel (bottom right on a laptop, `?lab` on a phone)
-switches view (phone, host screen, both), role, player count and screen; settings persist per viewer and in the URL.
-To try it on a phone on the same Wi-Fi: `pnpm --dir web dev --host`.
+- `/` is the start page; `/join/BKZW` opens it on joining that room. A device holds one `RoomConnection`
+  (`useRoomConnection`) and, once the room is there, renders `RoomPlayerView` from its `RoomState` and sends intents
+  through `send` (`src/app/GameRoute.tsx`). The creator sets the room up first (`LobbySetup`, built from the
+  snapshot's `settings` and `wordCategories`; every change is an `updateSettings`). A connection that gives up brings
+  you back to the start page with the reason; every try gets a fresh connection.
+- `/watch/BKZW` is a host screen: `watchRoom`, rendered by `RoomHostView` (`src/app/WatchRoute.tsx`).
+- `components/room/` only renders server state. What the screens need beyond the raw state (who's up next, counts,
+  this round's points from the awards, standings, the table talk from comparing suspicions and votes) is worked out in
+  `RoomViewUtils`, `FeedUtils` and `useRoomView`, never the rules themselves.
+- **Strokes:** the canvas draws your own stroke as you move, and `useStrokeSender` sends it: `beginStroke` with the
+  first point, then the points batched about every 50 ms, thinned out and split at 128 per message, then `endStroke`.
+  The server echoes your stroke back like everyone else's; `Drawing.sync` keeps the one you're drawing as drawn here
+  until it ends, then the server's copy replaces it.
+- Countdowns come from `state.timers`: a deadline on this device's clock and how long it ran, so bars need no copy of
+  the server's timings.
+
+### The lab (`/lab`)
+
+The game on one device with simulated players, for working on the screens without a server: `useLabRoom`
+(`components/lab/_hooks/labRoom.hook.ts`) plays the rounds with copies of the round flow and scoring
+(`components/lab/_utils/`) and hands the same views the same `RoomState` the server would, for your phone and for a
+host screen; your `send` is answered as the server would. The lab also has what isn't on the wire yet: drawing your
+own avatar and own colours per player. A "Lab" panel (bottom right on a laptop, `?panel` on a phone) switches screen,
+view (phone, host screen, both), role and player count; settings persist per viewer and in the URL. To try anything on
+a phone on the same Wi-Fi: `pnpm --dir web dev --host`.
 
 ### Code layout
 

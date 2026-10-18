@@ -3,7 +3,7 @@ import { AvatarDoodle } from "@/components/avatar/AvatarDoodle.component";
 import { BrandSketchyFrame } from "@/components/brand/BrandSketchyFrame.component";
 import { BrandStyles } from "@/components/brand/_utils/brandStyles.utils";
 import type { RoomPlayer } from "@/components/room/_types/room.types";
-import { RoundUtils } from "@/components/room/_utils/round.utils";
+import { ClockUtils } from "@/components/room/_utils/clock.utils";
 
 type VotePromptProps = {
   players: RoomPlayer[];
@@ -11,11 +11,11 @@ type VotePromptProps = {
   picked: RoomPlayer | undefined;
   /** Your locked vote. */
   voted: RoomPlayer | undefined;
-  onLock: (playerId: string) => void;
+  onLock: (playerId: number) => void;
   /** Who has locked a vote (not for whom). */
-  votedIds: string[];
+  votedIds: number[];
   msLeft: number;
-  colours?: Record<string, string>;
+  colours?: Record<number, string>;
 };
 
 /**
@@ -54,7 +54,7 @@ export function VotePrompt({ players, picked, voted, onLock, votedIds, msLeft, c
         </div>
         <p className="shrink-0 rounded-full bg-night px-3 py-1 font-display text-2xl tabular-nums">
           <span className="sr-only">Time left to vote: </span>
-          {RoundUtils.formatClock(msLeft)}
+          {ClockUtils.format(msLeft)}
         </p>
       </div>
 

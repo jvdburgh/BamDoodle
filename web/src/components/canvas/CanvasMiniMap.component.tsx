@@ -5,7 +5,7 @@ import type { Drawing } from "@/components/canvas/_utils/drawing.utils";
 
 type CanvasMiniMapProps = {
   drawing: Drawing;
-  playerId: string;
+  playerId: number;
   /** Leave out when the mini-map sits inside a control that already names the player; it is then decorative. */
   label?: string;
 };

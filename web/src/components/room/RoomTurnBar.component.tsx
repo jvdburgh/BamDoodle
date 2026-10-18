@@ -1,4 +1,4 @@
-import type { TurnMode } from "@/components/room/_types/room.types";
+import type { TurnMode } from "@/protocol/generated/TurnMode";
 
 type RoomTurnBarProps = {
   /** "Your turn" or "Juno’s turn". */

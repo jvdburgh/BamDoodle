@@ -1,26 +1,25 @@
-import type { FeedLine } from "@/components/room/_hooks/roomSimulation.hook";
-import type { RoomPlayer } from "@/components/room/_types/room.types";
+import type { FeedLine, RoomPlayer } from "@/components/room/_types/room.types";
 import { FeedUtils } from "@/components/room/_utils/feed.utils";
 
 type RoomFeedProps = {
   lines: FeedLine[];
   players: RoomPlayer[];
   /** Whose screen this is, so their own lines say "You"; null on the host screen. */
-  youId?: string | null;
+  youId?: number | null;
   /** Bigger for the host screen. */
   big?: boolean;
 };
 
 /** The latest public news ("Noor thinks Jip is sketchy"), as short-lived notes stacked over the canvas. */
 export function RoomFeed({ lines, players, youId = null, big = false }: RoomFeedProps) {
-  const nameOf = (id: string) => players.find((player) => player.id === id)?.name ?? "Someone";
+  const nameOf = (id: number) => players.find((player) => player.id === id)?.name ?? "Someone";
   const text = (line: FeedLine) => {
     const voter = { name: nameOf(line.voterId), you: line.voterId === youId };
     if (line.kind === "voted") return FeedUtils.voted(voter);
     return FeedUtils.suspicion(
       voter,
-      line.suspectId ? nameOf(line.suspectId) : null,
-      line.beforeId ? nameOf(line.beforeId) : null,
+      line.suspectId === null ? null : nameOf(line.suspectId),
+      line.beforeId === null ? null : nameOf(line.beforeId),
     );
   };
   return (

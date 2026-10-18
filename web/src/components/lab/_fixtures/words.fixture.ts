@@ -1,8 +1,8 @@
-import type { WordPack } from "@/components/room/_types/room.types";
+import type { WordPack } from "@/components/lab/_types/lab.types";
 
 /**
- * Word categories for the playground, copied from words/ on main (CC BY-SA 4.0, see words/NOTICE). Once the
- * playground talks to the server, these come from the room snapshot's `wordCategories` instead.
+ * Word categories for the playground, copied from words/ on main (CC BY-SA 4.0, see words/NOTICE). The real
+ * game reads them from the room snapshot's `wordCategories` instead.
  */
 export const wordCategoriesFixture: WordPack[] = [
   {

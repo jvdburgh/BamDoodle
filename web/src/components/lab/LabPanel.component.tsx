@@ -22,6 +22,7 @@ const labels: { [K in LabKey]: { legend: string; options: Choice<K>[] } } = {
     legend: "Screen",
     options: [
       { value: "start", label: "Start page" },
+      { value: "setup", label: "Setup" },
       { value: "lobby", label: "Lobby" },
       { value: "room", label: "Room" },
     ],

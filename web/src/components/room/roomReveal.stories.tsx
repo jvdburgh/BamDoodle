@@ -8,9 +8,9 @@ const meta = {
   component: RoomReveal,
   args: {
     players: playersFixture.slice(0, 4),
-    bamboozlerId: "mo",
-    votes: { pip: "mo", juno: "kiki", kiki: "mo", mo: "pip" },
-    youId: "juno",
+    bamboozlerId: 3,
+    votes: { 1: 3, 2: 4, 4: 3, 3: 1 },
+    youId: 2,
   },
 } satisfies Meta<typeof RoomReveal>;
 
@@ -26,7 +26,7 @@ export const SomeCaughtThem: Story = {
 };
 
 export const YouWereIt: Story = {
-  args: { bamboozlerId: "juno", votes: {} },
+  args: { bamboozlerId: 2, votes: {} },
   play: async ({ canvas }) => {
     await expect(canvas.getByText("Nobody caught them!")).toBeVisible();
   },

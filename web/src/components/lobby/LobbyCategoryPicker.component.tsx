@@ -1,9 +1,9 @@
 import { useId } from "react";
-import type { WordPack } from "@/components/room/_types/room.types";
+import type { WordCategory } from "@/protocol/generated/WordCategory";
 
 type LobbyCategoryPickerProps = {
   /** The categories in the room's language. */
-  categories: WordPack[];
+  categories: WordCategory[];
   selected: string[];
   onChange: (names: string[]) => void;
 };
@@ -54,7 +54,7 @@ export function LobbyCategoryPicker({ categories, selected, onChange }: LobbyCat
               <span className="rounded-full bg-berry px-1.5 text-xs font-semibold text-night">18+</span>
             )}
             <span className="rounded-full bg-night-soft px-2 text-xs text-white/80">
-              {category.words.length}
+              {category.words}
               <span className="sr-only"> words</span>
             </span>
           </label>

@@ -74,10 +74,10 @@ describe("RoomStateUtils.apply", () => {
 
   it("turns remaining times into deadlines on this device's clock", () => {
     const state = play([joined, { type: "roundStarted", round }], undefined, 5_000);
-    expect(state.timers).toEqual({ turnEndsAt: 20_000, votingEndsAt: null, guessEndsAt: null });
+    expect(state.timers).toEqual({ turn: { endsAt: 20_000, totalMs: 15_000 }, voting: null, guess: null });
 
-    const next = RoomStateUtils.apply(state, { type: "turnStarted", playerId: 1, durationMs: 15_000, turn: 2 }, 21_000);
-    expect(next.timers.turnEndsAt).toBe(36_000);
+    const next = RoomStateUtils.apply(state, { type: "turnStarted", playerId: 1, durationMs: 10_000, turn: 2 }, 21_000);
+    expect(next.timers.turn).toEqual({ endsAt: 31_000, totalMs: 10_000 });
     expect(RoomStateUtils.round(next)).toMatchObject({ activePlayerId: 1, turn: 2 });
   });
 
@@ -103,7 +103,7 @@ describe("RoomStateUtils.apply", () => {
     );
     expect(state.room?.phase).toMatchObject({ phase: "voting", votingRemainingMs: 30_000 });
     expect(RoomStateUtils.round(state)).toMatchObject({ activePlayerId: null, word: "giraffe" });
-    expect(state.timers).toEqual({ turnEndsAt: null, votingEndsAt: 32_000, guessEndsAt: null });
+    expect(state.timers).toEqual({ turn: null, voting: { endsAt: 32_000, totalMs: 30_000 }, guess: null });
   });
 
   it("resets scores when a new game starts", () => {
@@ -194,7 +194,7 @@ describe("RoomStateUtils.apply", () => {
       3_000,
     );
     expect(state.room?.phase.phase).toBe("guessing");
-    expect(state.timers).toEqual({ turnEndsAt: null, votingEndsAt: null, guessEndsAt: 23_000 });
+    expect(state.timers).toEqual({ turn: null, voting: null, guess: { endsAt: 23_000, totalMs: 20_000 } });
 
     const finished = RoomStateUtils.apply(
       state,
@@ -221,7 +221,7 @@ describe("RoomStateUtils.apply", () => {
     );
     expect(finished.room?.phase.phase).toBe("finished");
     expect(finished.room?.players.find((player) => player.id === 1)?.score).toBe(1);
-    expect(finished.timers.guessEndsAt).toBeNull();
+    expect(finished.timers.guess).toBeNull();
   });
 
   it("remembers the last rejection", () => {

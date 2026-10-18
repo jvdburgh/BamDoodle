@@ -38,10 +38,13 @@ can change the number of rounds between rounds; when that's already been reached
 
 1. **Lobby.** The start page offers **Join a room** (most people) or **Create a room**. Joining asks for the four-letter
    room code (shown as "Join at bamdoodle.io with code …" on the host's screen) and a nickname, or skips the code when
-   you open a shared link; players draw or tweak their avatar while they wait (a random doodle face to start from,
-   shuffle for another; a small round pad with one pen and the colours that read on navy; undo and clear). The host sets
-   up the room: mode, turns per player or turn length, rounds per game, the language and the word categories to play
-   with (Efteling, Places, Very British, …, and 18+ ones if they want), then starts.
+   you open a shared link (`/join/BKZW`; the address bar shows it once you're in). Creating asks your nickname, then
+   the host sets up the room: mode, turns per player or turn length, rounds per game, the language and the word
+   categories to play with (Efteling, Places, Very British, …, and 18+ ones if they want). Every change reaches the
+   room at once, and the host can open the settings again between rounds. The others wait on the join card until the
+   host starts; the host's card also links to the host screen ("Show on a TV", `/watch/BKZW`). Everyone has a doodle
+   face picked for them; drawing your own (a small round pad with one pen, the colours that read on navy, shuffle, undo
+   and clear) is in the lab until avatars go over the wire.
 2. **Secret.** The server picks a word from the chosen categories and tells each player their role.
 3. **Drawing.** Players take turns on the shared canvas in a shuffled order shown on screen; each player
    gets the same number of turns. The player whose turn it is is highlighted, and their strokes appear live for everyone.
@@ -81,19 +84,20 @@ Everyone can use every colour: there is nothing to unlock, ever. To still see wh
   canvas while the rest fades back to grey. Click again or press Esc to show everyone. Hovering a player with a mouse
   previews their spotlight without pinning it.
 
-**In the playground only** (not a server setting yet): the room's creator picks **Any colour** (everyone uses every
+**In the lab only** (`/lab`, not a server setting yet): the room's creator picks **Any colour** (everyone uses every
 colour, the default) or **Own colours** (each player gets a family of five shades, and their avatar wears it), so
-playtests can compare both. Making it a real setting needs a protocol change.
+playtests can compare both. Real rooms use any colour until the setting is on the wire.
 
-**Suspecting and voting in the playground:** every player card (avatar, name, mini-map of their strokes) has a
+**Suspecting and voting on screen:** every player card (avatar, name, mini-map of their strokes) has a
 "Mark as sketchy" button; marking or changing it is public table talk ("Noor thinks Jip is sketchy") and cards show
 how many suspect that player. After the last turn the same cards turn into the choice ("Pick"), next to a "Time's up!
 Who's sketchy? Who do you think didn't know the word?" prompt with a 30 s countdown, your suspicion pre-selected and
 a "Lock in my vote" button; it shows who has voted, never for whom. On a laptop everything fits one screen (cards
 in one column on the left, the canvas sized to fit with pens and colours right under it, round and turn progress
 bottom-left); on a phone the cards
-or your tools follow the canvas depending on whose turn it is. Then the reveal, the bamboozler's guess, the round's
-points with the running totals, and a podium after the last round.
+or your tools follow the canvas depending on whose turn it is. Then the reveal with the bamboozler's guess under it
+(the guess's 20 seconds start at the reveal), the round's points with the running totals, and after the last round
+the podium: on a phone when you tap "See the final scores", on the host screen ten seconds after the results.
 
 ## Points (starting point, tune in playtests)
 

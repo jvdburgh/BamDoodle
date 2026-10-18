@@ -5,7 +5,7 @@ export type StrokePoint = Point;
 
 export type Stroke = {
   id: string;
-  playerId: string;
+  playerId: number;
   color: string;
   /** Diameter as a fraction of the canvas width, so every screen draws the same line. */
   size: number;

@@ -1,4 +1,4 @@
-import type { RoundPhase } from "@/components/room/_types/room.types";
+import type { RoomPhase } from "@/components/room/_types/room.types";
 
 export type SoundCue =
   | "start"
@@ -16,7 +16,7 @@ export type SoundCue =
 
 /** What the room looks like at one moment, as far as sound cares. */
 export type SoundMoment = {
-  phase: RoundPhase;
+  phase: RoomPhase;
   turnCount: number;
   yourTurn: boolean;
   /** Whole seconds left in the turn, rounded up as the clocks show them. */
@@ -37,7 +37,7 @@ function between(before: SoundMoment, after: SoundMoment): SoundCue[] {
   if (before.phase !== after.phase) {
     if (after.phase === "drawing") return ["start"];
     if (after.phase === "voting") return ["timeUp"];
-    if (after.phase === "reveal") return ["reveal"];
+    if (after.phase === "guessing") return ["reveal"];
     return [];
   }
   if (after.phase === "voting") {

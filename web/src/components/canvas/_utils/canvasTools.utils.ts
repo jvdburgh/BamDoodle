@@ -1,5 +1,8 @@
+import type { BrushSize } from "@/protocol/generated/BrushSize";
+
 export type CanvasColour = { name: string; value: string };
-export type CanvasBrush = { name: string; size: number };
+/** `id` is the size on the wire, `size` the diameter as a fraction of the canvas width. */
+export type CanvasBrush = { id: BrushSize; name: string; size: number };
 
 /** Every colour for everyone: the logo's colours plus neutrals and the few a drawing needs that the logo lacks. */
 const colours: CanvasColour[] = [
@@ -39,9 +42,9 @@ const shadeFamilies: CanvasColour[][] = [
 ];
 
 const brushes: CanvasBrush[] = [
-  { name: "Fine", size: 0.006 },
-  { name: "Medium", size: 0.014 },
-  { name: "Bold", size: 0.03 },
+  { id: "fine", name: "Fine", size: 0.006 },
+  { id: "medium", name: "Medium", size: 0.014 },
+  { id: "bold", name: "Bold", size: 0.03 },
 ];
 
 export const CanvasTools = { colours, shadeFamilies, brushes };

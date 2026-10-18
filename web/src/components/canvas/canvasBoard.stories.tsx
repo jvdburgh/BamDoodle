@@ -4,7 +4,7 @@ import { expect, fn, waitFor } from "storybook/test";
 import { CanvasBoard } from "./CanvasBoard.component";
 import { drawingFixture } from "./_fixtures/drawing.fixture";
 
-const order = ["pip", "juno", "mo", "kiki"];
+const order = [1, 2, 3, 4];
 
 const meta = {
   title: "Canvas/CanvasBoard",
@@ -21,10 +21,12 @@ const meta = {
   args: {
     drawing: drawingFixture(),
     order,
-    activePlayerId: "pip",
+    activePlayerId: 1,
     color: "#f13866",
     brushSize: 0.014,
     label: "Shared drawing",
+    onStrokeBegin: fn(),
+    onStrokeExtend: fn(),
     onStrokeEnd: fn(),
     penTag: <span className="rounded-full bg-night px-2 font-display text-white">Pip</span>,
   },
@@ -69,11 +71,14 @@ export const Drawing: Story = {
   play: async ({ args, canvas }) => {
     drawLine(canvas.getByRole("img", { name: "Shared drawing" }) as HTMLCanvasElement);
     await expect(args.onStrokeEnd).toHaveBeenCalledWith(
-      expect.objectContaining({ playerId: "pip", color: "#f13866", size: 0.014, hasPressure: false }),
+      expect.objectContaining({ playerId: 1, color: "#f13866", size: 0.014, hasPressure: false }),
     );
     const [stroke] = (args.onStrokeEnd as ReturnType<typeof fn>).mock.calls[0] ?? [];
     await expect(stroke.points[0]).toEqual([0.1, 0.1, 0.5]);
     await expect(stroke.points.at(-1)).toEqual([0.6, 0.4, 0.5]);
+    // The points also come out as they're drawn, so they can go over the wire live.
+    await expect(args.onStrokeBegin).toHaveBeenCalledWith(expect.objectContaining({ points: [[0.1, 0.1, 0.5]] }));
+    await expect(args.onStrokeExtend).toHaveBeenCalledTimes(10);
   },
 };
 
@@ -81,12 +86,13 @@ export const Locked: Story = {
   args: { drawing: drawingFixture([]), activePlayerId: null, label: "Shared drawing. The round is over." },
   play: async ({ args, canvas }) => {
     drawLine(canvas.getByRole("img", { name: /round is over/ }) as HTMLCanvasElement);
+    await expect(args.onStrokeBegin).not.toHaveBeenCalled();
     await expect(args.onStrokeEnd).not.toHaveBeenCalled();
   },
 };
 
 export const Spotlight: Story = {
-  args: { activePlayerId: null, spotlightId: "mo", label: "Shared drawing. Mo’s lines stand out." },
+  args: { activePlayerId: null, spotlightId: 3, label: "Shared drawing. Mo’s lines stand out." },
   play: async ({ canvas }) => {
     const board = canvas.getByRole("img", { name: /Mo’s lines/ }) as HTMLCanvasElement;
     await waitFor(() => expect(board.width).toBeGreaterThan(0));
@@ -98,11 +104,11 @@ const turnEndsDrawing = drawingFixture([]);
 export const TurnEndsMidStroke: Story = {
   args: { drawing: turnEndsDrawing },
   render: function Render(args) {
-    const [activePlayerId, setActivePlayerId] = useState<string | null>("pip");
+    const [activePlayerId, setActivePlayerId] = useState<number | null>(1);
     return (
       <>
         <CanvasBoard {...args} activePlayerId={activePlayerId} />
-        <button type="button" onClick={() => setActivePlayerId("juno")} className="mt-2 text-white">
+        <button type="button" onClick={() => setActivePlayerId(2)} className="mt-2 text-white">
           Time’s up for Pip
         </button>
       </>
@@ -115,7 +121,7 @@ export const TurnEndsMidStroke: Story = {
     release(board);
 
     await expect(args.onStrokeEnd).not.toHaveBeenCalled();
-    await expect(turnEndsDrawing.strokes()).toEqual([expect.objectContaining({ playerId: "pip" })]);
+    await expect(turnEndsDrawing.strokes()).toEqual([expect.objectContaining({ playerId: 1 })]);
     await expect(turnEndsDrawing.live()).toBeNull();
   },
 };

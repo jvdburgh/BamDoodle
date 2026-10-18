@@ -1,5 +1,5 @@
-import type { RoundPhase } from "@/components/room/_types/room.types";
-import { RoundUtils } from "@/components/room/_utils/round.utils";
+import type { RoomPhase } from "@/components/room/_types/room.types";
+import { ClockUtils } from "@/components/room/_utils/clock.utils";
 
 type RoomProgressProps = {
   roundNumber: number;
@@ -7,7 +7,7 @@ type RoomProgressProps = {
   /** Which of their turns the players are on, and how many each gets. */
   turn: number;
   turnsPerPlayer: number;
-  phase: RoundPhase;
+  phase: RoomPhase;
   /** "Your turn" or "Juno's turn" while drawing. */
   turnTitle?: string;
   /** Time left in the turn (drawing) or the vote (voting). */
@@ -15,12 +15,11 @@ type RoomProgressProps = {
   msTotal: number;
 };
 
-const phaseNames: Partial<Record<RoundPhase, string>> = {
-  waiting: "Waiting to start",
+const phaseNames: Partial<Record<RoomPhase, string>> = {
+  lobby: "Waiting to start",
   voting: "Final vote",
-  reveal: "The reveal",
-  guess: "The guess",
-  results: "Results",
+  guessing: "The reveal",
+  finished: "Results",
 };
 
 /** Where the round is, small and out of the way of the pens: round, turn, and the turn's or vote's countdown. */
@@ -60,7 +59,7 @@ export function RoomProgress({
         {timed && (
           <span className="font-display text-lg tabular-nums">
             <span className="sr-only">Time left: </span>
-            {phase === "voting" ? RoundUtils.formatClock(msLeft) : `${seconds}s`}
+            {phase === "voting" ? ClockUtils.format(msLeft) : `${seconds}s`}
           </span>
         )}
       </p>

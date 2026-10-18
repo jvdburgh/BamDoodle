@@ -1,61 +1,37 @@
 import type { AvatarStroke } from "@/components/avatar/_types/avatar.types";
-import type { Language } from "@/protocol/generated/Language";
-import type { TurnMode } from "@/protocol/generated/TurnMode";
-import type { WordCategory } from "@/protocol/generated/WordCategory";
+import type { PhaseView } from "@/protocol/generated/PhaseView";
+import type { RoomSnapshot } from "@/protocol/generated/RoomSnapshot";
+import type { RoomState } from "@/protocol/roomState.utils";
 
 export type RoomPlayer = {
-  id: string;
+  /** The server's player id. */
+  id: number;
   name: string;
   /** Seed for this player's hand-drawn marks (rings, magnifier), so they wobble the same on every render. */
   avatarSeed: number;
   avatar: AvatarStroke[];
+  /** False while their device is away. */
+  connected: boolean;
 };
-
-export type { TurnMode };
-
-/** Free colours for everyone, or one shade family per player: the attribution question the prototype compares. */
-export type Attribution = "free" | "shades";
-
-export type WordLanguage = Language;
-
-/** What the host picks before the first round (docs/game-rules.md, "A round"). */
-export type RoomSetup = {
-  mode: TurnMode;
-  /** How many times each player draws in "One stroke each"; Timed turns use a fixed two for now. */
-  turnsPerPlayer: number;
-  /** Seconds per turn in Timed turns. */
-  turnSeconds: number;
-  rounds: number;
-  attribution: Attribution;
-  language: WordLanguage;
-  /** The word categories in play, by name in the room's language; at least one. 18+ ones are categories too. */
-  categories: string[];
-};
-
-/** A category with its words, as the playground deals them; the server's `WordCategory` only carries the count. */
-export type WordPack = Omit<WordCategory, "words"> & { words: string[] };
 
 /**
- * waiting → drawing (turns go round for the laps) → voting (30 s final vote) → reveal (the bamboozler and the votes)
- * → guess (the bamboozler's one try at the word) → results (points, then the host starts the next round).
+ * Free colours for everyone, or one shade family per player: the attribution question the lab compares. Real rooms
+ * are free until the server has the setting.
  */
-export type RoundPhase = "waiting" | "drawing" | "voting" | "reveal" | "guess" | "results";
+export type Attribution = "free" | "shades";
 
-export type Round = {
-  mode: TurnMode;
-  phase: RoundPhase;
-  /** Turns started this round; the active player is `turnCount % players`. */
-  turnCount: number;
-  /** Turns per player × players: when the drawing stops. */
-  totalTurns: number;
-  turnMs: number;
-  turnStartedAt: number;
-  /** When the current phase started, for the voting and guessing countdowns. */
-  phaseStartedAt: number;
-  bamboozlerId: string;
-  /** Who each player currently suspects; public and changeable while drawing. */
-  suspicions: Record<string, string>;
-  /** Locked final votes. */
-  votes: Record<string, string>;
-  guess: { text: string; right: boolean } | null;
-};
+/** The server's phase: lobby → drawing → voting → guessing (the reveal and the bamboozler's guess) → finished. */
+export type RoomPhase = PhaseView["phase"];
+
+/** One player's round on the results: points, and whether they got it right (an award says they did). */
+export type RoundScore = { points: number; right: boolean };
+
+/** A public fact for the table talk; each screen words it for its viewer. */
+export type FeedLine = {
+  id: number;
+  at: number;
+  voterId: number;
+} & ({ kind: "suspect"; suspectId: number | null; beforeId: number | null } | { kind: "voted" });
+
+/** A device's room state once the server has sent the room: what the room screens render. */
+export type RoomViewState = RoomState & { room: RoomSnapshot };

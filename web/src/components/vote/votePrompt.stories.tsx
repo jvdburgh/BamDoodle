@@ -21,7 +21,7 @@ const meta = {
     picked: mo,
     voted: undefined,
     onLock: fn(),
-    votedIds: ["pip", "kiki"],
+    votedIds: [1, 4],
     msLeft: 24_000,
   },
   render: function Render(args) {
@@ -50,7 +50,7 @@ export const LockIn: Story = {
     await expect(canvas.getByRole("img", { name: "Pip has voted" })).toBeVisible();
 
     await userEvent.click(canvas.getByRole("button", { name: "Lock in my vote for Mo" }));
-    await expect(args.onLock).toHaveBeenCalledWith("mo");
+    await expect(args.onLock).toHaveBeenCalledWith(3);
     await expect(canvas.getByText(/No take-backs/)).toHaveFocus();
   },
 };

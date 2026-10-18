@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { expect, fn } from "storybook/test";
-import { wordCategoriesFixture } from "@/components/room/_fixtures/words.fixture";
+import { wordCategoriesFixture } from "@/components/lobby/_fixtures/wordCategories.fixture";
 import { LobbyCategoryPicker } from "./LobbyCategoryPicker.component";
 
 const dutch = wordCategoriesFixture.filter((category) => category.language === "nl");

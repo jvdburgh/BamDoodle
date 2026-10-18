@@ -1,16 +1,12 @@
-import type { Round, RoomSetup, TurnMode } from "@/components/room/_types/room.types";
+import type { Round, RoomSetup } from "@/components/lab/_types/lab.types";
+import type { TurnMode } from "@/protocol/generated/TurnMode";
 
-/** Starting points (docs/game-rules.md); the server will own them, the prototype mirrors them. */
+/** The server's timings (docs/game-rules.md), copied so the lab plays like a real room. */
 const ONE_STROKE_TURN_MS = 15_000;
 const TIMED_TURNS_PER_PLAYER = 2;
 const VOTE_MS = 30_000;
-const REVEAL_MS = 7_000;
 const GUESS_MS = 20_000;
 
-/** What the host can pick when setting up a room, with the defaults first in docs/game-rules.md. */
-const TURNS_PER_PLAYER_CHOICES = [1, 2, 3, 4, 5];
-const TURN_SECOND_CHOICES = [10, 20, 30, 60];
-const ROUND_CHOICES = [3, 5, 10];
 const DEFAULT_SETUP: RoomSetup = {
   mode: "oneStroke",
   turnsPerPlayer: 3,
@@ -26,7 +22,7 @@ const turnsPerPlayerFor = (setup: Pick<RoomSetup, "mode" | "turnsPerPlayer">) =>
 const turnMsFor = (setup: Pick<RoomSetup, "mode" | "turnSeconds">) =>
   setup.mode === "oneStroke" ? ONE_STROKE_TURN_MS : setup.turnSeconds * 1000;
 
-type NewRound = { mode: TurnMode; turnMs: number; totalTurns: number; bamboozlerId: string };
+type NewRound = { mode: TurnMode; turnMs: number; totalTurns: number; bamboozlerId: number };
 
 function create({ mode, turnMs, totalTurns, bamboozlerId }: NewRound): Round {
   return {
@@ -64,12 +60,12 @@ function strokeFinished(round: Round, turnCount: number, now: number): Round {
 }
 
 /** Final votes: the locked ones, and for anyone who didn't lock one, their last suspicion. */
-function finalVotes(round: Round): Record<string, string> {
+function finalVotes(round: Round): Record<number, number> {
   return { ...round.suspicions, ...round.votes };
 }
 
 /**
- * Moves the clock on: turns expire, then the vote, the reveal and the guess each run out. Catches up in one go when
+ * Moves the clock on: turns expire, then the vote and the guess each run out. Catches up in one go when
  * the page was hidden for a while, instead of flashing through every phase.
  */
 function tick(round: Round, now: number): Round {
@@ -97,11 +93,7 @@ function tickOnce(round: Round, now: number): Round {
     }
     case "voting":
       return elapsed >= VOTE_MS
-        ? { ...round, phase: "reveal", votes: finalVotes(round), phaseStartedAt: round.phaseStartedAt + VOTE_MS }
-        : round;
-    case "reveal":
-      return elapsed >= REVEAL_MS
-        ? { ...round, phase: "guess", phaseStartedAt: round.phaseStartedAt + REVEAL_MS }
+        ? { ...round, phase: "guess", votes: finalVotes(round), phaseStartedAt: round.phaseStartedAt + VOTE_MS }
         : round;
     case "guess":
       return elapsed >= GUESS_MS
@@ -113,7 +105,7 @@ function tickOnce(round: Round, now: number): Round {
 }
 
 /** Changing your mind is allowed (and public) while the drawing goes on. Null stops suspecting. */
-function suspect(round: Round, voterId: string, suspectId: string | null): Round {
+function suspect(round: Round, voterId: number, suspectId: number | null): Round {
   if (round.phase !== "drawing" || voterId === suspectId) return round;
   if ((round.suspicions[voterId] ?? null) === suspectId) return round;
   const suspicions = { ...round.suspicions };
@@ -122,12 +114,12 @@ function suspect(round: Round, voterId: string, suspectId: string | null): Round
   return { ...round, suspicions };
 }
 
-/** Locks a final vote. Once everyone has voted, the reveal starts straight away. */
-function castVote(round: Round, voterId: string, suspectId: string, playerIds: string[], now: number): Round {
+/** Locks a final vote. Once everyone has voted, the reveal and the guess start straight away. */
+function castVote(round: Round, voterId: number, suspectId: number, playerIds: number[], now: number): Round {
   if (round.phase !== "voting" || voterId === suspectId || voterId in round.votes) return round;
   const votes = { ...round.votes, [voterId]: suspectId };
   const everyone = playerIds.every((id) => id in votes);
-  return everyone ? { ...round, votes, phase: "reveal", phaseStartedAt: now } : { ...round, votes };
+  return everyone ? { ...round, votes, phase: "guess", phaseStartedAt: now } : { ...round, votes };
 }
 
 const normalise = (text: string) =>
@@ -168,14 +160,6 @@ function guessWord(round: Round, text: string, word: string, now: number): Round
   return { ...round, phase: "results", guess: { text: text.trim(), right }, phaseStartedAt: now };
 }
 
-/** How many players suspect each player right now; only shown while drawing. */
-function suspectedBy(round: Round): Record<string, number> {
-  const counts: Record<string, number> = {};
-  if (round.phase !== "drawing") return counts;
-  for (const suspectId of Object.values(round.suspicions)) counts[suspectId] = (counts[suspectId] ?? 0) + 1;
-  return counts;
-}
-
 const activeIndex = (round: Round, playerCount: number) => round.turnCount % playerCount;
 /** Which of their turns the players are on: "Turn 2 of 3". */
 const turn = (round: Round, playerCount: number) => Math.floor(round.turnCount / playerCount) + 1;
@@ -185,27 +169,17 @@ function turnLeft(round: Round, now: number): number {
   return Math.min(round.turnMs, Math.max(0, round.turnMs - (now - round.turnStartedAt)));
 }
 
-const phaseLength: Partial<Record<Round["phase"], number>> = { voting: VOTE_MS, reveal: REVEAL_MS, guess: GUESS_MS };
+const phaseLength: Partial<Record<Round["phase"], number>> = { voting: VOTE_MS, guess: GUESS_MS };
 
-/** Time left in a timed phase (voting, reveal, guess); 0 otherwise. */
+/** Time left in a timed phase (voting, guess); 0 otherwise. */
 function phaseLeft(round: Round, now: number): number {
   const length = phaseLength[round.phase];
   return length ? Math.min(length, Math.max(0, length - (now - round.phaseStartedAt))) : 0;
 }
 
-/** Milliseconds as a countdown, rounded up so "0:00" only shows when time is really up. */
-function formatClock(ms: number): string {
-  const seconds = Math.ceil(ms / 1000);
-  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
-}
-
 export const RoundUtils = {
-  TURNS_PER_PLAYER_CHOICES,
-  TURN_SECOND_CHOICES,
-  ROUND_CHOICES,
   DEFAULT_SETUP,
   VOTE_MS,
-  REVEAL_MS,
   GUESS_MS,
   turnsPerPlayerFor,
   turnMsFor,
@@ -217,11 +191,9 @@ export const RoundUtils = {
   suspect,
   castVote,
   finalVotes,
-  suspectedBy,
   guessWord,
   activeIndex,
   turn,
   turnLeft,
   phaseLeft,
-  formatClock,
 };

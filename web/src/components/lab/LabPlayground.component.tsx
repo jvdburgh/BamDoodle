@@ -1,20 +1,18 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { LabPhoneFrame } from "@/components/lab/LabPhoneFrame.component";
+import { useLabRoom } from "@/components/lab/_hooks/labRoom.hook";
+import type { RoomSetup, WordCard } from "@/components/lab/_types/lab.types";
 import type { LabView } from "@/components/lab/_utils/labSettings.utils";
 import { RoomHostView } from "@/components/room/RoomHostView.component";
 import { RoomPlayerView } from "@/components/room/RoomPlayerView.component";
-import type { WordCard } from "@/components/room/_fixtures/players.fixture";
-import { useRoomSimulation } from "@/components/room/_hooks/roomSimulation.hook";
-import type { RoomPlayer, RoomSetup } from "@/components/room/_types/room.types";
-import { RoundUtils } from "@/components/room/_utils/round.utils";
-import { useSoundCues } from "@/components/sound/_hooks/sound.hook";
-import { SoundPlayer } from "@/components/sound/_utils/soundPlayer.utils";
+import { useRoomSounds } from "@/components/room/_hooks/roomSounds.hook";
+import type { RoomPlayer } from "@/components/room/_types/room.types";
 import type { Role } from "@/protocol/generated/Role";
 
 type LabPlaygroundProps = {
   players: RoomPlayer[];
-  /** Your seat when the others are simulated. */
-  youId: string;
+  /** Your seat; the others are simulated. */
+  youId: number;
   words: WordCard[];
   roomCode: string;
   setup: RoomSetup;
@@ -27,9 +25,11 @@ type LabPlaygroundProps = {
   role: Role;
 };
 
+const HOME = "/lab?screen=start";
+
 /**
- * A game without a server, shown as a phone, a host screen, or both side by side. The setup and role are read once:
- * change them by remounting (the lab keys on them), since they reset the game.
+ * A game without a server, shown as a phone, a host screen, or both side by side: the same views as a real room, fed
+ * by a simulation. The setup and role are read once: change them by remounting (the lab keys on them).
  */
 export function LabPlayground({
   players,
@@ -42,9 +42,8 @@ export function LabPlayground({
   view,
   role,
 }: LabPlaygroundProps) {
-  const you = youId;
-  const sim = useRoomSimulation({ players, youId: you, words, setup, youAreBamboozler: role === "bamboozler" });
-  const started = sim.round.phase !== "waiting";
+  const lab = useLabRoom({ code: roomCode, players, youId, words, setup, youAreBamboozler: role === "bamboozler" });
+  const started = lab.player.room.phase.phase !== "lobby";
   const roundStart = useRef(onRoundStart);
   useLayoutEffect(() => {
     roundStart.current = onRoundStart;
@@ -52,29 +51,19 @@ export function LabPlayground({
   useEffect(() => {
     if (started) roundStart.current?.();
   }, [started]);
-  useSoundCues({
-    phase: sim.round.phase,
-    turnCount: sim.round.turnCount,
-    yourTurn: sim.yourTurn,
-    turnSeconds: Math.ceil(RoundUtils.turnLeft(sim.round, sim.now) / 1000),
-    voteSeconds: Math.ceil(RoundUtils.phaseLeft(sim.round, sim.now) / 1000),
-  });
-  useEffect(() => {
-    if (sim.gameOver) SoundPlayer.play("fanfare");
-  }, [sim.gameOver]);
-  const yourName = players.find((player) => player.id === you)?.name;
-  const playing = started && !sim.gameOver;
+  useRoomSounds(lab.player);
+  const yourName = players.find((player) => player.id === youId)?.name;
 
-  // Mid-game, leaving (the logo link, reload, closing the tab) asks first, with the browser's own prompt.
-  useEffect(() => {
-    if (!playing) return;
-    const confirmLeave = (event: BeforeUnloadEvent) => event.preventDefault();
-    window.addEventListener("beforeunload", confirmLeave);
-    return () => window.removeEventListener("beforeunload", confirmLeave);
-  }, [playing]);
-
-  const player = <RoomPlayerView sim={sim} youId={you} roomCode={roomCode} revealCode={revealCode} />;
-  const host = <RoomHostView sim={sim} roomCode={roomCode} revealCode={revealCode} />;
+  const player = (
+    <RoomPlayerView
+      state={lab.player}
+      send={lab.send}
+      revealCode={revealCode}
+      colours={setup.attribution}
+      home={HOME}
+    />
+  );
+  const host = <RoomHostView state={lab.host} revealCode={revealCode} colours={setup.attribution} home={HOME} />;
 
   if (view === "player") return <main>{player}</main>;
   if (view === "host") return <main>{host}</main>;

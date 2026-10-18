@@ -14,18 +14,18 @@ const { between } = SoundCuesUtils;
 
 describe("SoundCuesUtils.between", () => {
   it("plays a jingle when drawing starts, also in later rounds", () => {
-    expect(between(moment({ phase: "waiting" }), moment())).toEqual(["start"]);
-    expect(between(moment({ phase: "results" }), moment())).toEqual(["start"]);
+    expect(between(moment({ phase: "lobby" }), moment())).toEqual(["start"]);
+    expect(between(moment({ phase: "finished" }), moment())).toEqual(["start"]);
   });
 
   it("sounds time's up when the final vote opens, and a reveal after it", () => {
     expect(between(moment(), moment({ phase: "voting", voteSeconds: 30 }))).toEqual(["timeUp"]);
-    expect(between(moment({ phase: "voting" }), moment({ phase: "reveal" }))).toEqual(["reveal"]);
+    expect(between(moment({ phase: "voting" }), moment({ phase: "guessing" }))).toEqual(["reveal"]);
   });
 
   it("stays quiet when nothing changed", () => {
     expect(between(moment(), moment())).toEqual([]);
-    expect(between(moment({ phase: "results" }), moment({ phase: "results" }))).toEqual([]);
+    expect(between(moment({ phase: "finished" }), moment({ phase: "finished" }))).toEqual([]);
   });
 
   it("blips on a new turn, brighter when it's yours", () => {

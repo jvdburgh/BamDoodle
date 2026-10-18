@@ -3,11 +3,11 @@ import type { RoomPlayer } from "@/components/room/_types/room.types";
 
 type RoomRevealProps = {
   players: RoomPlayer[];
-  bamboozlerId: string;
+  bamboozlerId: number;
   /** Final votes: voter → suspect. */
-  votes: Record<string, string>;
-  youId?: string | null;
-  colours?: Record<string, string>;
+  votes: Record<number, number>;
+  youId?: number | null;
+  colours?: Record<number, string>;
   /** Bigger for the host screen. */
   big?: boolean;
 };
@@ -15,7 +15,7 @@ type RoomRevealProps = {
 /** The moment of truth: who the bamboozler was, popping in, and who voted for whom. */
 export function RoomReveal({ players, bamboozlerId, votes, youId = null, colours, big = false }: RoomRevealProps) {
   const bamboozler = players.find((player) => player.id === bamboozlerId);
-  const nameOf = (id: string) => (id === youId ? "you" : (players.find((player) => player.id === id)?.name ?? "?"));
+  const nameOf = (id: number) => (id === youId ? "you" : (players.find((player) => player.id === id)?.name ?? "?"));
   const artists = players.filter((player) => player.id !== bamboozlerId);
   const caught = artists.filter((player) => votes[player.id] === bamboozlerId).length;
   if (!bamboozler) return null;

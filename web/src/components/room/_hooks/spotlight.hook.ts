@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 
 /** One viewer's magnifying glass: a pinned player, a hover peek that wins while it lasts, and Esc to clear. */
 export function useSpotlight() {
-  const [pinned, setPinned] = useState<string | null>(null);
-  const [peek, setPeek] = useState<string | null>(null);
+  const [pinned, setPinned] = useState<number | null>(null);
+  const [peek, setPeek] = useState<number | null>(null);
 
   useEffect(() => {
     if (!pinned && !peek) return;

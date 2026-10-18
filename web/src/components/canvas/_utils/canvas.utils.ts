@@ -78,4 +78,7 @@ function strokeToPath(
   return freehandPath(points, stroke.size * width, stroke.hasPressure, complete);
 }
 
-export const CanvasUtils = { normalise, simplify, freehandPath, strokeToPath };
+/** How close points may be before `simplify` drops them: what's drawn and what's sent are thinned alike. */
+const SIMPLIFY_TOLERANCE = 0.0015;
+
+export const CanvasUtils = { SIMPLIFY_TOLERANCE, normalise, simplify, freehandPath, strokeToPath };
