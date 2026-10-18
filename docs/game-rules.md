@@ -77,13 +77,27 @@ Split votes need no tie-break: points are per voter, not per majority.
 - English and Dutch, simple and drawable, grouped into categories. See [words.md](words.md).
 - An **adults pack** (18+, innuendo and rude-but-drawable words) the host can switch on. Off by default.
 
+## Current defaults (revisit after playtests)
+
+These are implemented in the server (`server/src/limits.rs`) and easy to change:
+
+- **Players:** 3 to start a round, at most 8 in a room. Designed for 4 to 6.
+- **Timers:** round 60 seconds (the host can pick 30 to 300), Classic turn 15 seconds, Timed turn 10 seconds, the
+  bamboozler's guess 20 seconds.
+- **Turn order** is shuffled each round and the bamboozler is picked fully at random, so the same player can be it
+  twice in a row (any rule about who it can't be would narrow it down). Words don't repeat until the pack runs out.
+- **Everyone votes, the bamboozler too**, so not voting doesn't give them away; their vote earns nothing. Votes stay
+  secret until the reveal; everyone sees who has voted.
+- **The guess** is free text, forgiving about case, accents, spaces and one typo in words of five letters or more.
+- **Disconnects:** the round goes on. A drawer who drops loses their turn. A player who drops still counts for the
+  vote for 15 seconds (a locked phone shouldn't end the round); after that they no longer hold it up. A session token
+  takes your seat and score back, and a second device with the same token takes over from the first. After a round,
+  the seat of someone who is gone is kept for 2 minutes.
+- **Late joiners** watch the current round (no word, no vote) and play from the next one.
+- **The host** is whoever created the room; when they drop out, the next player who joined takes over.
+
 ## Open questions
 
-- Player count: we design for 4 to 6, support 3 to 8? Mini-maps on desktop fit up to 8.
-- Classic mode: stroke time limit, and how many laps per round?
-- Does the bamboozler vote too (to blend in)? Their vote earns nothing either way.
-- The bamboozler's guess: free text with fuzzy matching, or pick from a few options?
-- Disconnects: does the round go on, pause, or end when the bamboozler leaves?
-- Can late joiners enter mid-round as spectators?
-- Does the big screen need its own controls (start the next round, kick a player), or is that the host's phone?
+- Does the host screen need its own controls (start the next round, kick a player), or is that the host's phone?
+- Should a round have a fixed number of laps instead of (or as well as) a timer?
 - A computer-controlled bamboozler (the original pitch said "player or AI"): later, if ever.

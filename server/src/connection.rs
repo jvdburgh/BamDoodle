@@ -1,0 +1,173 @@
+//! One WebSocket: the first message picks the room (create, join or watch), after that messages flow between the
+//! socket and the room's task until either side goes away.
+
+use std::{
+    sync::Arc,
+    time::{Duration, Instant},
+};
+
+use axum::extract::ws::{Message, Utf8Bytes, WebSocket};
+use tokio::sync::{mpsc, oneshot};
+
+use crate::{
+    limits,
+    protocol::{ClientMessage, RejectReason, ServerMessage},
+    registry::{Registry, RoomHandle},
+    room::{
+        clean_name,
+        task::{ConnectionId, Entered, RoomCommand},
+    },
+};
+
+pub async fn handle(mut socket: WebSocket, registry: Arc<Registry>) {
+    let Some(hello) = first_message(&mut socket).await else {
+        return;
+    };
+    let (room, connection, mut outbox) = match enter(hello, &registry).await {
+        Ok(entered) => entered,
+        Err(reason) => {
+            let _ = send(&mut socket, &ServerMessage::Rejected { reason }).await;
+            let _ = socket.send(Message::Close(None)).await;
+            return;
+        }
+    };
+
+    let mut limiter = RateLimiter::new(limits::MESSAGES_PER_SECOND);
+    loop {
+        tokio::select! {
+            outgoing = outbox.recv() => match outgoing {
+                Some(message) => if send(&mut socket, &message).await.is_err() { break },
+                None => break,
+            },
+            incoming = socket.recv() => match incoming {
+                Some(Ok(Message::Text(text))) => {
+                    if !limiter.allow(Instant::now()) {
+                        tracing::debug!(connection, "dropping message: over the rate limit");
+                        continue;
+                    }
+                    match serde_json::from_str::<ClientMessage>(&text) {
+                        Ok(message) => {
+                            if room.commands.send(RoomCommand::Message { connection, message }).await.is_err() {
+                                break;
+                            }
+                        }
+                        Err(error) => tracing::debug!(%error, "ignoring malformed client message"),
+                    }
+                }
+                Some(Ok(Message::Close(_)) | Err(_)) | None => break,
+                Some(Ok(_)) => {}
+            },
+        }
+    }
+    let _ = room.commands.send(RoomCommand::Leave { connection }).await;
+}
+
+async fn first_message(socket: &mut WebSocket) -> Option<ClientMessage> {
+    let deadline = tokio::time::sleep(limits::HELLO_TIMEOUT);
+    tokio::pin!(deadline);
+    loop {
+        tokio::select! {
+            () = &mut deadline => return None,
+            incoming = socket.recv() => match incoming {
+                Some(Ok(Message::Text(text))) => return serde_json::from_str(&text).ok(),
+                Some(Ok(Message::Ping(_) | Message::Pong(_))) => {}
+                _ => return None,
+            },
+        }
+    }
+}
+
+async fn enter(
+    hello: ClientMessage,
+    registry: &Arc<Registry>,
+) -> Result<(RoomHandle, ConnectionId, mpsc::Receiver<ServerMessage>), RejectReason> {
+    match hello {
+        ClientMessage::CreateRoom { name } => {
+            clean_name(&name).ok_or(RejectReason::InvalidName)?;
+            let (_, room) = registry.create()?;
+            let (connection, outbox) = join(&room, name, None).await?;
+            Ok((room, connection, outbox))
+        }
+        ClientMessage::JoinRoom {
+            code,
+            name,
+            session_token,
+        } => {
+            let room = registry.find(&code).ok_or(RejectReason::RoomNotFound)?;
+            let (connection, outbox) = join(&room, name, session_token).await?;
+            Ok((room, connection, outbox))
+        }
+        ClientMessage::WatchRoom { code } => {
+            let room = registry.find(&code).ok_or(RejectReason::RoomNotFound)?;
+            let (reply, answer) = oneshot::channel();
+            room.commands
+                .send(RoomCommand::Watch { reply })
+                .await
+                .map_err(|_| RejectReason::RoomNotFound)?;
+            let (connection, outbox) = answer.await.map_err(|_| RejectReason::RoomNotFound)??;
+            Ok((room, connection, outbox))
+        }
+        _ => Err(RejectReason::NotJoined),
+    }
+}
+
+async fn join(room: &RoomHandle, name: String, session_token: Option<String>) -> Result<Entered, RejectReason> {
+    let (reply, answer) = oneshot::channel();
+    room.commands
+        .send(RoomCommand::Join {
+            name,
+            session_token,
+            reply,
+        })
+        .await
+        .map_err(|_| RejectReason::RoomNotFound)?;
+    answer.await.map_err(|_| RejectReason::RoomNotFound)?
+}
+
+async fn send(socket: &mut WebSocket, message: &ServerMessage) -> Result<(), axum::Error> {
+    let json = serde_json::to_string(message).expect("server messages always serialize");
+    socket.send(Message::Text(Utf8Bytes::from(json))).await
+}
+
+/// Allows `per_second` messages in every one-second window and drops the rest.
+struct RateLimiter {
+    per_second: u32,
+    window_start: Option<Instant>,
+    count: u32,
+}
+
+impl RateLimiter {
+    fn new(per_second: u32) -> Self {
+        Self {
+            per_second,
+            window_start: None,
+            count: 0,
+        }
+    }
+
+    fn allow(&mut self, now: Instant) -> bool {
+        match self.window_start {
+            Some(start) if now.duration_since(start) < Duration::from_secs(1) => {}
+            _ => {
+                self.window_start = Some(now);
+                self.count = 0;
+            }
+        }
+        self.count += 1;
+        self.count <= self.per_second
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn the_rate_limiter_drops_bursts_and_recovers() {
+        let mut limiter = RateLimiter::new(3);
+        let start = Instant::now();
+        let allowed = (0..5).filter(|_| limiter.allow(start)).count();
+        assert_eq!(allowed, 3);
+        assert!(limiter.allow(start + Duration::from_secs(1)));
+    }
+}

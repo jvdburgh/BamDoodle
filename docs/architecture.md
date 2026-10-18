@@ -37,34 +37,56 @@ Rust, Axum, tokio. Chosen because it is fast, small to run, and already familiar
 
 All live state lives in the process ([decision 0002](decisions/0002-in-memory-state.md)):
 
-- **Room registry:** a map from room code to a handle for that room. Room codes are short, easy to read aloud and
-  unambiguous (no `0/O`, `1/I`), generated randomly and checked for collisions.
-- **One task per room.** Each room is its own tokio task that owns its state (players, roles, word, canvas strokes,
-  votes, scores, timers) and handles one message at a time from a channel. No locks around game state, and no way
-  for two rooms to interfere.
-- **Players** get a random session token on join, which the browser keeps in `localStorage`. On reconnect the token
-  puts them back in their seat. Nickname and avatar are also kept client-side.
-- **Cleanup:** a room with nobody connected is removed after a grace period (a few minutes, so a refresh or a flaky
-  connection doesn't kill the game).
+- **Room registry** (`server/src/registry.rs`): room code to a handle for that room's task. Codes are four
+  consonants without look-alikes (`BCDFGHJKLMNPQRSTVWXZ`, so `BKTZ`), random and checked for collisions; at most
+  500 rooms.
+- **One task per room** (`server/src/room/task.rs`) owns the room, its connections and its timers, and handles one
+  command at a time from a channel: join, watch, a client message, a disconnect, or a deadline passing. No locks
+  around game state, and rooms can't interfere with each other. A connection whose queue fills up is dropped.
+- **The rules** (`server/src/room/mod.rs`) are a plain state machine, `Room`, without I/O: every method takes the
+  current time and returns the messages to send and to whom (everyone, one player, host screens). That's what the
+  unit tests drive, one or more per rule in [game-rules.md](game-rules.md).
+- **Players** get a random session token when they join; the browser keeps it in `localStorage` and sends it to take
+  back the same seat (and score) after a refresh or a dropped connection. Nickname and avatar are client-side.
+- **Cleanup:** a player who is gone between rounds loses their seat after 2 minutes; a room with no players
+  connected closes after 5 minutes (30 seconds if nobody ever joined it). Host screens don't keep a room open.
+- **Words** come from `words/<language>/<pack>.toml`, loaded at startup (`WORDS_DIR`).
+- **Limits** are all in `server/src/limits.rs`.
 
 The catch: a deploy or crash ends all running games. At hobby scale that's acceptable; deploy when it's quiet.
 
 ### Protocol
 
-- JSON over one WebSocket per player, messages tagged by `type` (`server/src/protocol.rs`).
+- JSON over one WebSocket per device at `/ws`, messages tagged by `type`, fields in camelCase
+  (`server/src/protocol.rs`).
 - [ts-rs](https://github.com/Aleph-Alpha/ts-rs) generates the TypeScript types into `web/src/protocol/generated/`
   (`just protocol`). The generated files are committed, and CI fails if they are stale.
-- Per-player messages: the server builds each player's view itself, so the bamboozler's client never receives
-  the word, and nobody's client learns who the bamboozler is before the reveal.
-- The client reconnects automatically with backoff. Needed anyway, and Scaleway Serverless Containers cap a
-  connection at the request timeout (max 60 minutes).
+- **The first message picks the room:** `createRoom { name }` (you become host), `joinRoom { code, name,
+  sessionToken? }` or `watchRoom { code }` for a host screen. The answer is `joined` with your player id, your
+  session token and a snapshot of the room as you may see it, or `rejected` with a reason.
+- **A round:** the host sends `startRound`; each device gets its own `roundStarted` (artists with the word, the
+  bamboozler and host screens without). The active player sends `beginStroke`, `extendStroke` (batches of points)
+  and `endStroke`; everyone gets `strokeBegun`, `strokeExtended`, `strokeEnded` and `turnStarted`. Votes
+  (`castVote`) are announced as `voteCast` with only the voter. When everyone has voted or the time is up,
+  `revealed` names the bamboozler and every vote; their `guessWord` (or the guess timer) ends the round with
+  `roundFinished`: the word, the guess, the awards and the scores.
+- Times are sent as milliseconds remaining, never as clock times, so device clocks don't matter.
+- Per-device views: the server builds each view itself, so the bamboozler's device and host screens never receive
+  the word before `roundFinished`, and nobody learns who the bamboozler is before `revealed`. Tests check the actual
+  socket traffic for this.
+- The client should reconnect automatically with backoff (needed anyway; Scaleway Serverless Containers also cap a
+  connection at the request timeout, max 60 minutes).
 
 ### Fair play, without over-engineering
 
 - Secrets never leave the server early (above).
-- Turns are enforced on the server: wrong player, out of time or too many points → dropped.
-- Limits on message size, points per stroke and messages per second per connection.
-- Votes are accepted once per player per round.
+- Turns are enforced on the server: strokes from the wrong player, after the turn, off the canvas, with an odd
+  colour or too many points are dropped. Classic turns allow one stroke, timed turns up to 40.
+- Limits: 16 KiB per message, 128 points per message, 2,048 per stroke, 60,000 per round, 60 messages per second
+  per connection, 10 seconds to say which room you want, 4 host screens per room, 500 rooms. A name is checked
+  before a room is created. Not yet: a limit on rooms per IP address.
+- A vote counts once per round, never for yourself, only from players in the round.
+- Only the host changes settings and starts rounds, only between rounds.
 - What we don't try to stop: friends telling each other things on a voice call. That's part of a party game.
 
 ## Web (`web/`)
