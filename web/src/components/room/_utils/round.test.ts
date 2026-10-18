@@ -75,4 +75,11 @@ describe("RoundUtils", () => {
     expect(RoundUtils.formatClock(41_200)).toBe("0:42");
     expect(RoundUtils.formatClock(0)).toBe("0:00");
   });
+
+  it("uses the room's round length", () => {
+    const round = RoundUtils.start(RoundUtils.create("timed", 90_000), 1_000);
+    expect(RoundUtils.roundLeft(round, 1_000)).toBe(90_000);
+    expect(RoundUtils.tick(round, 1_000 + 60_000).phase).toBe("drawing");
+    expect(RoundUtils.tick(round, 1_000 + 90_000).phase).toBe("over");
+  });
 });

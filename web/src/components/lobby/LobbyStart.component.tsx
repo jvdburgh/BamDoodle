@@ -1,16 +1,20 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { BrandLogo } from "@/components/brand/BrandLogo.component";
-import { BrandTagline } from "@/components/brand/BrandTagline.component";
 import { BrandSketchyFrame } from "@/components/brand/BrandSketchyFrame.component";
-import type { TurnMode } from "@/components/room/_types/room.types";
+import { BrandTagline } from "@/components/brand/BrandTagline.component";
 import { BrandStyles } from "@/components/brand/_utils/brandStyles.utils";
+import type { Attribution, TurnMode } from "@/components/room/_types/room.types";
 
-export type LobbyEntry = { name: string } & ({ kind: "create"; mode: TurnMode } | { kind: "join"; code: string });
+export type RoomSetup = { mode: TurnMode; roundSeconds: number; attribution: Attribution };
+
+export type LobbyEntry = { name: string } & (({ kind: "create" } & RoomSetup) | { kind: "join"; code: string });
 
 type LobbyStartProps = {
   onEnter: (entry: LobbyEntry) => void;
   defaultName?: string;
 };
+
+type Step = "choose" | "join" | "setup" | "name";
 
 /** Same as the server: `NAME_MAX_CHARS` in limits.rs, the code alphabet and length in registry.rs. */
 const NAME_MAX = 20;
@@ -20,41 +24,78 @@ const NOT_IN_CODE = /[^BCDFGHJKLMNPQRSTVWXZ]/g;
 const field =
   "w-full rounded-[10px_14px_12px_9px] bg-night-deep px-4 py-3 text-lg text-white placeholder:text-white/40 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-sun";
 
-/** The first page: create a room or join one. As few fields as possible. */
+type Option<T> = { value: T; title: string; detail: string };
+
+const turnOptions: Option<TurnMode>[] = [
+  { value: "classic", title: "One stroke each", detail: "Draw one line, pass it on" },
+  { value: "timed", title: "Timed turns", detail: "A few seconds to draw freely" },
+];
+const lengthOptions: Option<number>[] = [
+  { value: 60, title: "1 minute", detail: "Quick" },
+  { value: 90, title: "1½ minutes", detail: "Relaxed" },
+  { value: 120, title: "2 minutes", detail: "Big drawings" },
+];
+const colourOptions: Option<Attribution>[] = [
+  { value: "free", title: "Any colour", detail: "Everyone uses every colour" },
+  { value: "shades", title: "Own colours", detail: "Each player gets a family of shades" },
+];
+
+/** The first page: join a room (most people) or create one. Creating sets the room up first, then asks your name. */
 export function LobbyStart({ onEnter, defaultName = "" }: LobbyStartProps) {
-  const [step, setStep] = useState<"choose" | "create" | "join">("choose");
+  const [step, setStep] = useState<Step>("choose");
   const [name, setName] = useState(defaultName);
   const [code, setCode] = useState("");
-  const [mode, setMode] = useState<TurnMode>("classic");
+  const [setup, setSetup] = useState<RoomSetup>({ mode: "classic", roundSeconds: 60, attribution: "free" });
   const nameId = useId();
   const codeId = useId();
-  const firstField = useRef<HTMLInputElement>(null);
-  const opener = useRef<"create" | "join" | null>(null);
-  const createButton = useRef<HTMLButtonElement>(null);
+  const firstField = useRef<HTMLElement | null>(null);
+  const opener = useRef<"join" | "setup" | null>(null);
   const joinButton = useRef<HTMLButtonElement>(null);
+  const createButton = useRef<HTMLButtonElement>(null);
 
-  // The button you pressed disappears with each step: focus the first field, or on Back the button that opened it.
+  // Each step replaces the button you pressed: focus the step's first control, or on Back the button that opened it.
   useEffect(() => {
     if (step !== "choose") firstField.current?.focus();
     else if (opener.current) (opener.current === "join" ? joinButton : createButton).current?.focus();
   }, [step]);
 
-  const open = (next: "create" | "join") => {
-    opener.current = next;
+  const go = (next: Step) => {
+    if (next === "join" || next === "setup") opener.current = next;
     setStep(next);
+  };
+  const first = (element: HTMLElement | null) => {
+    if (element) firstField.current = element;
   };
 
   const cleanName = name.trim();
-  const canEnter = cleanName.length > 0 && (step !== "join" || code.length === CODE_LENGTH);
+  const canSubmit = step === "setup" || (cleanName.length > 0 && (step !== "join" || code.length === CODE_LENGTH));
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
-    if (!canEnter) return;
-    onEnter(step === "join" ? { kind: "join", name: cleanName, code } : { kind: "create", name: cleanName, mode });
+    if (!canSubmit) return;
+    if (step === "setup") go("name");
+    else if (step === "join") onEnter({ kind: "join", name: cleanName, code });
+    else onEnter({ kind: "create", name: cleanName, ...setup });
   };
 
+  const nameField = (
+    <div className="grid gap-1.5">
+      <label htmlFor={nameId} className="text-sm text-white/70">
+        Your name
+      </label>
+      <input
+        ref={step === "name" ? first : undefined}
+        id={nameId}
+        value={name}
+        onChange={(event) => setName(event.target.value.slice(0, NAME_MAX))}
+        autoComplete="nickname"
+        className={field}
+      />
+    </div>
+  );
+
   return (
-    <main className="mx-auto flex min-h-svh max-w-md flex-col items-center justify-center gap-8 px-4 py-10">
+    <main className="mx-auto flex min-h-svh max-w-md flex-col items-center justify-center gap-8 px-5 py-10">
       <div className="flex flex-col items-center gap-2 text-center">
         <BrandLogo className="size-28" />
         <h2 className="font-display text-5xl">BamDoodle</h2>
@@ -64,114 +105,141 @@ export function LobbyStart({ onEnter, defaultName = "" }: LobbyStartProps) {
       {step === "choose" ? (
         <div className="grid w-full gap-3">
           <button
+            ref={joinButton}
             type="button"
-            ref={createButton}
-            onClick={() => open("create")}
+            onClick={() => go("join")}
             className={`${BrandStyles.primaryButton} w-full`}
           >
-            Create a room
+            Join a room
           </button>
           <button
+            ref={createButton}
             type="button"
-            ref={joinButton}
-            onClick={() => open("join")}
+            onClick={() => go("setup")}
             className={`${BrandStyles.quietButton} w-full`}
           >
-            Join a room
+            Create a room
           </button>
         </div>
       ) : (
         <form
           onSubmit={submit}
-          className="relative grid w-full gap-4 rounded-[18px_24px_20px_16px] bg-night-soft/50 p-5"
+          className="relative grid w-full gap-5 rounded-[18px_24px_20px_16px] bg-night-soft/50 p-5"
         >
           <BrandSketchyFrame className="text-white/25" />
-          <h3 className="font-display text-2xl">{step === "join" ? "Join a room" : "New room"}</h3>
+          <h3 className="font-display text-2xl">
+            {step === "join" ? "Join a room" : step === "setup" ? "Set up your room" : "And you are?"}
+          </h3>
 
           {step === "join" && (
-            <div className="grid gap-1.5">
-              <label htmlFor={codeId} className="text-sm text-white/70">
-                Room code
-              </label>
-              <input
-                ref={firstField}
-                id={codeId}
-                value={code}
-                onChange={(event) =>
-                  setCode(event.target.value.toUpperCase().replace(NOT_IN_CODE, "").slice(0, CODE_LENGTH))
-                }
-                autoComplete="off"
-                autoCapitalize="characters"
-                spellCheck={false}
-                inputMode="text"
-                placeholder="ABCD"
-                className={`${field} font-display text-3xl tracking-[0.3em] uppercase`}
-              />
-            </div>
-          )}
-
-          <div className="grid gap-1.5">
-            <label htmlFor={nameId} className="text-sm text-white/70">
-              Your name
-            </label>
-            <input
-              ref={step === "create" ? firstField : undefined}
-              id={nameId}
-              value={name}
-              onChange={(event) => setName(event.target.value.slice(0, NAME_MAX))}
-              autoComplete="nickname"
-              className={field}
-            />
-          </div>
-
-          {step === "create" && (
-            <fieldset className="grid gap-1.5">
-              <legend className="mb-1.5 text-sm text-white/70">Turns</legend>
-              <div className="grid grid-cols-2 gap-2">
-                {(
-                  [
-                    ["classic", "Classic", "One stroke each"],
-                    ["timed", "Timed", "10 seconds each"],
-                  ] as const
-                ).map(([value, title, detail]) => (
-                  <label
-                    key={value}
-                    className="cursor-pointer rounded-[12px_16px_14px_10px] bg-night-deep p-3 ring-2 ring-transparent has-checked:ring-sun has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-white"
-                  >
-                    <input
-                      type="radio"
-                      name="lobby-mode"
-                      value={value}
-                      checked={mode === value}
-                      onChange={() => setMode(value)}
-                      className="sr-only"
-                    />
-                    <span className="block font-display text-lg">{title}</span>
-                    <span className="block text-sm text-white/70">{detail}</span>
-                  </label>
-                ))}
+            <>
+              <div className="grid gap-1.5">
+                <label htmlFor={codeId} className="text-sm text-white/70">
+                  Room code
+                </label>
+                <input
+                  ref={first}
+                  id={codeId}
+                  value={code}
+                  onChange={(event) =>
+                    setCode(event.target.value.toUpperCase().replace(NOT_IN_CODE, "").slice(0, CODE_LENGTH))
+                  }
+                  autoComplete="off"
+                  autoCapitalize="characters"
+                  spellCheck={false}
+                  placeholder="BKZW"
+                  className={`${field} font-display text-3xl tracking-[0.3em] uppercase`}
+                />
               </div>
-            </fieldset>
+              {nameField}
+            </>
           )}
+
+          {step === "setup" && (
+            <>
+              <LobbyChoice
+                legend="Turns"
+                name="lobby-mode"
+                options={turnOptions}
+                value={setup.mode}
+                onChange={(mode) => setSetup((current) => ({ ...current, mode }))}
+                firstRef={first}
+              />
+              <LobbyChoice
+                legend="Round length"
+                name="lobby-length"
+                options={lengthOptions}
+                value={setup.roundSeconds}
+                onChange={(roundSeconds) => setSetup((current) => ({ ...current, roundSeconds }))}
+              />
+              <LobbyChoice
+                legend="Colours"
+                name="lobby-colours"
+                options={colourOptions}
+                value={setup.attribution}
+                onChange={(attribution) => setSetup((current) => ({ ...current, attribution }))}
+              />
+            </>
+          )}
+
+          {step === "name" && nameField}
 
           <div className="flex items-center justify-between gap-3">
             <button
               type="button"
-              onClick={() => setStep("choose")}
-              className="rounded-full px-3 py-2 text-white/70 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              onClick={() => go(step === "name" ? "setup" : "choose")}
+              className={BrandStyles.ghostButton}
             >
               Back
             </button>
-            <button
-              type="submit"
-              disabled={!canEnter}
-              className={`${BrandStyles.primaryButton} disabled:cursor-not-allowed disabled:opacity-50`}
-            >
-              {step === "join" ? "Join" : "Create room"}
+            <button type="submit" disabled={!canSubmit} className={BrandStyles.primaryButton}>
+              {step === "join" ? "Join" : step === "setup" ? "Next" : "Create room"}
             </button>
           </div>
         </form>
       )}
     </main>
+  );
+}
+
+function LobbyChoice<T extends string | number>({
+  legend,
+  name,
+  options,
+  value,
+  onChange,
+  firstRef,
+}: {
+  legend: string;
+  name: string;
+  options: Option<T>[];
+  value: T;
+  onChange: (value: T) => void;
+  firstRef?: (element: HTMLInputElement | null) => void;
+}) {
+  return (
+    <fieldset className="grid gap-1.5">
+      <legend className="mb-1.5 text-sm text-white/70">{legend}</legend>
+      <div className={`grid gap-2 ${options.length > 2 ? "grid-cols-3" : "grid-cols-2"}`}>
+        {options.map((option) => (
+          <label
+            key={option.value}
+            className="cursor-pointer rounded-[12px_16px_14px_10px] bg-night-deep p-3 ring-2 ring-transparent has-checked:ring-sun has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-white"
+          >
+            <input
+              ref={value === option.value ? firstRef : undefined}
+              type="radio"
+              name={name}
+              value={option.value}
+              checked={value === option.value}
+              onChange={() => onChange(option.value)}
+              className="sr-only"
+            />
+            <span className="block font-display text-lg leading-tight">{option.title}</span>
+            <span className="mt-0.5 block text-sm text-white/70">{option.detail}</span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
   );
 }

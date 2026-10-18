@@ -12,17 +12,37 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+export const JoinFirst: Story = {
+  play: async ({ canvas }) => {
+    const buttons = canvas.getAllByRole("button");
+    await expect(buttons.map((button) => button.textContent)).toEqual(["Join a room", "Create a room"]);
+  },
+};
+
 export const CreateARoom: Story = {
   play: async ({ args, canvas, userEvent }) => {
     await userEvent.click(canvas.getByRole("button", { name: "Create a room" }));
-    await expect(canvas.getByLabelText("Your name")).toHaveFocus();
+    await expect(canvas.getByRole("heading", { name: "Set up your room" })).toBeVisible();
+    await expect(canvas.getByRole("radio", { name: /One stroke each/ })).toHaveFocus();
+
+    await userEvent.click(canvas.getByText("Timed turns"));
+    await userEvent.click(canvas.getByText("1½ minutes"));
+    await userEvent.click(canvas.getByText("Own colours"));
+    await userEvent.click(canvas.getByRole("button", { name: "Next" }));
+
+    const name = canvas.getByLabelText("Your name");
+    await expect(name).toHaveFocus();
     const create = canvas.getByRole("button", { name: "Create room" });
     await expect(create).toBeDisabled();
-
-    await userEvent.type(canvas.getByLabelText("Your name"), "  Joris ");
-    await userEvent.click(canvas.getByText("Timed"));
+    await userEvent.type(name, "  Joris ");
     await userEvent.click(create);
-    await expect(args.onEnter).toHaveBeenCalledWith({ kind: "create", name: "Joris", mode: "timed" });
+    await expect(args.onEnter).toHaveBeenCalledWith({
+      kind: "create",
+      name: "Joris",
+      mode: "timed",
+      roundSeconds: 90,
+      attribution: "shades",
+    });
   },
 };
 

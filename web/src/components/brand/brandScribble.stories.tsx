@@ -25,3 +25,11 @@ export const Underline: Story = {
 export const Magnifier: Story = {
   args: { shape: "magnifier", className: "size-16 text-white" },
 };
+
+export const Speaker: Story = {
+  args: { shape: "speaker", className: "size-12 text-white" },
+};
+
+export const SpeakerOff: Story = {
+  args: { shape: "speakerOff", className: "size-12 text-white" },
+};

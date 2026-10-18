@@ -6,8 +6,8 @@ const TURN_MS: Record<TurnMode, number> = { classic: 15_000, timed: 10_000 };
 
 const turnLength = (mode: TurnMode) => TURN_MS[mode];
 
-function create(mode: TurnMode): Round {
-  return { mode, phase: "waiting", turnCount: 0, roundStartedAt: 0, turnStartedAt: 0 };
+function create(mode: TurnMode, roundMs = ROUND_MS): Round {
+  return { mode, phase: "waiting", turnCount: 0, roundMs, roundStartedAt: 0, turnStartedAt: 0 };
 }
 
 function start(round: Round, now: number): Round {
@@ -28,7 +28,7 @@ function strokeFinished(round: Round, turnCount: number, now: number): Round {
 /** Moves the clock on: expired turns pass to the next player, and the round ends when its time is up. */
 function tick(round: Round, now: number): Round {
   if (round.phase !== "drawing") return round;
-  if (now - round.roundStartedAt >= ROUND_MS) return { ...round, phase: "over" };
+  if (now - round.roundStartedAt >= round.roundMs) return { ...round, phase: "over" };
   const length = turnLength(round.mode);
   const expired = Math.floor((now - round.turnStartedAt) / length);
   if (expired < 1) return round;
@@ -37,7 +37,7 @@ function tick(round: Round, now: number): Round {
 
 /** The mode only changes between rounds. */
 function setMode(round: Round, mode: TurnMode): Round {
-  return round.phase === "drawing" ? round : create(mode);
+  return round.phase === "drawing" ? round : create(mode, round.roundMs);
 }
 
 const activeIndex = (round: Round, playerCount: number) => round.turnCount % playerCount;
@@ -49,9 +49,9 @@ function turnLeft(round: Round, now: number): number {
 }
 
 function roundLeft(round: Round, now: number): number {
-  if (round.phase === "waiting") return ROUND_MS;
+  if (round.phase === "waiting") return round.roundMs;
   if (round.phase === "over") return 0;
-  return Math.min(ROUND_MS, Math.max(0, ROUND_MS - (now - round.roundStartedAt)));
+  return Math.min(round.roundMs, Math.max(0, round.roundMs - (now - round.roundStartedAt)));
 }
 
 /** Milliseconds as a countdown, rounded up so "0:00" only shows when time is really up. */

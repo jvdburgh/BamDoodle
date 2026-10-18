@@ -9,7 +9,7 @@ describe("LabSettingsUtils.read", () => {
   });
 
   it("uses what the viewer stored", () => {
-    expect(read("", JSON.stringify({ font: "dynapuff", players: 3 }))).toMatchObject({ font: "dynapuff", players: 3 });
+    expect(read("", JSON.stringify({ mode: "timed", players: 3 }))).toMatchObject({ mode: "timed", players: 3 });
   });
 
   it("lets the URL win over storage", () => {
@@ -18,7 +18,7 @@ describe("LabSettingsUtils.read", () => {
   });
 
   it("ignores values it doesn't know", () => {
-    expect(read("?view=fridge&players=9", JSON.stringify({ font: 42, role: "spy" }))).toEqual(defaults);
+    expect(read("?view=fridge&players=9&roundSeconds=7", JSON.stringify({ mode: 42, role: "spy" }))).toEqual(defaults);
   });
 
   it("survives broken storage", () => {
@@ -42,7 +42,7 @@ describe("LabSettingsUtils.toSearch", () => {
       ...defaults,
       attribution: "shades" as const,
       role: "bamboozler" as const,
-      surface: "night" as const,
+      roundSeconds: 120,
     };
     expect(read(toSearch(settings), null)).toEqual(settings);
   });

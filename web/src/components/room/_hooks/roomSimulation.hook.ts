@@ -13,15 +13,23 @@ type RoomSimulationOptions = {
   words: { category: string; word: string }[];
   mode: TurnMode;
   attribution: Attribution;
+  roundSeconds?: number;
 };
 
 /**
  * A whole round without a server: the shared drawing, the clock, whose turn it is, and simulated players drawing on
  * their turns. Both the phone view and the host screen render from this, as they will from server messages later.
  */
-export function useRoomSimulation({ players, youId, words, mode, attribution }: RoomSimulationOptions) {
+export function useRoomSimulation({
+  players,
+  youId,
+  words,
+  mode,
+  attribution,
+  roundSeconds = 60,
+}: RoomSimulationOptions) {
   const [drawing] = useState(DrawingUtils.createDrawing);
-  const [round, setRound] = useState(() => RoundUtils.create(mode));
+  const [round, setRound] = useState(() => RoundUtils.create(mode, roundSeconds * 1000));
   const [wordIndex, setWordIndex] = useState(0);
   const [now, setNow] = useState(Date.now);
   /** voter id → suspect id, for this round. */
@@ -82,7 +90,7 @@ export function useRoomSimulation({ players, youId, words, mode, attribution }: 
     drawing.clear();
     setVotes({});
     setWordIndex((index) => index + 1);
-    setRound((current) => RoundUtils.create(current.mode));
+    setRound((current) => RoundUtils.create(current.mode, current.roundMs));
   };
 
   return {

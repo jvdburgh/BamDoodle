@@ -1,12 +1,6 @@
 @import "tailwindcss";
 @import "@fontsource-variable/work-sans";
 @import "@fontsource/love-ya-like-a-sister";
-/* Alternatives for the playground's font switcher (docs/brand.md); browsers only download the one in use. */
-@import "@fontsource-variable/grandstander";
-@import "@fontsource-variable/dynapuff";
-@import "@fontsource-variable/fredoka";
-@import "@fontsource/gochi-hand";
-@import "@fontsource/patrick-hand";
 
 /* Brand tokens, taken from brand/logo.svg. Fonts and their reasons: docs/brand.md. */
 @theme {
@@ -32,6 +26,42 @@
 
   --animate-turn-call: turn-call 1100ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
 
+  /* The room-created reveal (RoomJoinCard): card, frame drawn in, letters popping, underline. */
+  --animate-card-in: card-in 500ms cubic-bezier(0.2, 0.9, 0.3, 1.1) both;
+  --animate-draw-in: draw-in 650ms ease-out both;
+  --animate-letter-in: letter-in 460ms cubic-bezier(0.2, 0.9, 0.3, 1.4) both;
+  --animate-rise-in: rise-in 400ms ease-out both;
+
+  @keyframes card-in {
+    from {
+      opacity: 0;
+      transform: scale(0.9) rotate(-2deg);
+    }
+  }
+
+  @keyframes draw-in {
+    from {
+      clip-path: inset(0 100% 0 0);
+    }
+    to {
+      clip-path: inset(0 0 0 0);
+    }
+  }
+
+  @keyframes letter-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.4em) rotate(-14deg) scale(0.4);
+    }
+  }
+
+  @keyframes rise-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+
   @keyframes turn-call {
     0% {
       opacity: 0;
@@ -53,11 +83,6 @@
 }
 
 @layer base {
-  :root {
-    /* Display fonts differ in weight range; the playground's font switcher sets both together. */
-    --display-weight: 400;
-  }
-
   html {
     color-scheme: dark;
   }
@@ -73,10 +98,6 @@
 }
 
 @layer utilities {
-  .font-display {
-    font-weight: var(--display-weight);
-  }
-
   /* Wobbly outline for frames, via the #sketchy filter from BrandSketchFilter. Never on text. */
   .sketchy {
     filter: url(#sketchy);

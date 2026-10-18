@@ -1,10 +1,9 @@
-import { useMemo, useState, type CSSProperties } from "react";
+import { useMemo, useState } from "react";
 import { BrandSketchFilter } from "@/components/brand/BrandSketchFilter.component";
 import { LabPanel } from "@/components/lab/LabPanel.component";
-import { useLabSettings } from "@/components/lab/_hooks/labSettings.hook";
-import { LabSettingsUtils } from "@/components/lab/_utils/labSettings.utils";
-import { LobbyStart } from "@/components/lobby/LobbyStart.component";
 import { LabPlayground } from "@/components/lab/LabPlayground.component";
+import { useLabSettings } from "@/components/lab/_hooks/labSettings.hook";
+import { LobbyStart } from "@/components/lobby/LobbyStart.component";
 import { playersFixture, roomCodeFixture, wordsFixture } from "@/components/room/_fixtures/players.fixture";
 
 const YOU = "juno";
@@ -15,7 +14,7 @@ export function App() {
   const [resets, setResets] = useState(0);
   const [yourName, setYourName] = useState("Juno");
   const [roomCode, setRoomCode] = useState(roomCodeFixture);
-  const font = LabSettingsUtils.fonts[settings.font];
+  const [justCreated, setJustCreated] = useState(false);
   const players = useMemo(
     () =>
       playersFixture
@@ -23,13 +22,9 @@ export function App() {
         .map((player) => (player.id === YOU ? { ...player, name: yourName } : player)),
     [settings.players, yourName],
   );
-  const fontStyle = {
-    "--font-display": `${font.family}, "Work Sans Variable", system-ui, sans-serif`,
-    "--display-weight": font.weight,
-  } as CSSProperties;
 
   return (
-    <div style={fontStyle}>
+    <>
       <BrandSketchFilter />
       <h1 className="sr-only">BamDoodle playground</h1>
       {settings.screen === "start" ? (
@@ -37,26 +32,37 @@ export function App() {
           defaultName={yourName}
           onEnter={(entry) => {
             setYourName(entry.name);
-            setRoomCode(entry.kind === "join" ? entry.code : roomCodeFixture);
-            update(entry.kind === "create" ? { screen: "room", mode: entry.mode } : { screen: "room" });
+            if (entry.kind === "create") {
+              const { mode, roundSeconds, attribution } = entry;
+              setRoomCode(roomCodeFixture);
+              setJustCreated(true);
+              update({ screen: "room", mode, roundSeconds, attribution });
+            } else {
+              setRoomCode(entry.code);
+              setJustCreated(false);
+              update({ screen: "room" });
+            }
           }}
         />
       ) : (
         <LabPlayground
-          key={`${settings.mode}-${settings.attribution}-${settings.seats}-${settings.players}-${resets}`}
+          key={`${settings.mode}-${settings.attribution}-${settings.roundSeconds}-${settings.seats}-${settings.players}-${resets}`}
           players={players}
           youId={YOU}
           words={wordsFixture}
           roomCode={roomCode}
+          revealCode={justCreated}
+          onRoundStart={() => setJustCreated(false)}
           view={settings.view}
           role={settings.role}
           mode={settings.mode}
           attribution={settings.attribution}
+          roundSeconds={settings.roundSeconds}
           seats={settings.seats}
-          surface={settings.surface}
         />
       )}
       <LabPanel
+        showOnPhones={new URLSearchParams(window.location.search).has("lab")}
         settings={settings}
         onChange={update}
         onReset={() => {
@@ -64,6 +70,6 @@ export function App() {
           setResets((count) => count + 1);
         }}
       />
-    </div>
+    </>
   );
 }

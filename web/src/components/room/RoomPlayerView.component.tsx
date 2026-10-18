@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { BrandLogo } from "@/components/brand/BrandLogo.component";
 import { BrandTagline } from "@/components/brand/BrandTagline.component";
-import { CanvasBoard, type CanvasSurface } from "@/components/canvas/CanvasBoard.component";
+import { CanvasBoard } from "@/components/canvas/CanvasBoard.component";
 import { CanvasBrushPicker } from "@/components/canvas/CanvasBrushPicker.component";
 import { CanvasPalette } from "@/components/canvas/CanvasPalette.component";
 import { CanvasTools } from "@/components/canvas/_utils/canvasTools.utils";
@@ -18,6 +18,8 @@ import { useSpotlight } from "@/components/room/_hooks/spotlight.hook";
 import type { RoomPlayer } from "@/components/room/_types/room.types";
 import { RoundUtils } from "@/components/room/_utils/round.utils";
 import { BrandStyles } from "@/components/brand/_utils/brandStyles.utils";
+import { SoundToggle } from "@/components/sound/SoundToggle.component";
+import { SoundPlayer } from "@/components/sound/_utils/soundPlayer.utils";
 import { VoteBallot } from "@/components/vote/VoteBallot.component";
 import type { Role } from "@/protocol/generated/Role";
 
@@ -27,14 +29,15 @@ type RoomPlayerViewProps = {
   youId: string | null;
   role: Role;
   roomCode: string;
-  surface?: CanvasSurface;
+  /** Play the room-created reveal on the join card. */
+  revealCode?: boolean;
 };
 
 /**
  * What a player sees on their own phone: everything they need, in one column. In a wide `room` container (tablet,
  * desktop) the players move to a rail beside the canvas.
  */
-export function RoomPlayerView({ sim, youId, role, roomCode, surface = "paper" }: RoomPlayerViewProps) {
+export function RoomPlayerView({ sim, youId, role, roomCode, revealCode = false }: RoomPlayerViewProps) {
   const { players, drawing, round, now, word, families, identities, active, next, yourTurn, order } = sim;
   const [chosenColour, setChosenColour] = useState(CanvasTools.colours[0]?.value ?? "#000000");
   const [brushSize, setBrushSize] = useState(CanvasTools.brushes[1]?.size ?? 0.014);
@@ -43,6 +46,7 @@ export function RoomPlayerView({ sim, youId, role, roomCode, surface = "paper" }
   const playersRef = useRef<HTMLElement>(null);
   const startRef = useRef<HTMLButtonElement>(null);
   const focusStart = useRef(false);
+  const ballotRef = useRef<HTMLDivElement>(null);
 
   const you = players.find((player) => player.id === youId);
   const drawer = yourTurn ? active : you;
@@ -57,6 +61,11 @@ export function RoomPlayerView({ sim, youId, role, roomCode, surface = "paper" }
     if (round.phase !== "waiting" || !focusStart.current) return;
     focusStart.current = false;
     startRef.current?.focus();
+  }, [round.phase]);
+
+  // When time's up the tools hide; if focus was in them, hand it to the ballot instead of dropping it to the page.
+  useEffect(() => {
+    if (round.phase === "over" && toolsRef.current?.contains(document.activeElement)) ballotRef.current?.focus();
   }, [round.phase]);
 
   // These buttons disappear once used; keep keyboard focus nearby instead of dropping it to the page.
@@ -81,17 +90,36 @@ export function RoomPlayerView({ sim, youId, role, roomCode, surface = "paper" }
       ? "Shared drawing. The round is over."
       : "Shared drawing. The round hasn't started.";
 
+  // Pinned to the bottom of a phone screen while you watch (vote while looking at the lines), but not on your own turn,
+  // where it would cover the tools; in place on wide screens.
   const ballot = you && round.phase !== "waiting" && (
-    <VoteBallot
-      candidates={players.filter((player) => player.id !== you.id)}
-      vote={yourVote}
-      onVote={(playerId) => sim.vote(you.id, playerId)}
-    />
+    <div
+      ref={ballotRef}
+      tabIndex={-1}
+      className={`outline-none ${
+        yourTurn
+          ? ""
+          : "sticky bottom-2 z-10 shadow-[0_-8px_24px_var(--color-night)] @4xl/room:static @4xl/room:shadow-none"
+      }`}
+    >
+      <VoteBallot
+        candidates={players.filter((player) => player.id !== you.id)}
+        drawing={drawing}
+        vote={yourVote}
+        onVote={(playerId) => {
+          sim.vote(you.id, playerId);
+          SoundPlayer.play("vote");
+        }}
+        onConsider={spotlight.pin}
+        prompt={round.phase === "over"}
+        colours={identities}
+      />
+    </div>
   );
 
   return (
     <div className="@container/room">
-      <div className="mx-auto flex max-w-[90rem] flex-col gap-3 p-3 @4xl/room:gap-5 @4xl/room:p-6">
+      <div className="mx-auto flex max-w-[90rem] flex-col gap-4 p-4 @4xl/room:gap-6 @4xl/room:p-8">
         <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-x-2">
           <div className="flex items-center gap-2">
             <BrandLogo href="/?screen=start" className="size-9 @4xl/room:size-12" />
@@ -104,7 +132,10 @@ export function RoomPlayerView({ sim, youId, role, roomCode, surface = "paper" }
             <RoomWordCard category={word.category} word={role === "artist" ? word.word : null} view={role} />
           </div>
           <div className="flex flex-col items-end gap-1 justify-self-end">
-            <RoomRoundClock msLeft={RoundUtils.roundLeft(round, now)} />
+            <div className="flex items-center gap-2">
+              <SoundToggle />
+              <RoomRoundClock msLeft={RoundUtils.roundLeft(round, now)} />
+            </div>
             <p className="rounded-full bg-night-soft px-2 py-0.5 text-xs text-white/80">
               <span className="sr-only">Room code </span>
               <span aria-hidden="true">Room </span>
@@ -113,8 +144,8 @@ export function RoomPlayerView({ sim, youId, role, roomCode, surface = "paper" }
           </div>
         </header>
 
-        <div className="grid gap-3 @4xl/room:grid-cols-[16rem_minmax(0,1fr)] @4xl/room:items-start @4xl/room:gap-6">
-          <aside ref={playersRef} tabIndex={-1} aria-label="Players" className="flex flex-col gap-3 outline-none">
+        <div className="grid gap-4 @4xl/room:grid-cols-[16rem_minmax(0,1fr)] @4xl/room:items-start @4xl/room:gap-6">
+          <aside ref={playersRef} tabIndex={-1} aria-label="Players" className="flex flex-col gap-4 outline-none">
             <RoomPlayerList
               players={players}
               drawing={drawing}
@@ -125,11 +156,10 @@ export function RoomPlayerView({ sim, youId, role, roomCode, surface = "paper" }
               onSpotlight={spotlight.pin}
               onPeek={spotlight.setPeek}
               colours={identities}
-              surface={surface}
             />
           </aside>
 
-          <div className="flex min-w-0 flex-col gap-3 @4xl/room:mx-auto @4xl/room:w-full @4xl/room:max-w-[calc((100svh-16rem)*4/3)]">
+          <div className="flex min-w-0 flex-col gap-4 @4xl/room:mx-auto @4xl/room:w-full @4xl/room:max-w-[calc((100svh-16rem)*4/3)]">
             <div
               className={`relative rounded-[12px_16px_14px_11px] transition-shadow ${you && yourTurn ? "shadow-[0_0_0_4px_var(--color-sun)]" : ""}`}
             >
@@ -140,9 +170,11 @@ export function RoomPlayerView({ sim, youId, role, roomCode, surface = "paper" }
                 color={colour}
                 brushSize={brushSize}
                 spotlightId={spotlight.shown}
-                surface={surface}
                 label={canvasLabel}
-                onStrokeEnd={() => sim.strokeFinished(round.turnCount)}
+                onStrokeEnd={() => {
+                  SoundPlayer.play("scribble");
+                  sim.strokeFinished(round.turnCount);
+                }}
                 penTag={active && <RoomPenTag player={active} color={identities?.[active.id]} />}
               >
                 {spotlit && (
@@ -162,11 +194,11 @@ export function RoomPlayerView({ sim, youId, role, roomCode, surface = "paper" }
                   </div>
                 )}
 
-                {active && <RoomTurnCall turn={round.turnCount} text={turnTitle(active)} surface={surface} />}
+                {active && <RoomTurnCall turn={round.turnCount} text={turnTitle(active)} />}
 
                 {round.phase === "waiting" && (
                   <div className="absolute inset-0 grid place-items-center p-4">
-                    <RoomJoinCard roomCode={roomCode}>
+                    <RoomJoinCard roomCode={roomCode} reveal={revealCode}>
                       <button ref={startRef} type="button" onClick={start} className={BrandStyles.primaryButton}>
                         Start round
                       </button>
@@ -188,7 +220,7 @@ export function RoomPlayerView({ sim, youId, role, roomCode, surface = "paper" }
                   />
                 ) : (
                   <div className="flex items-center justify-between gap-3">
-                    <p className="font-display text-2xl text-sun">Time’s up. Who’s sketchy?</p>
+                    <p className="text-white/70">Round over</p>
                     <button type="button" onClick={newRound} className={BrandStyles.primaryButton}>
                       New round
                     </button>
@@ -199,25 +231,30 @@ export function RoomPlayerView({ sim, youId, role, roomCode, surface = "paper" }
 
             <section
               ref={toolsRef}
+              hidden={round.phase === "over"}
               tabIndex={-1}
               aria-label="Drawing tools"
-              className={`${BrandStyles.panel} flex flex-col gap-3 outline-none @2xl/room:flex-row @2xl/room:items-center`}
+              className={`${BrandStyles.panel} flex flex-col gap-4 outline-none @2xl/room:flex-row @2xl/room:items-center`}
             >
               <div className="min-w-0 flex-1">
                 <CanvasPalette
                   colours={palette}
                   value={colour}
-                  onChange={setChosenColour}
-                  disabled={round.phase === "over"}
+                  onChange={(value) => {
+                    setChosenColour(value);
+                    SoundPlayer.play("pick");
+                  }}
                 />
               </div>
               <div className="flex items-center justify-between gap-3">
                 <CanvasBrushPicker
                   brushes={CanvasTools.brushes}
                   value={brushSize}
-                  onChange={setBrushSize}
+                  onChange={(size) => {
+                    setBrushSize(size);
+                    SoundPlayer.play("pick");
+                  }}
                   color={colour}
-                  disabled={round.phase === "over"}
                 />
                 {yourTurn && (
                   <button type="button" onClick={endTurn} className={BrandStyles.quietButton}>

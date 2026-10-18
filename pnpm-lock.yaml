@@ -17,25 +17,10 @@ importers:
 
   web:
     dependencies:
-      '@fontsource-variable/dynapuff':
-        specifier: ^5.3.0
-        version: 5.3.0
-      '@fontsource-variable/fredoka':
-        specifier: ^5.3.0
-        version: 5.3.0
-      '@fontsource-variable/grandstander':
-        specifier: ^5.3.0
-        version: 5.3.0
       '@fontsource-variable/work-sans':
         specifier: ^5.3.0
         version: 5.3.0
-      '@fontsource/gochi-hand':
-        specifier: ^5.3.0
-        version: 5.3.0
       '@fontsource/love-ya-like-a-sister':
-        specifier: ^5.3.0
-        version: 5.3.0
-      '@fontsource/patrick-hand':
         specifier: ^5.3.0
         version: 5.3.0
       '@tailwindcss/vite':
@@ -366,26 +351,11 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@fontsource-variable/dynapuff@5.3.0':
-    resolution: {integrity: sha512-NGAwywo+CPXGntaiXjQ0B6PQj57bQkJZwk2lha1TZVHcMey+TozSlbbJthyzwEYzAQiMif+T3/19XP0yZ5W7Kg==}
-
-  '@fontsource-variable/fredoka@5.3.0':
-    resolution: {integrity: sha512-13w98iw2RcmYfZQRZPLSu+0YJK3HHm5A2XrpU26moFIAePmfiKfvkmEJUgkc8r5GNR+pbDijOueS1KdGAMAWmQ==}
-
-  '@fontsource-variable/grandstander@5.3.0':
-    resolution: {integrity: sha512-vD2bm4My0+kgUxIZ6J+CSKMonbbxxMF0dWq4uQYJP2ZNyHC+ss1XZPu/WCRB72K15+gaLs97UfR6UWU6a2GmvA==}
-
   '@fontsource-variable/work-sans@5.3.0':
     resolution: {integrity: sha512-le8h/OIIuhm5Z7TdvuMw0yKg2gaCZUiMec8zaumsVVjzeJRBPEF0bQI/MkaZDHCVzZDvZoP/O2LiGOSfDLSbaw==}
 
-  '@fontsource/gochi-hand@5.3.0':
-    resolution: {integrity: sha512-IW6Xo3wbZuTLyx7hZzIr7+VSQwQ3oEiLZRphBnuNVaK+dhdxwYw57/r1NVi8x1ubX4OYyCG2S04mH6tLhanIsQ==}
-
   '@fontsource/love-ya-like-a-sister@5.3.0':
     resolution: {integrity: sha512-ob28EC0/6Gc35r3T3At/dEr6D1kdczUf6drbfVZTKZT5YYjiS66T0mxmloPqemcikZLNmytVHMyLd+iZ0/lM2Q==}
-
-  '@fontsource/patrick-hand@5.3.0':
-    resolution: {integrity: sha512-V8C38IlIFfdWg0Xtri3F7sLCVpm069rUwn6w4n+oyn38gt7H4arOJmuReg3tAw1Q6jHqZp89wTnAAJagq4Atxw==}
 
   '@joshwooding/vite-plugin-react-docgen-typescript@0.7.0':
     resolution: {integrity: sha512-qvsTEwEFefhdirGOPnu9Wp6ChfIwy2dBCRuETU3uE+4cC+PFoxMSiiEhxk4lOluA34eARHA0OxqsEUYDqRMgeQ==}
@@ -2718,19 +2688,9 @@ snapshots:
   '@esbuild/win32-x64@0.28.2':
     optional: true
 
-  '@fontsource-variable/dynapuff@5.3.0': {}
-
-  '@fontsource-variable/fredoka@5.3.0': {}
-
-  '@fontsource-variable/grandstander@5.3.0': {}
-
   '@fontsource-variable/work-sans@5.3.0': {}
 
-  '@fontsource/gochi-hand@5.3.0': {}
-
   '@fontsource/love-ya-like-a-sister@5.3.0': {}
-
-  '@fontsource/patrick-hand@5.3.0': {}
 
   '@joshwooding/vite-plugin-react-docgen-typescript@0.7.0(typescript@7.0.2)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0))':
     dependencies:

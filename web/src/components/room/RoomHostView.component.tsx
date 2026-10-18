@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { BrandLogo } from "@/components/brand/BrandLogo.component";
 import { BrandTagline } from "@/components/brand/BrandTagline.component";
-import { CanvasBoard, type CanvasSurface } from "@/components/canvas/CanvasBoard.component";
+import { CanvasBoard } from "@/components/canvas/CanvasBoard.component";
 import { JOIN_AT, RoomJoinCard } from "@/components/room/RoomJoinCard.component";
 import { RoomPenTag } from "@/components/room/RoomPenTag.component";
 import { RoomPlayerList } from "@/components/room/RoomPlayerList.component";
@@ -13,19 +13,21 @@ import { RoomWordCard } from "@/components/room/RoomWordCard.component";
 import type { RoomSimulation } from "@/components/room/_hooks/roomSimulation.hook";
 import { useSpotlight } from "@/components/room/_hooks/spotlight.hook";
 import { RoundUtils } from "@/components/room/_utils/round.utils";
+import { SoundToggle } from "@/components/sound/SoundToggle.component";
 import { BrandStyles } from "@/components/brand/_utils/brandStyles.utils";
 
 type RoomHostViewProps = {
   sim: RoomSimulation;
   roomCode: string;
-  surface?: CanvasSurface;
+  /** Play the room-created reveal on the join card. */
+  revealCode?: boolean;
 };
 
 /**
  * The optional big screen (TV, beamer, laptop): the canvas large, everyone's mini-maps, the clocks. It never gets the
  * word and nobody draws on it.
  */
-export function RoomHostView({ sim, roomCode, surface = "paper" }: RoomHostViewProps) {
+export function RoomHostView({ sim, roomCode, revealCode = false }: RoomHostViewProps) {
   const { players, drawing, round, now, word, identities, active, next, order } = sim;
   const spotlight = useSpotlight();
   const playersRef = useRef<HTMLDivElement>(null);
@@ -46,7 +48,10 @@ export function RoomHostView({ sim, roomCode, surface = "paper" }: RoomHostViewP
             <RoomWordCard category={word.category} word={null} view="host" />
           </div>
           <div className="col-start-2 row-start-1 justify-self-end @4xl/room:col-start-3">
-            <RoomRoundClock msLeft={RoundUtils.roundLeft(round, now)} />
+            <div className="flex items-center gap-3">
+              <SoundToggle />
+              <RoomRoundClock msLeft={RoundUtils.roundLeft(round, now)} />
+            </div>
           </div>
         </header>
 
@@ -62,7 +67,6 @@ export function RoomHostView({ sim, roomCode, surface = "paper" }: RoomHostViewP
               onSpotlight={spotlight.pin}
               onPeek={spotlight.setPeek}
               colours={identities}
-              surface={surface}
               layout="row"
             />
           </div>
@@ -75,7 +79,6 @@ export function RoomHostView({ sim, roomCode, surface = "paper" }: RoomHostViewP
               color="transparent"
               brushSize={0}
               spotlightId={spotlight.shown}
-              surface={surface}
               label={active ? `Shared drawing. ${active.name} is drawing.` : "Shared drawing."}
               penTag={active && <RoomPenTag player={active} color={identities?.[active.id]} />}
             >
@@ -94,10 +97,10 @@ export function RoomHostView({ sim, roomCode, surface = "paper" }: RoomHostViewP
                   />
                 </div>
               )}
-              {active && <RoomTurnCall turn={round.turnCount} text={`${active.name}’s turn`} surface={surface} big />}
+              {active && <RoomTurnCall turn={round.turnCount} text={`${active.name}’s turn`} big />}
               {round.phase === "waiting" && (
                 <div className="absolute inset-0 grid place-items-center p-4">
-                  <RoomJoinCard roomCode={roomCode} big>
+                  <RoomJoinCard roomCode={roomCode} reveal={revealCode} big>
                     <button
                       type="button"
                       onClick={() => {
@@ -124,7 +127,9 @@ export function RoomHostView({ sim, roomCode, surface = "paper" }: RoomHostViewP
                     msTotal={RoundUtils.turnLength(round.mode)}
                   />
                 ) : (
-                  <p className="font-display text-3xl text-sun">Time’s up. Who’s sketchy?</p>
+                  <p className="animate-rise-in font-display text-4xl text-sun motion-reduce:animate-none">
+                    Time’s up! Who’s sketchy?
+                  </p>
                 )}
               </div>
             )}

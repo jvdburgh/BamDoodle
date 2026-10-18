@@ -22,6 +22,8 @@ export type Round = {
   phase: RoundPhase;
   /** Turns started this round; the active player is `turnCount % players`. */
   turnCount: number;
+  /** How long the round lasts; a room setting. */
+  roundMs: number;
   roundStartedAt: number;
   turnStartedAt: number;
 };

@@ -4,7 +4,7 @@ import { RoomHostView } from "./RoomHostView.component";
 import { useRoomSimulation } from "./_hooks/roomSimulation.hook";
 import { playersFixture, roomCodeFixture, wordsFixture } from "./_fixtures/players.fixture";
 
-function HostWithSimulation({ surface }: { surface: "paper" | "night" }) {
+function HostWithSimulation() {
   const sim = useRoomSimulation({
     players: playersFixture,
     youId: null,
@@ -12,14 +12,13 @@ function HostWithSimulation({ surface }: { surface: "paper" | "night" }) {
     mode: "timed",
     attribution: "free",
   });
-  return <RoomHostView sim={sim} roomCode={roomCodeFixture} surface={surface} />;
+  return <RoomHostView sim={sim} roomCode={roomCodeFixture} />;
 }
 
 const meta = {
   title: "Room/RoomHostView",
   component: HostWithSimulation,
   parameters: { layout: "fullscreen" },
-  args: { surface: "paper" },
 } satisfies Meta<typeof HostWithSimulation>;
 
 export default meta;
@@ -35,12 +34,5 @@ export const NeverShowsTheWord: Story = {
     await expect(canvas.getByRole("img", { name: "Shared drawing. Pip is drawing." })).toBeVisible();
     await expect(canvas.queryByRole("region", { name: "Drawing tools" })).toBeNull();
     await expect(canvas.getByText("bamdoodle.io")).toBeVisible();
-  },
-};
-
-export const NightSheet: Story = {
-  args: { surface: "night" },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("img", { name: "Shared drawing." })).toBeVisible();
   },
 };

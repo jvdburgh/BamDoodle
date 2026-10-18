@@ -8,7 +8,7 @@ const meta = {
   title: "Lab/LabPanel",
   component: LabPanel,
   parameters: { layout: "fullscreen" },
-  args: { settings: LabSettingsUtils.defaults, onChange: fn(), onReset: fn() },
+  args: { settings: LabSettingsUtils.defaults, onChange: fn(), onReset: fn(), showOnPhones: true },
   render: function Render(args) {
     const [settings, setSettings] = useState(args.settings);
     return (
@@ -36,9 +36,9 @@ export const OpenAndSwitch: Story = {
     await userEvent.click(toggle);
     await expect(canvas.getByRole("region", { name: "Lab" })).toBeVisible();
 
-    await userEvent.click(canvas.getByText("Shades per player"));
-    await expect(args.onChange).toHaveBeenLastCalledWith({ attribution: "shades" });
-    await expect(canvas.getByRole("radio", { name: "Shades per player" })).toBeChecked();
+    await userEvent.click(canvas.getByText("Bamboozler"));
+    await expect(args.onChange).toHaveBeenLastCalledWith({ role: "bamboozler" });
+    await expect(canvas.getByRole("radio", { name: "Bamboozler" })).toBeChecked();
 
     await userEvent.click(canvas.getByText("Both"));
     await expect(args.onChange).toHaveBeenLastCalledWith({ view: "both" });
@@ -48,14 +48,14 @@ export const OpenAndSwitch: Story = {
   },
 };
 
-export const FontsInTheirOwnFace: Story = {
+export const TestingSwitchesOnly: Story = {
   args: { defaultOpen: true },
   play: async ({ args, canvas, userEvent }) => {
-    const group = canvas.getByRole("group", { name: "Display font" });
-    await expect(group).toBeVisible();
-    await expect(canvas.getByRole("radio", { name: "Love Ya Like A Sister" })).toBeChecked();
-    await userEvent.click(canvas.getByText("DynaPuff"));
-    await expect(args.onChange).toHaveBeenLastCalledWith({ font: "dynapuff" });
-    await expect(canvas.getByRole("radio", { name: "3" })).not.toBeChecked();
+    await expect(canvas.queryByRole("group", { name: "Display font" })).toBeNull();
+    await expect(canvas.queryByRole("group", { name: "Colours" })).toBeNull();
+    await userEvent.click(canvas.getByRole("radio", { name: "3" }));
+    await expect(args.onChange).toHaveBeenLastCalledWith({ players: 3 });
+    await userEvent.keyboard("{Escape}");
+    await expect(canvas.queryByRole("region", { name: "Lab" })).toBeNull();
   },
 };

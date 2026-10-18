@@ -7,9 +7,7 @@ const meta = {
   component: RoomTurnCall,
   args: { turn: 1, text: "Juno’s turn" },
   render: (args) => (
-    <div
-      className={`@container/room relative aspect-[4/3] w-96 ${args.surface === "night" ? "bg-night-deep" : "bg-paper"}`}
-    >
+    <div className="@container/room relative aspect-[4/3] w-96 bg-paper">
       <RoomTurnCall {...args} />
     </div>
   ),
@@ -18,7 +16,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const OnPaper: Story = {
+export const Phone: Story = {
   play: async ({ canvasElement }) => {
     const call = canvasElement.querySelector("p");
     await expect(call).toHaveTextContent("Juno’s turn");
@@ -26,9 +24,9 @@ export const OnPaper: Story = {
   },
 };
 
-export const OnNight: Story = {
-  args: { surface: "night", big: true },
+export const HostScreen: Story = {
+  args: { big: true },
   play: async ({ canvasElement }) => {
-    await expect(canvasElement.querySelector("p")).toHaveClass("text-white");
+    await expect(canvasElement.querySelector("p")).toHaveClass("text-5xl");
   },
 };

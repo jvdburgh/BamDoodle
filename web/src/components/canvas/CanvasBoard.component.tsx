@@ -7,10 +7,6 @@ import type { Drawing } from "@/components/canvas/_utils/drawing.utils";
 
 const FADED_ALPHA = 0.14;
 
-export type CanvasSurface = "paper" | "night";
-
-const surfaceClass: Record<CanvasSurface, string> = { paper: "bg-paper", night: "bg-night-deep" };
-
 type CanvasBoardProps = {
   drawing: Drawing;
   /** Player ids in the order their layers are stacked. */
@@ -22,7 +18,6 @@ type CanvasBoardProps = {
   /** Whose strokes stand out while everyone else's fade back. */
   spotlightId?: string | null;
   label: string;
-  surface?: CanvasSurface;
   /** Follows the pen tip while a stroke is being drawn, so everyone sees who is drawing. */
   penTag?: ReactNode;
   onStrokeEnd?: (stroke: Stroke) => void;
@@ -38,7 +33,6 @@ export function CanvasBoard({
   brushSize,
   spotlightId = null,
   label,
-  surface = "paper",
   penTag,
   onStrokeEnd,
   children,
@@ -47,7 +41,7 @@ export function CanvasBoard({
   const tagRef = useRef<HTMLDivElement>(null);
   const pointerId = useRef<number | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
-  const halo = useRef<{ surface: CanvasSurface; color: string } | null>(null);
+  const halo = useRef<string | null>(null);
 
   const schedule = useFrame(() => {
     const canvas = canvasRef.current;
@@ -69,11 +63,8 @@ export function CanvasBoard({
     const spotlit = spotlightId ? drawing.layer(spotlightId) : null;
     if (spotlit) {
       // A halo in the sheet's own colour lifts the spotlit strokes off the faded ones underneath.
-      if (halo.current?.surface !== surface) {
-        const color = rootRef.current ? getComputedStyle(rootRef.current).backgroundColor : "white";
-        halo.current = { surface, color };
-      }
-      context.shadowColor = halo.current.color;
+      halo.current ??= rootRef.current ? getComputedStyle(rootRef.current).backgroundColor : "white";
+      context.shadowColor = halo.current;
       context.shadowBlur = 6 * (window.devicePixelRatio || 1);
       context.drawImage(spotlit, 0, 0, canvas.width, canvas.height);
       context.shadowColor = "transparent";
@@ -104,7 +95,7 @@ export function CanvasBoard({
 
   useEffect(() => () => drawing.release(canvasRef), [drawing]);
   useEffect(() => drawing.subscribe(schedule), [drawing, schedule]);
-  useEffect(schedule, [schedule, order, spotlightId, surface]);
+  useEffect(schedule, [schedule, order, spotlightId]);
 
   useEffect(
     () => () => {
@@ -150,10 +141,7 @@ export function CanvasBoard({
   };
 
   return (
-    <div
-      ref={rootRef}
-      className={`relative aspect-[4/3] w-full overflow-hidden rounded-[10px_14px_12px_9px] ${surfaceClass[surface]}`}
-    >
+    <div ref={rootRef} className="relative aspect-[4/3] w-full overflow-hidden rounded-[10px_14px_12px_9px] bg-paper">
       <canvas
         ref={canvasRef}
         role="img"

@@ -16,8 +16,8 @@ const meta = {
     role: "artist",
     mode: "classic",
     attribution: "free",
+    roundSeconds: 60,
     seats: "simulated",
-    surface: "paper",
   },
 } satisfies Meta<typeof LabPlayground>;
 

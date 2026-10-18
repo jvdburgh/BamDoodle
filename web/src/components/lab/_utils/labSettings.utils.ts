@@ -1,62 +1,52 @@
-import type { CanvasSurface } from "@/components/canvas/CanvasBoard.component";
 import type { Attribution, Seats, TurnMode } from "@/components/room/_types/room.types";
 import type { Role } from "@/protocol/generated/Role";
 
-export type LabFont = "love" | "grandstander" | "dynapuff" | "fredoka" | "gochi" | "patrick";
 export type LabView = "player" | "host" | "both";
 
-/** The playground's switches. Persisted per viewer; the non-default ones also go in the URL so a link reproduces them. */
+/**
+ * What the playground remembers per viewer; the non-default values also go in the URL so a link reproduces them.
+ * Mode, attribution and round length are room settings, chosen when creating a room; the rest are testing switches
+ * in the Lab panel.
+ */
 export type LabSettings = {
   /** The create-or-join start page, or straight into the room. */
   screen: "start" | "room";
-  font: LabFont;
-  attribution: Attribution;
   mode: TurnMode;
+  attribution: Attribution;
+  roundSeconds: number;
   view: LabView;
   role: Role;
   seats: Seats;
   players: number;
-  surface: CanvasSurface;
-};
-
-/** Display fonts to compare (docs/brand.md). Weight is what each looks best at for headings. */
-const fonts: Record<LabFont, { name: string; family: string; weight: number }> = {
-  love: { name: "Love Ya Like A Sister", family: '"Love Ya Like A Sister"', weight: 400 },
-  grandstander: { name: "Grandstander", family: '"Grandstander Variable"', weight: 800 },
-  dynapuff: { name: "DynaPuff", family: '"DynaPuff Variable"', weight: 600 },
-  fredoka: { name: "Fredoka", family: '"Fredoka Variable"', weight: 600 },
-  gochi: { name: "Gochi Hand", family: '"Gochi Hand"', weight: 400 },
-  patrick: { name: "Patrick Hand", family: '"Patrick Hand"', weight: 400 },
 };
 
 const defaults: LabSettings = {
   screen: "start",
-  font: "love",
-  attribution: "free",
   mode: "classic",
+  attribution: "free",
+  roundSeconds: 60,
   view: "player",
   role: "artist",
   seats: "simulated",
   players: 6,
-  surface: "paper",
 };
 
 const choices: { [K in keyof LabSettings]: readonly LabSettings[K][] } = {
   screen: ["start", "room"],
-  font: Object.keys(fonts) as LabFont[],
-  attribution: ["free", "shades"],
   mode: ["classic", "timed"],
+  attribution: ["free", "shades"],
+  roundSeconds: [60, 90, 120],
   view: ["player", "host", "both"],
   role: ["artist", "bamboozler"],
   seats: ["simulated", "shared"],
   players: [3, 4, 5, 6],
-  surface: ["paper", "night"],
 };
 
 const keys = Object.keys(defaults) as (keyof LabSettings)[];
+const numeric = new Set<keyof LabSettings>(["players", "roundSeconds"]);
 
 function pick<K extends keyof LabSettings>(key: K, raw: unknown): LabSettings[K] | undefined {
-  const value = key === "players" && typeof raw === "string" ? Number(raw) : raw;
+  const value = numeric.has(key) && typeof raw === "string" ? Number(raw) : raw;
   return (choices[key] as readonly unknown[]).includes(value) ? (value as LabSettings[K]) : undefined;
 }
 
@@ -89,4 +79,4 @@ function toSearch(settings: LabSettings, current = ""): string {
   return query ? `?${query}` : "";
 }
 
-export const LabSettingsUtils = { fonts, defaults, choices, read, toSearch };
+export const LabSettingsUtils = { defaults, choices, read, toSearch };

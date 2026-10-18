@@ -1,11 +1,12 @@
-import { useEffect } from "react";
-import type { CanvasSurface } from "@/components/canvas/CanvasBoard.component";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import { LabPhoneFrame } from "@/components/lab/LabPhoneFrame.component";
 import type { LabView } from "@/components/lab/_utils/labSettings.utils";
 import { RoomHostView } from "@/components/room/RoomHostView.component";
 import { RoomPlayerView } from "@/components/room/RoomPlayerView.component";
 import { useRoomSimulation } from "@/components/room/_hooks/roomSimulation.hook";
 import type { Attribution, RoomPlayer, Seats, TurnMode } from "@/components/room/_types/room.types";
+import { useSoundCues } from "@/components/sound/_hooks/sound.hook";
+import { RoundUtils } from "@/components/room/_utils/round.utils";
 import type { Role } from "@/protocol/generated/Role";
 
 type LabPlaygroundProps = {
@@ -14,12 +15,16 @@ type LabPlaygroundProps = {
   youId: string;
   words: { category: string; word: string }[];
   roomCode: string;
+  /** Play the room-created reveal on the join card. */
+  revealCode?: boolean;
+  /** Called when the first round starts, e.g. to stop the reveal from playing again. */
+  onRoundStart?: () => void;
   view: LabView;
   role: Role;
   mode: TurnMode;
   attribution: Attribution;
+  roundSeconds: number;
   seats: Seats;
-  surface: CanvasSurface;
 };
 
 /**
@@ -31,15 +36,32 @@ export function LabPlayground({
   youId,
   words,
   roomCode,
+  revealCode = false,
+  onRoundStart,
   view,
   role,
   mode,
   attribution,
+  roundSeconds,
   seats,
-  surface,
 }: LabPlaygroundProps) {
   const you = seats === "shared" ? null : youId;
-  const sim = useRoomSimulation({ players, youId: you, words, mode, attribution });
+  const sim = useRoomSimulation({ players, youId: you, words, mode, attribution, roundSeconds });
+  const started = sim.round.phase === "drawing";
+  const roundStart = useRef(onRoundStart);
+  useLayoutEffect(() => {
+    roundStart.current = onRoundStart;
+  });
+  useEffect(() => {
+    if (started) roundStart.current?.();
+  }, [started]);
+  useSoundCues({
+    phase: sim.round.phase,
+    turnCount: sim.round.turnCount,
+    yourTurn: sim.yourTurn,
+    turnSeconds: Math.ceil(RoundUtils.turnLeft(sim.round, sim.now) / 1000),
+    roundSeconds: Math.ceil(RoundUtils.roundLeft(sim.round, sim.now) / 1000),
+  });
   const yourName = players.find((player) => player.id === you)?.name;
   const playing = sim.round.phase === "drawing";
 
@@ -51,8 +73,8 @@ export function LabPlayground({
     return () => window.removeEventListener("beforeunload", confirmLeave);
   }, [playing]);
 
-  const player = <RoomPlayerView sim={sim} youId={you} role={role} roomCode={roomCode} surface={surface} />;
-  const host = <RoomHostView sim={sim} roomCode={roomCode} surface={surface} />;
+  const player = <RoomPlayerView sim={sim} youId={you} role={role} roomCode={roomCode} revealCode={revealCode} />;
+  const host = <RoomHostView sim={sim} roomCode={roomCode} revealCode={revealCode} />;
 
   if (view === "player") return <main>{player}</main>;
   if (view === "host") return <main>{host}</main>;

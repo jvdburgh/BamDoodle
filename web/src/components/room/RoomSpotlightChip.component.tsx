@@ -20,7 +20,7 @@ export function RoomSpotlightChip({ player, you = false, onClear }: RoomSpotligh
           onClick={onClear}
           className="rounded-full bg-night-soft px-3 py-1 text-sm hover:bg-iris/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
         >
-          Show all <span className="text-white/60">(Esc)</span>
+          Show all <span className="text-white/60 pointer-coarse:hidden">(Esc)</span>
         </button>
       )}
     </div>

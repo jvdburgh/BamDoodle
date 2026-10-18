@@ -1,6 +1,5 @@
 import { AvatarDoodle } from "@/components/avatar/AvatarDoodle.component";
 import { BrandScribble } from "@/components/brand/BrandScribble.component";
-import type { CanvasSurface } from "@/components/canvas/CanvasBoard.component";
 import { CanvasMiniMap } from "@/components/canvas/CanvasMiniMap.component";
 import type { Drawing } from "@/components/canvas/_utils/drawing.utils";
 import type { RoomPlayer } from "@/components/room/_types/room.types";
@@ -18,7 +17,6 @@ type RoomPlayerListProps = {
   onPeek: (playerId: string | null) => void;
   /** Identity colour per player, when players have one (shade families). */
   colours?: Record<string, string>;
-  surface?: CanvasSurface;
   /**
    * "auto": one row in narrow `room` containers (phones), a rail beside the canvas in wide ones.
    * "row": always one row, for the host screen.
@@ -49,14 +47,13 @@ export function RoomPlayerList({
   onSpotlight,
   onPeek,
   colours,
-  surface,
   layout = "auto",
 }: RoomPlayerListProps) {
   const rail = layout === "auto";
   return (
     <ol
       aria-label="Turn order"
-      className={`grid gap-1.5 ${columns[players.length] ?? "grid-cols-6"} ${rail ? "@4xl/room:grid-cols-1 @4xl/room:gap-2.5" : "@4xl/room:gap-3"}`}
+      className={`grid gap-2 ${columns[players.length] ?? "grid-cols-6"} ${rail ? "@4xl/room:grid-cols-1 @4xl/room:gap-2.5" : "@4xl/room:gap-3"}`}
     >
       {players.map((player) => {
         const active = player.id === activeId;
@@ -130,7 +127,7 @@ export function RoomPlayerList({
                 </span>
               </span>
               <span className="relative">
-                <CanvasMiniMap drawing={drawing} playerId={player.id} surface={surface} />
+                <CanvasMiniMap drawing={drawing} playerId={player.id} />
                 <span
                   className={`absolute right-1 bottom-1 hidden size-7 place-items-center rounded-full bg-night text-white transition-opacity @4xl/room:grid ${
                     spotlit ? "opacity-100" : "opacity-0 group-hover:opacity-90 group-focus-visible:opacity-90"
