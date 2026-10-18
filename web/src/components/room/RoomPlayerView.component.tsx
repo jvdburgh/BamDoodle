@@ -119,12 +119,19 @@ export function RoomPlayerView({ sim, youId, roomCode, revealCode = false }: Roo
             }
           : undefined;
 
+  // On a laptop the canvas takes the height the header and whatever sits under it (tools, vote, results) leave over.
+  const canvasMax = drawingPhase
+    ? "@5xl/room:max-w-[calc((100svh-16.5rem)*4/3)]"
+    : phase === "voting"
+      ? "@5xl/room:max-w-[calc((100svh-20rem)*4/3)]"
+      : "@5xl/room:max-w-[calc((100svh-33rem)*4/3)]";
+
   const progress = (
     <RoomProgress
       roundNumber={sim.roundNumber}
       rounds={setup.rounds}
-      lap={RoundUtils.lap(round, players.length)}
-      laps={RoundUtils.lapsFor(setup)}
+      turn={RoundUtils.turn(round, players.length)}
+      turnsPerPlayer={RoundUtils.turnsPerPlayerFor(setup)}
       phase={phase}
       turnTitle={active ? turnTitle(active) : undefined}
       msLeft={phase === "voting" ? RoundUtils.phaseLeft(round, now) : RoundUtils.turnLeft(round, now)}
@@ -143,7 +150,7 @@ export function RoomPlayerView({ sim, youId, roomCode, revealCode = false }: Roo
   return (
     <div className="@container/room">
       <div className="mx-auto flex max-w-[110rem] flex-col gap-3 p-3 @5xl/room:h-svh @5xl/room:gap-4 @5xl/room:px-5 @5xl/room:py-4">
-        <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-x-2">
+        <header className="grid grid-cols-[auto_1fr_auto] items-center gap-x-2 @5xl/room:grid-cols-[1fr_auto_1fr]">
           <div className="flex items-center gap-2">
             <BrandLogo href="/?screen=start" className="size-9 @5xl/room:size-11" />
             <div className="hidden leading-tight @2xl/room:block">
@@ -157,9 +164,11 @@ export function RoomPlayerView({ sim, youId, roomCode, revealCode = false }: Roo
             view={youAreBamboozler ? "bamboozler" : "artist"}
           />
           <div className="flex items-center gap-2 justify-self-end">
-            <p className="text-right text-xs leading-tight text-white/70">
-              <span className="sr-only">Room code </span>
-              <span className="font-display text-sm tracking-widest text-white">{roomCode}</span>
+            <p className="flex flex-col items-end leading-none">
+              <span className="text-xs whitespace-nowrap text-white/75">Room code</span>
+              <span className="mt-0.5 font-display text-2xl tracking-[0.15em] text-white @5xl/room:text-3xl">
+                {roomCode}
+              </span>
             </p>
             <SoundToggle />
           </div>
@@ -176,21 +185,13 @@ export function RoomPlayerView({ sim, youId, roomCode, revealCode = false }: Roo
             />
           </div>
         ) : (
-          <div
-            className={`flex min-h-0 flex-1 flex-col gap-3 @5xl/room:grid @5xl/room:gap-5 ${
-              drawingPhase
-                ? "@5xl/room:grid-cols-[17rem_minmax(0,1fr)_13rem]"
-                : phase === "voting"
-                  ? "@5xl/room:grid-cols-[17rem_minmax(0,1fr)_17rem]"
-                  : "@5xl/room:grid-cols-[17rem_minmax(0,1fr)_24rem]"
-            }`}
-          >
+          <div className="flex min-h-0 flex-1 flex-col gap-3 @5xl/room:grid @5xl/room:grid-cols-[17rem_minmax(0,1fr)] @5xl/room:grid-rows-[minmax(0,1fr)_auto] @5xl/room:gap-x-5 @5xl/room:gap-y-3">
             <div className="order-first @5xl/room:hidden">{progress}</div>
 
             {/* The canvas: full width on a phone, as big as the leftover height allows on a laptop. */}
-            <div className="order-1 flex min-h-0 justify-center @5xl/room:col-start-2 @5xl/room:row-start-1 @5xl/room:items-start">
+            <div className="order-1 flex min-h-0 justify-center @5xl/room:col-start-2 @5xl/room:row-start-1 @5xl/room:items-end">
               <div
-                className={`relative w-full rounded-[12px_16px_14px_11px] transition-shadow @5xl/room:max-w-[calc((100svh-7.5rem)*4/3)] ${
+                className={`relative w-full rounded-[12px_16px_14px_11px] transition-shadow ${canvasMax} ${
                   you && yourTurn ? "shadow-[0_0_0_4px_var(--color-sun)]" : ""
                 }`}
               >
@@ -248,7 +249,7 @@ export function RoomPlayerView({ sim, youId, roomCode, revealCode = false }: Roo
               ref={cardsRef}
               tabIndex={-1}
               aria-label="Who drew what"
-              className={`flex min-h-0 flex-col gap-3 outline-none @5xl/room:col-start-1 @5xl/room:row-start-1 @5xl/room:h-[calc(100svh-7rem)] ${placeOnPhone("cards")}`}
+              className={`flex min-h-0 flex-col gap-3 outline-none @5xl/room:col-start-1 @5xl/room:row-span-2 @5xl/room:row-start-1 @5xl/room:h-[calc(100svh-7.5rem)] ${placeOnPhone("cards")}`}
             >
               <div className="min-h-0 @5xl/room:flex-1 @5xl/room:overflow-y-auto @5xl/room:pr-1">
                 <RoomPlayerList
@@ -270,9 +271,9 @@ export function RoomPlayerView({ sim, youId, roomCode, revealCode = false }: Roo
               <div className="hidden @5xl/room:block">{progress}</div>
             </aside>
 
-            {/* The final call: right column on a laptop (the cards stay whole on the left), above the cards on a phone. */}
+            {/* The final call: under the canvas, next to the cards it refers to; above the cards on a phone. */}
             {phase === "voting" && you && (
-              <div className="order-2 @5xl/room:col-start-3 @5xl/room:row-start-1 @5xl/room:self-start">
+              <div className="order-2 @5xl/room:col-start-2 @5xl/room:row-start-2">
                 <VotePrompt
                   players={players}
                   picked={players.find((player) => player.id === pickedId)}
@@ -289,13 +290,13 @@ export function RoomPlayerView({ sim, youId, roomCode, revealCode = false }: Roo
               </div>
             )}
 
-            {/* Pens and colours: docked on the right on a laptop, always in view while drawing. */}
+            {/* Pens and colours: right under the canvas, always in view while drawing (the canvas shrinks to make room). */}
             <section
               ref={toolsRef}
               hidden={!drawingPhase}
               tabIndex={-1}
               aria-label="Drawing tools"
-              className={`${BrandStyles.panel} flex flex-col gap-4 outline-none @2xl/room:flex-row @2xl/room:items-center @5xl/room:col-start-3 @5xl/room:row-start-1 @5xl/room:flex-col @5xl/room:items-stretch @5xl/room:self-start ${placeOnPhone("tools")}`}
+              className={`${BrandStyles.panel} flex flex-col gap-4 outline-none @2xl/room:flex-row @2xl/room:items-center @5xl/room:col-start-2 @5xl/room:row-start-2 ${placeOnPhone("tools")}`}
             >
               <div className="min-w-0 flex-1">
                 <CanvasPalette
@@ -318,19 +319,19 @@ export function RoomPlayerView({ sim, youId, roomCode, revealCode = false }: Roo
                   color={colour}
                 />
                 {yourTurn && (
-                  <button type="button" onClick={endTurn} className={`${BrandStyles.quietButton} @5xl/room:w-full`}>
+                  <button type="button" onClick={endTurn} className={BrandStyles.quietButton}>
                     End turn
                   </button>
                 )}
               </div>
             </section>
 
-            {/* After the drawing: the reveal, the guess, the results. Right column on a laptop. */}
+            {/* After the drawing: the reveal, the guess, the results, under a smaller canvas. */}
             {!drawingPhase && phase !== "voting" && (
               <div
                 ref={stageRef}
                 tabIndex={-1}
-                className={`${BrandStyles.panel} outline-none @5xl/room:col-start-3 @5xl/room:row-start-1 @5xl/room:max-h-[calc(100svh-7rem)] @5xl/room:overflow-y-auto ${placeOnPhone("stage")}`}
+                className={`${BrandStyles.panel} outline-none @5xl/room:col-start-2 @5xl/room:row-start-2 @5xl/room:max-h-[24rem] @5xl/room:overflow-y-auto ${placeOnPhone("stage")}`}
               >
                 {phase === "reveal" && (
                   <RoomReveal

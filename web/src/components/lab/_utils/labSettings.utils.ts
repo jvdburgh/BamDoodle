@@ -6,19 +6,20 @@ export type LabView = "player" | "host" | "both";
 
 /**
  * What the playground remembers per viewer; the non-default values also go in the URL so a link reproduces them.
- * The room settings (mode, laps, turn length, rounds, colours, language, adults pack) are chosen when creating a
+ * The room settings (mode, turns per player, turn length, rounds, colours, language, categories) are chosen when creating a
  * room; the rest are testing switches in the Lab panel.
  */
 export type LabSettings = {
   /** The create-or-join start page, or straight into the room. */
   screen: "start" | "room";
   mode: TurnMode;
-  laps: number;
+  turnsPerPlayer: number;
   turnSeconds: number;
   rounds: number;
   attribution: Attribution;
   language: WordLanguage;
-  adults: boolean;
+  /** Category names in play; empty means the language's defaults (everything but 18+). */
+  categories: string[];
   view: LabView;
   role: Role;
   players: number;
@@ -35,24 +36,28 @@ const defaults: LabSettings = {
 const choices: { [K in keyof LabSettings]: readonly LabSettings[K][] } = {
   screen: ["start", "room"],
   mode: ["classic", "timed"],
-  laps: RoundUtils.LAP_CHOICES,
+  turnsPerPlayer: RoundUtils.TURNS_PER_PLAYER_CHOICES,
   turnSeconds: RoundUtils.TURN_SECOND_CHOICES,
   rounds: RoundUtils.ROUND_CHOICES,
   attribution: ["free", "shades"],
   language: ["en", "nl"],
-  adults: [false, true],
+  categories: [],
   view: ["player", "host", "both"],
   role: ["artist", "bamboozler"],
   players: [3, 4, 5, 6],
 };
 
 const keys = Object.keys(defaults) as (keyof LabSettings)[];
-const numeric = new Set<keyof LabSettings>(["players", "laps", "turnSeconds", "rounds"]);
+const numeric = new Set<keyof LabSettings>(["players", "turnsPerPlayer", "turnSeconds", "rounds"]);
 
 function pick<K extends keyof LabSettings>(key: K, raw: unknown): LabSettings[K] | undefined {
+  if (key === "categories") {
+    const names = typeof raw === "string" ? raw.split(",") : Array.isArray(raw) ? raw : [];
+    const clean = names.filter((name): name is string => typeof name === "string" && name.trim() !== "");
+    return (clean.length > 0 ? clean : undefined) as LabSettings[K] | undefined;
+  }
   let value = raw;
   if (typeof raw === "string" && numeric.has(key)) value = Number(raw);
-  if (typeof raw === "string" && key === "adults") value = raw === "true";
   return (choices[key] as readonly unknown[]).includes(value) ? (value as LabSettings[K]) : undefined;
 }
 
@@ -78,8 +83,10 @@ function read(search: string, stored: string | null): LabSettings {
 function toSearch(settings: LabSettings, current = ""): string {
   const params = new URLSearchParams(current);
   for (const key of keys) {
-    if (settings[key] === defaults[key]) params.delete(key);
-    else params.set(key, String(settings[key]));
+    const value = settings[key];
+    const isDefault = Array.isArray(value) ? value.length === 0 : value === defaults[key];
+    if (isDefault) params.delete(key);
+    else params.set(key, Array.isArray(value) ? value.join(",") : String(value));
   }
   const query = params.toString();
   return query ? `?${query}` : "";

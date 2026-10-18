@@ -17,15 +17,18 @@ export type WordLanguage = "en" | "nl";
 /** What the host picks before the first round (docs/game-rules.md, "A round"). */
 export type RoomSetup = {
   mode: TurnMode;
-  /** Laps of one stroke each; Timed turns use a fixed two laps for now. */
-  laps: number;
+  /** How many times each player draws in "One stroke each"; Timed turns use a fixed two for now. */
+  turnsPerPlayer: number;
   /** Seconds per turn in Timed turns. */
   turnSeconds: number;
   rounds: number;
   attribution: Attribution;
   language: WordLanguage;
-  adults: boolean;
+  /** The word categories in play, by name in the room's language; at least one. 18+ ones are categories too. */
+  categories: string[];
 };
+
+export type WordCategory = { language: WordLanguage; name: string; adult: boolean; words: string[] };
 
 /**
  * waiting → drawing (turns go round for the laps) → voting (30 s final vote) → reveal (the bamboozler and the votes)
@@ -38,7 +41,7 @@ export type Round = {
   phase: RoundPhase;
   /** Turns started this round; the active player is `turnCount % players`. */
   turnCount: number;
-  /** Laps × players: when the drawing stops. */
+  /** Turns per player × players: when the drawing stops. */
   totalTurns: number;
   turnMs: number;
   turnStartedAt: number;

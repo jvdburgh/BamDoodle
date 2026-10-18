@@ -18,7 +18,9 @@ describe("LabSettingsUtils.read", () => {
   });
 
   it("ignores values it doesn't know", () => {
-    expect(read("?view=fridge&players=9&laps=7", JSON.stringify({ mode: 42, role: "spy" }))).toEqual(defaults);
+    expect(read("?view=fridge&players=9&turnsPerPlayer=7", JSON.stringify({ mode: 42, role: "spy" }))).toEqual(
+      defaults,
+    );
   });
 
   it("survives broken storage", () => {
@@ -43,7 +45,7 @@ describe("LabSettingsUtils.toSearch", () => {
       attribution: "shades" as const,
       role: "bamboozler" as const,
       turnSeconds: 60,
-      adults: true,
+      categories: ["Dieren", "Lekker Nederlands"],
       language: "nl" as const,
     };
     expect(read(toSearch(settings), null)).toEqual(settings);

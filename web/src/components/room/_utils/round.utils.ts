@@ -2,28 +2,27 @@ import type { Round, RoomSetup, TurnMode } from "@/components/room/_types/room.t
 
 /** Starting points (docs/game-rules.md); the server will own them, the prototype mirrors them. */
 const CLASSIC_TURN_MS = 15_000;
-const TIMED_LAPS = 2;
+const TIMED_TURNS_PER_PLAYER = 2;
 const VOTE_MS = 30_000;
 const REVEAL_MS = 7_000;
 const GUESS_MS = 20_000;
-/** What a one-stroke turn takes on average, for the duration estimate (the limit is CLASSIC_TURN_MS). */
-const CLASSIC_TYPICAL_TURN_MS = 7_000;
 
 /** What the host can pick when setting up a room, with the defaults first in docs/game-rules.md. */
-const LAP_CHOICES = [1, 2, 3, 4, 5];
+const TURNS_PER_PLAYER_CHOICES = [1, 2, 3, 4, 5];
 const TURN_SECOND_CHOICES = [10, 20, 30, 60];
 const ROUND_CHOICES = [3, 5, 10];
 const DEFAULT_SETUP: RoomSetup = {
   mode: "classic",
-  laps: 3,
+  turnsPerPlayer: 3,
   turnSeconds: 20,
   rounds: 5,
   attribution: "free",
   language: "en",
-  adults: false,
+  categories: [],
 };
 
-const lapsFor = (setup: Pick<RoomSetup, "mode" | "laps">) => (setup.mode === "classic" ? setup.laps : TIMED_LAPS);
+const turnsPerPlayerFor = (setup: Pick<RoomSetup, "mode" | "turnsPerPlayer">) =>
+  setup.mode === "classic" ? setup.turnsPerPlayer : TIMED_TURNS_PER_PLAYER;
 const turnMsFor = (setup: Pick<RoomSetup, "mode" | "turnSeconds">) =>
   setup.mode === "classic" ? CLASSIC_TURN_MS : setup.turnSeconds * 1000;
 
@@ -178,7 +177,8 @@ function suspectedBy(round: Round): Record<string, number> {
 }
 
 const activeIndex = (round: Round, playerCount: number) => round.turnCount % playerCount;
-const lap = (round: Round, playerCount: number) => Math.floor(round.turnCount / playerCount) + 1;
+/** Which of their turns the players are on: "Turn 2 of 3". */
+const turn = (round: Round, playerCount: number) => Math.floor(round.turnCount / playerCount) + 1;
 
 function turnLeft(round: Round, now: number): number {
   if (round.phase !== "drawing") return 0;
@@ -193,13 +193,6 @@ function phaseLeft(round: Round, now: number): number {
   return length ? Math.min(length, Math.max(0, length - (now - round.phaseStartedAt))) : 0;
 }
 
-/** Rough minutes for one round: every turn at its typical length, plus the vote, reveal and guess. */
-function estimateRoundMinutes(setup: RoomSetup, playerCount: number): number {
-  const turn = setup.mode === "classic" ? CLASSIC_TYPICAL_TURN_MS : turnMsFor(setup);
-  const ms = lapsFor(setup) * playerCount * turn + VOTE_MS + REVEAL_MS + GUESS_MS / 2;
-  return Math.max(1, Math.round(ms / 60_000));
-}
-
 /** Milliseconds as a countdown, rounded up so "0:00" only shows when time is really up. */
 function formatClock(ms: number): string {
   const seconds = Math.ceil(ms / 1000);
@@ -207,14 +200,14 @@ function formatClock(ms: number): string {
 }
 
 export const RoundUtils = {
-  LAP_CHOICES,
+  TURNS_PER_PLAYER_CHOICES,
   TURN_SECOND_CHOICES,
   ROUND_CHOICES,
   DEFAULT_SETUP,
   VOTE_MS,
   REVEAL_MS,
   GUESS_MS,
-  lapsFor,
+  turnsPerPlayerFor,
   turnMsFor,
   create,
   start,
@@ -227,9 +220,8 @@ export const RoundUtils = {
   suspectedBy,
   guessWord,
   activeIndex,
-  lap,
+  turn,
   turnLeft,
   phaseLeft,
-  estimateRoundMinutes,
   formatClock,
 };

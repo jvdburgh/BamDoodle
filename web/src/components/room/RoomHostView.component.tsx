@@ -69,10 +69,11 @@ export function RoomHostView({ sim, roomCode, revealCode = false }: RoomHostView
               {phase === "drawing" && (
                 <>
                   <br />
-                  Lap <span className="font-display text-2xl text-white">
-                    {RoundUtils.lap(round, players.length)}
-                  </span>{" "}
-                  of {RoundUtils.lapsFor(setup)}
+                  Turn{" "}
+                  <span className="font-display text-2xl text-white">
+                    {RoundUtils.turn(round, players.length)}
+                  </span> of{" "}
+                  {RoundUtils.turnsPerPlayerFor(setup)}
                 </>
               )}
             </p>

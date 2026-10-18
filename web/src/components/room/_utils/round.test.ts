@@ -18,7 +18,7 @@ describe("RoundUtils: drawing", () => {
     const round = drawing();
     expect(round.phase).toBe("drawing");
     expect(RoundUtils.activeIndex(round, 3)).toBe(0);
-    expect(RoundUtils.lap(round, 3)).toBe(1);
+    expect(RoundUtils.turn(round, 3)).toBe(1);
   });
 
   it("ends a one-stroke turn after one stroke, a timed turn only when its time is up", () => {
@@ -33,10 +33,10 @@ describe("RoundUtils: drawing", () => {
     expect(RoundUtils.strokeFinished(timedOut, 0, 11_001)).toBe(timedOut);
   });
 
-  it("counts laps", () => {
+  it("counts each player's turns", () => {
     let round = drawing("classic", 3);
     for (let turn = 0; turn < 4; turn++) round = RoundUtils.endTurn(round, turn, 2_000 + turn);
-    expect(RoundUtils.lap(round, 3)).toBe(2);
+    expect(RoundUtils.turn(round, 3)).toBe(2);
     expect(RoundUtils.activeIndex(round, 3)).toBe(1);
   });
 
@@ -149,24 +149,19 @@ describe("RoundUtils: reveal, guess, results", () => {
 describe("RoundUtils: setup and clocks", () => {
   const setup: RoomSetup = {
     mode: "classic",
-    laps: 3,
+    turnsPerPlayer: 3,
     turnSeconds: 20,
     rounds: 5,
     attribution: "free",
     language: "en",
-    adults: false,
+    categories: ["Animals"],
   };
 
-  it("uses the chosen laps for one stroke each, and two laps of the chosen length for timed turns", () => {
-    expect(RoundUtils.lapsFor(setup)).toBe(3);
-    expect(RoundUtils.lapsFor({ ...setup, mode: "timed" })).toBe(2);
+  it("uses the chosen turns per player for one stroke each, and two turns of the chosen length when timed", () => {
+    expect(RoundUtils.turnsPerPlayerFor(setup)).toBe(3);
+    expect(RoundUtils.turnsPerPlayerFor({ ...setup, mode: "timed" })).toBe(2);
     expect(RoundUtils.turnMsFor({ ...setup, mode: "timed" })).toBe(20_000);
     expect(RoundUtils.turnMsFor(setup)).toBe(15_000);
-  });
-
-  it("estimates a round's length in minutes", () => {
-    expect(RoundUtils.estimateRoundMinutes({ ...setup, mode: "timed", turnSeconds: 20 }, 4)).toBe(3);
-    expect(RoundUtils.estimateRoundMinutes(setup, 3)).toBe(2);
   });
 
   it("reports what's left of the turn and of the vote", () => {

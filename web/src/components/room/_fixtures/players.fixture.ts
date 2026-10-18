@@ -16,6 +16,7 @@ export const roomCodeFixture = "BKZW";
 
 export type WordCard = { category: string; word: string };
 
+/** A few cards for stories; the app deals them from the chosen categories (words.fixture.ts). */
 export const wordsFixture: WordCard[] = [
   { category: "Animals", word: "Giraffe" },
   { category: "Places", word: "Lighthouse" },
@@ -24,12 +25,4 @@ export const wordsFixture: WordCard[] = [
   { category: "Things", word: "Umbrella" },
 ];
 
-export const dutchWordsFixture: WordCard[] = [
-  { category: "Dieren", word: "Giraf" },
-  { category: "Plekken", word: "Vuurtoren" },
-  { category: "Eten", word: "Pannenkoek" },
-  { category: "Natuur", word: "Vulkaan" },
-  { category: "Dingen", word: "Paraplu" },
-];
-
-export const setupFixture: RoomSetup = { ...RoundUtils.DEFAULT_SETUP };
+export const setupFixture: RoomSetup = { ...RoundUtils.DEFAULT_SETUP, categories: ["Animals", "Food", "Places"] };

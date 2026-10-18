@@ -4,8 +4,9 @@ import { RoundUtils } from "@/components/room/_utils/round.utils";
 type RoomProgressProps = {
   roundNumber: number;
   rounds: number;
-  lap: number;
-  laps: number;
+  /** Which of their turns the players are on, and how many each gets. */
+  turn: number;
+  turnsPerPlayer: number;
   phase: RoundPhase;
   /** "Your turn" or "Juno's turn" while drawing. */
   turnTitle?: string;
@@ -22,8 +23,17 @@ const phaseNames: Partial<Record<RoundPhase, string>> = {
   results: "Results",
 };
 
-/** Where the round is, small and out of the way of the pens: round, lap, and the turn's or vote's countdown. */
-export function RoomProgress({ roundNumber, rounds, lap, laps, phase, turnTitle, msLeft, msTotal }: RoomProgressProps) {
+/** Where the round is, small and out of the way of the pens: round, turn, and the turn's or vote's countdown. */
+export function RoomProgress({
+  roundNumber,
+  rounds,
+  turn,
+  turnsPerPlayer,
+  phase,
+  turnTitle,
+  msLeft,
+  msTotal,
+}: RoomProgressProps) {
   const timed = phase === "drawing" || phase === "voting";
   const seconds = Math.ceil(msLeft / 1000);
   const fraction = msTotal > 0 ? Math.min(1, msLeft / msTotal) : 0;
@@ -41,7 +51,7 @@ export function RoomProgress({ roundNumber, rounds, lap, laps, phase, turnTitle,
         </span>
         {phase === "drawing" && (
           <span>
-            Lap <span className="font-display text-base text-white">{lap}</span>/{laps}
+            Turn <span className="font-display text-base text-white">{turn}</span> of {turnsPerPlayer}
           </span>
         )}
       </p>

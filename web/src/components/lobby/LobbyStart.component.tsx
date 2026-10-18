@@ -3,7 +3,9 @@ import { BrandLogo } from "@/components/brand/BrandLogo.component";
 import { BrandSketchyFrame } from "@/components/brand/BrandSketchyFrame.component";
 import { BrandTagline } from "@/components/brand/BrandTagline.component";
 import { BrandStyles } from "@/components/brand/_utils/brandStyles.utils";
-import type { Attribution, RoomSetup, TurnMode, WordLanguage } from "@/components/room/_types/room.types";
+import { LobbyCategoryPicker } from "@/components/lobby/LobbyCategoryPicker.component";
+import type { Attribution, RoomSetup, TurnMode, WordCategory, WordLanguage } from "@/components/room/_types/room.types";
+import { WordsUtils } from "@/components/room/_utils/words.utils";
 import { RoundUtils } from "@/components/room/_utils/round.utils";
 
 export type LobbyEntry = { name: string } & (({ kind: "create" } & RoomSetup) | { kind: "join"; code: string });
@@ -11,8 +13,8 @@ export type LobbyEntry = { name: string } & (({ kind: "create" } & RoomSetup) | 
 type LobbyStartProps = {
   onEnter: (entry: LobbyEntry) => void;
   defaultName?: string;
-  /** For the duration estimate; the real count is only known once people join. */
-  expectedPlayers?: number;
+  /** Every word category, in every language. */
+  wordCategories: WordCategory[];
 };
 
 type Step = "choose" | "join" | "setup" | "name";
@@ -38,13 +40,15 @@ const colourOptions: Option<Attribution>[] = [
 
 /** The first page: join a room (most people) or create one. Creating sets the room up first, then asks your name. */
 
-export function LobbyStart({ onEnter, defaultName = "", expectedPlayers = 4 }: LobbyStartProps) {
+export function LobbyStart({ onEnter, defaultName = "", wordCategories }: LobbyStartProps) {
   const [step, setStep] = useState<Step>("choose");
   const [name, setName] = useState(defaultName);
   const [code, setCode] = useState("");
-  const [setup, setSetup] = useState<RoomSetup>(RoundUtils.DEFAULT_SETUP);
+  const [setup, setSetup] = useState<RoomSetup>(() => ({
+    ...RoundUtils.DEFAULT_SETUP,
+    categories: WordsUtils.defaults(wordCategories, RoundUtils.DEFAULT_SETUP.language),
+  }));
   const change = (patch: Partial<RoomSetup>) => setSetup((current) => ({ ...current, ...patch }));
-  const minutes = RoundUtils.estimateRoundMinutes(setup, expectedPlayers);
   const nameId = useId();
   const codeId = useId();
   const firstField = useRef<HTMLElement | null>(null);
@@ -67,7 +71,10 @@ export function LobbyStart({ onEnter, defaultName = "", expectedPlayers = 4 }: L
   };
 
   const cleanName = name.trim();
-  const canSubmit = step === "setup" || (cleanName.length > 0 && (step !== "join" || code.length === CODE_LENGTH));
+  const canSubmit =
+    step === "setup"
+      ? setup.categories.length > 0
+      : cleanName.length > 0 && (step !== "join" || code.length === CODE_LENGTH);
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
@@ -166,11 +173,14 @@ export function LobbyStart({ onEnter, defaultName = "", expectedPlayers = 4 }: L
               />
               {setup.mode === "classic" ? (
                 <LobbyPills
-                  legend="Laps"
-                  name="lobby-laps"
-                  options={RoundUtils.LAP_CHOICES.map((laps) => ({ value: laps, label: String(laps) }))}
-                  value={setup.laps}
-                  onChange={(laps) => change({ laps })}
+                  legend="Each player draws"
+                  name="lobby-turns"
+                  options={RoundUtils.TURNS_PER_PLAYER_CHOICES.map((turns) => ({
+                    value: turns,
+                    label: turns === 1 ? "once" : `${turns} times`,
+                  }))}
+                  value={setup.turnsPerPlayer}
+                  onChange={(turnsPerPlayer) => change({ turnsPerPlayer })}
                 />
               ) : (
                 <LobbyPills
@@ -195,31 +205,21 @@ export function LobbyStart({ onEnter, defaultName = "", expectedPlayers = 4 }: L
                 value={setup.attribution}
                 onChange={(attribution) => change({ attribution })}
               />
-              <div className="flex flex-wrap items-end justify-between gap-3">
-                <LobbyPills<WordLanguage>
-                  legend="Words"
-                  name="lobby-language"
-                  options={[
-                    { value: "en", label: "English" },
-                    { value: "nl", label: "Nederlands" },
-                  ]}
-                  value={setup.language}
-                  onChange={(language) => change({ language })}
-                />
-                <label className="flex min-h-11 cursor-pointer items-center gap-2 text-white/85">
-                  <input
-                    type="checkbox"
-                    checked={setup.adults}
-                    onChange={(event) => change({ adults: event.target.checked })}
-                    className="size-5 accent-sun"
-                  />
-                  Adults pack (18+)
-                </label>
-              </div>
-              <p className="text-sm text-white/70" aria-live="polite">
-                About <span className="font-semibold text-white">{minutes} min</span> a round with {expectedPlayers}{" "}
-                players, {setup.rounds} rounds.
-              </p>
+              <LobbyPills<WordLanguage>
+                legend="Words"
+                name="lobby-language"
+                options={[
+                  { value: "en", label: "English" },
+                  { value: "nl", label: "Nederlands" },
+                ]}
+                value={setup.language}
+                onChange={(language) => change({ language, categories: WordsUtils.defaults(wordCategories, language) })}
+              />
+              <LobbyCategoryPicker
+                categories={WordsUtils.inLanguage(wordCategories, setup.language)}
+                selected={setup.categories}
+                onChange={(categories) => change({ categories })}
+              />
             </>
           )}
 

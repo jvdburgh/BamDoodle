@@ -34,7 +34,10 @@ type RoomPlayerListProps = {
   suspectedBy?: Record<string, number>;
   /** Who has locked a final vote (not for whom). */
   votedIds?: string[];
-  /** "grid": two or three columns, depending on the space; "row": everyone in one row (host screen). */
+  /**
+   * "grid": two or three columns of cards on a phone, and one column of wide cards in a laptop's `room` container;
+   * "row": everyone in one row (host screen).
+   */
   layout?: "grid" | "row";
 };
 
@@ -72,7 +75,7 @@ export function RoomPlayerList({
     <div className="@container/players">
       <ol
         aria-label="Players"
-        className={`grid gap-2 ${layout === "row" ? `grid-cols-3 ${rowColumns[players.length] ?? rowColumns[6]}` : "grid-cols-2 @xs/players:grid-cols-3"}`}
+        className={`grid gap-2 ${layout === "row" ? `grid-cols-3 ${rowColumns[players.length] ?? rowColumns[6]}` : "grid-cols-2 @xs/players:grid-cols-3 @5xl/room:grid-cols-1"}`}
       >
         {players.map((player) => {
           const you = player.id === youId;
@@ -89,23 +92,20 @@ export function RoomPlayerList({
               : active
                 ? "shadow-[inset_0_0_0_2px_var(--color-sun)]"
                 : "";
+          const rail = layout === "grid";
           return (
             <li
               key={player.id}
-              className={`flex min-w-0 flex-col gap-1.5 rounded-[12px_16px_14px_10px] p-1.5 transition-colors ${active ? "bg-night-soft" : "bg-night-deep/70"} ${ring}`}
+              onPointerEnter={(event) => event.pointerType === "mouse" && onPeek(player.id)}
+              onPointerLeave={() => onPeek(null)}
+              className={`flex min-w-0 flex-col gap-1.5 rounded-[12px_16px_14px_10px] p-1.5 transition-colors ${
+                rail
+                  ? "@5xl/room:grid @5xl/room:grid-cols-[minmax(0,1fr)_5.5rem] @5xl/room:items-center @5xl/room:gap-x-2.5 @5xl/room:gap-y-1 @5xl/room:p-2"
+                  : ""
+              } ${active ? "bg-night-soft" : "bg-night-deep/70"} ${ring}`}
             >
-              <button
-                type="button"
-                aria-pressed={spotlit}
-                onClick={() => {
-                  onPeek(null);
-                  onSpotlight(spotlit ? null : player.id);
-                }}
-                onPointerEnter={(event) => event.pointerType === "mouse" && onPeek(player.id)}
-                onPointerLeave={() => onPeek(null)}
-                className="group flex flex-col gap-1 rounded-[10px_12px_11px_9px] text-left focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-white"
-              >
-                <span className="flex min-w-0 items-center gap-1.5">
+              <div className={`min-w-0 ${rail ? "@5xl/room:col-start-1 @5xl/room:row-start-1" : ""}`}>
+                <p className="flex min-w-0 items-center gap-1.5">
                   <span className="relative size-6 shrink-0">
                     <AvatarDoodle seed={player.avatarSeed} color={colour} className="size-full" />
                     {active && (
@@ -118,35 +118,47 @@ export function RoomPlayerList({
                     )}
                   </span>
                   <span className={`min-w-0 truncate font-display leading-tight ${active ? "text-sun" : "text-white"}`}>
-                    <span className="sr-only">Spotlight </span>
                     {player.name}
                     {you && <span className="ml-1 font-body text-xs text-white/65">(you)</span>}
                     {status && <span className="sr-only">, {status}</span>}
                   </span>
-                </span>
-                <span className="relative">
-                  <CanvasMiniMap drawing={drawing} playerId={player.id} />
-                  <span
-                    className={`absolute right-1 bottom-1 grid size-6 place-items-center rounded-full bg-night text-white transition-opacity ${
-                      spotlit ? "opacity-100" : "opacity-0 group-hover:opacity-90 group-focus-visible:opacity-90"
-                    }`}
-                  >
-                    <BrandScribble shape="magnifier" seed={player.avatarSeed + 2} className="size-3.5" />
-                  </span>
+                </p>
+                {(votedIds.includes(player.id) || suspects > 0 || yourVoteId === player.id) && (
+                  <p className="mt-1 flex flex-wrap gap-1 text-xs">
+                    {yourVoteId === player.id && (
+                      <span className="rounded-full bg-berry px-1.5 font-semibold text-night">your vote</span>
+                    )}
+                    {votedIds.includes(player.id) && (
+                      <span className="rounded-full bg-sun px-1.5 text-night">voted</span>
+                    )}
+                    {suspects > 0 && (
+                      <span className="rounded-full bg-night px-1.5 text-white/85">suspected by {suspects}</span>
+                    )}
+                  </p>
+                )}
+              </div>
+
+              <button
+                type="button"
+                aria-pressed={spotlit}
+                onClick={() => {
+                  onPeek(null);
+                  onSpotlight(spotlit ? null : player.id);
+                }}
+                className={`group relative block rounded-[6px_8px_7px_5px] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-white ${
+                  rail ? "@5xl/room:col-start-2 @5xl/room:row-span-2 @5xl/room:row-start-1" : ""
+                }`}
+              >
+                <span className="sr-only">Spotlight {player.name}</span>
+                <CanvasMiniMap drawing={drawing} playerId={player.id} />
+                <span
+                  className={`absolute right-1 bottom-1 grid size-6 place-items-center rounded-full bg-night text-white transition-opacity ${
+                    spotlit ? "opacity-100" : "opacity-0 group-hover:opacity-90 group-focus-visible:opacity-90"
+                  }`}
+                >
+                  <BrandScribble shape="magnifier" seed={player.avatarSeed + 2} className="size-3.5" />
                 </span>
               </button>
-
-              {(votedIds.includes(player.id) || suspects > 0 || yourVoteId === player.id) && (
-                <span className="flex flex-wrap gap-1 text-xs">
-                  {yourVoteId === player.id && (
-                    <span className="rounded-full bg-berry px-1.5 font-semibold text-night">your vote</span>
-                  )}
-                  {votedIds.includes(player.id) && <span className="rounded-full bg-sun px-1.5 text-night">voted</span>}
-                  {suspects > 0 && (
-                    <span className="rounded-full bg-night px-1.5 text-white/85">suspected by {suspects}</span>
-                  )}
-                </span>
-              )}
 
               {action && !you && (
                 <button
@@ -154,8 +166,8 @@ export function RoomPlayerList({
                   aria-pressed={chosen}
                   onClick={() => action.onChoose(chosen ? null : player.id)}
                   className={`min-h-9 rounded-full px-2 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
-                    chosen ? "bg-berry text-night" : "bg-night text-white/90 hover:bg-night-soft"
-                  }`}
+                    rail ? "@5xl/room:col-start-1 @5xl/room:row-start-2 @5xl/room:self-end" : ""
+                  } ${chosen ? "bg-berry text-night" : "bg-night text-white/90 hover:bg-night-soft"}`}
                 >
                   {action.kind === "suspect"
                     ? chosen

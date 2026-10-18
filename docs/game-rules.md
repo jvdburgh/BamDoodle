@@ -35,8 +35,8 @@ goal for now.
    the host's screen) and a nickname, or skips the code when you open a shared link. Players draw or tweak their
    avatar while they wait. The host starts the first round.
 2. **Secret.** The server picks a word from the pack and tells each player their role.
-3. **Drawing.** Players take turns on the shared canvas in a fixed order shown on screen, for the chosen number of
-   laps. The player whose turn it is is highlighted, and their strokes appear live for everyone.
+3. **Drawing.** Players take turns on the shared canvas in a fixed order shown on screen, until each player has drawn the chosen
+   number of times ("Turn 2 of 3"). The player whose turn it is is highlighted, and their strokes appear live for everyone.
 4. **Suspecting runs alongside the drawing.** At any moment a player can mark who they suspect, and change it. It's
    public: every screen shows it ("Noor thinks Jip is sketchy").
 5. **Final vote.** After the last turn: "Time's up! Who's sketchy?" for 30 seconds, with your suspicion pre-selected.
@@ -54,11 +54,12 @@ There is no separate investigation phase: you have to pay attention while the dr
 | Mode | A turn is | Notes |
 | --- | --- | --- |
 | **One stroke each** (`classic`) | one stroke (press, draw, release), with a short time limit | Tense, every stroke counts. |
-| **Timed turns** (`timed`) | about 10 seconds of free drawing, any number of strokes | More expressive. Gives the bamboozler more clues, so fewer laps. |
+| **Timed turns** (`timed`) | about 10 seconds of free drawing, any number of strokes | More expressive. Gives the bamboozler more clues, so fewer turns each. |
 
 The app shows the descriptive names; `classic` and `timed` are the names in code and on the wire. Creating a room
-picks the mode with its laps or turn length, the number of rounds, the colours (below), the language and
-whether the adults pack is on. The setup shows an estimated duration per round.
+picks the mode (with how many times each player draws, or the seconds per turn), the number of rounds, the colours
+(below), the language and the word categories in play: chips with the word count, everything but the 18+ categories
+ticked by default, at least one required. Switching language picks that language's non-adult categories.
 
 The server enforces the turn: strokes from someone whose turn it isn't, or after the time limit, are dropped.
 Simultaneous drawing is parked: it is hard to follow who draws what and much heavier to sync.

@@ -4,13 +4,10 @@ import { LabPanel } from "@/components/lab/LabPanel.component";
 import { LabPlayground } from "@/components/lab/LabPlayground.component";
 import { useLabSettings } from "@/components/lab/_hooks/labSettings.hook";
 import { LobbyStart } from "@/components/lobby/LobbyStart.component";
-import {
-  dutchWordsFixture,
-  playersFixture,
-  roomCodeFixture,
-  wordsFixture,
-} from "@/components/room/_fixtures/players.fixture";
+import { playersFixture, roomCodeFixture } from "@/components/room/_fixtures/players.fixture";
+import { wordCategoriesFixture } from "@/components/room/_fixtures/words.fixture";
 import type { RoomSetup } from "@/components/room/_types/room.types";
+import { WordsUtils } from "@/components/room/_utils/words.utils";
 
 const YOU = "juno";
 
@@ -23,13 +20,18 @@ export function App() {
   const [justCreated, setJustCreated] = useState(false);
   const setup: RoomSetup = {
     mode: settings.mode,
-    laps: settings.laps,
+    turnsPerPlayer: settings.turnsPerPlayer,
     turnSeconds: settings.turnSeconds,
     rounds: settings.rounds,
     attribution: settings.attribution,
     language: settings.language,
-    adults: settings.adults,
+    categories: WordsUtils.valid(wordCategoriesFixture, settings.language, settings.categories),
   };
+  const categoriesKey = setup.categories.join(",");
+  const words = useMemo(
+    () => WordsUtils.deck(wordCategoriesFixture, setup.language, categoriesKey.split(","), resets + 1),
+    [setup.language, categoriesKey, resets],
+  );
   const players = useMemo(
     () =>
       playersFixture
@@ -45,7 +47,7 @@ export function App() {
       {settings.screen === "start" ? (
         <LobbyStart
           defaultName={yourName}
-          expectedPlayers={settings.players}
+          wordCategories={wordCategoriesFixture}
           onEnter={(entry) => {
             setYourName(entry.name);
             if (entry.kind === "create") {
@@ -65,7 +67,7 @@ export function App() {
           key={`${JSON.stringify(setup)}-${settings.players}-${settings.role}-${resets}`}
           players={players}
           youId={YOU}
-          words={settings.language === "nl" ? dutchWordsFixture : wordsFixture}
+          words={words}
           roomCode={roomCode}
           setup={setup}
           revealCode={justCreated}

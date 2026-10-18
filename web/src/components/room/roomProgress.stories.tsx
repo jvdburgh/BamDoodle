@@ -8,8 +8,8 @@ const meta = {
   args: {
     roundNumber: 2,
     rounds: 5,
-    lap: 1,
-    laps: 3,
+    turn: 1,
+    turnsPerPlayer: 3,
     phase: "drawing",
     turnTitle: "Your turn",
     msLeft: 11_200,
@@ -24,7 +24,7 @@ export const Drawing: Story = {
   play: async ({ canvas }) => {
     const progress = canvas.getByRole("status", { name: "Round progress" });
     await expect(progress).toHaveTextContent("Round 2/5");
-    await expect(progress).toHaveTextContent("Lap 1/3");
+    await expect(progress).toHaveTextContent("Turn 1 of 3");
     await expect(canvas.getByText("Your turn")).toBeVisible();
     await expect(canvas.getByText("12s")).toBeVisible();
   },
@@ -35,6 +35,6 @@ export const FinalVote: Story = {
   play: async ({ canvas }) => {
     await expect(canvas.getByText("Final vote")).toBeVisible();
     await expect(canvas.getByText("0:24")).toBeVisible();
-    await expect(canvas.queryByText(/Lap/)).toBeNull();
+    await expect(canvas.queryByText(/Turn \d/)).toBeNull();
   },
 };

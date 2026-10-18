@@ -1,12 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn } from "storybook/test";
+import { wordCategoriesFixture } from "@/components/room/_fixtures/words.fixture";
 import { LobbyStart } from "./LobbyStart.component";
 
 const meta = {
   title: "Lobby/LobbyStart",
   component: LobbyStart,
   parameters: { layout: "fullscreen" },
-  args: { onEnter: fn() },
+  args: { onEnter: fn(), wordCategories: wordCategoriesFixture },
 } satisfies Meta<typeof LobbyStart>;
 
 export default meta;
@@ -20,40 +21,43 @@ export const JoinFirst: Story = {
 };
 
 export const CreateARoom: Story = {
-  args: { expectedPlayers: 4 },
   play: async ({ args, canvas, userEvent }) => {
     await userEvent.click(canvas.getByRole("button", { name: "Create a room" }));
     await expect(canvas.getByRole("heading", { name: "Set up your room" })).toBeVisible();
     await expect(canvas.getByRole("radio", { name: /One stroke each/ })).toHaveFocus();
-    await expect(canvas.getByRole("group", { name: "Laps" })).toBeVisible();
-    await expect(canvas.getByText("2 min")).toBeVisible();
+    await expect(canvas.getByRole("group", { name: "Each player draws" })).toBeVisible();
+    await expect(canvas.getByRole("radio", { name: "3 times" })).toBeChecked();
+    await expect(canvas.queryByText(/min a round/)).toBeNull();
 
     await userEvent.click(canvas.getByText("Timed turns"));
-    await expect(canvas.queryByRole("group", { name: "Laps" })).toBeNull();
+    await expect(canvas.queryByRole("group", { name: "Each player draws" })).toBeNull();
     await userEvent.click(canvas.getByText("30 s"));
-    await userEvent.click(canvas.getByText("10"));
+    await userEvent.click(canvas.getByRole("radio", { name: "10" }));
     await userEvent.click(canvas.getByText("Own colours"));
+
     await userEvent.click(canvas.getByText("Nederlands"));
-    await userEvent.click(canvas.getByLabelText("Adults pack (18+)"));
-    await expect(canvas.getByText("5 min")).toBeVisible();
+    await expect(canvas.getByRole("checkbox", { name: /Dieren/ })).toBeChecked();
+    await expect(canvas.getByRole("checkbox", { name: /Na middernacht/ })).not.toBeChecked();
+    await userEvent.click(canvas.getByRole("button", { name: "Clear" }));
+    await expect(canvas.getByRole("button", { name: "Next" })).toBeDisabled();
+    await userEvent.click(canvas.getByText("Efteling"));
+    await userEvent.click(canvas.getByText("Na middernacht"));
     await userEvent.click(canvas.getByRole("button", { name: "Next" }));
 
     const name = canvas.getByLabelText("Your name");
     await expect(name).toHaveFocus();
-    const create = canvas.getByRole("button", { name: "Create room" });
-    await expect(create).toBeDisabled();
     await userEvent.type(name, "  Joris ");
-    await userEvent.click(create);
+    await userEvent.click(canvas.getByRole("button", { name: "Create room" }));
     await expect(args.onEnter).toHaveBeenCalledWith({
       kind: "create",
       name: "Joris",
       mode: "timed",
-      laps: 3,
+      turnsPerPlayer: 3,
       turnSeconds: 30,
       rounds: 10,
       attribution: "shades",
       language: "nl",
-      adults: true,
+      categories: ["Efteling", "Na middernacht"],
     });
   },
 };

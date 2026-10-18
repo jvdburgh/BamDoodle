@@ -64,8 +64,9 @@ export const TurnOrder: Story = {
       expect.stringContaining("Mo"),
       expect.stringContaining("Kiki"),
     ]);
-    await expect(canvas.getByRole("button", { name: /Juno.*\(you\).*Drawing now/ })).toBeVisible();
-    await expect(canvas.getByRole("button", { name: /Mo\W+Up next/ })).toBeVisible();
+    await expect(items[1]).toHaveTextContent(/Juno.*\(you\).*Drawing now/);
+    await expect(items[2]).toHaveTextContent(/Mo.*Up next/);
+    await expect(canvas.getByRole("button", { name: "Spotlight Juno" })).toBeVisible();
   },
 };
 

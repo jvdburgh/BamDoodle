@@ -51,6 +51,6 @@ export const Tablet: Story = {
   args: { width: "1100px" },
   play: async ({ canvas }) => {
     await expect(canvas.getByText("Draw", { exact: false })).toBeVisible();
-    await expect(canvas.getByRole("button", { name: /Juno.*\(you\)/ })).toBeVisible();
+    await expect(canvas.getByText("(you)")).toBeVisible();
   },
 };

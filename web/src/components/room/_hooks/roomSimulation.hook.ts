@@ -45,7 +45,7 @@ export function useRoomSimulation({ players, youId, words, setup, youAreBamboozl
     return RoundUtils.create({
       mode: setup.mode,
       turnMs: RoundUtils.turnMsFor(setup),
-      totalTurns: RoundUtils.lapsFor(setup) * ids.length,
+      totalTurns: RoundUtils.turnsPerPlayerFor(setup) * ids.length,
       bamboozlerId,
     });
   };
