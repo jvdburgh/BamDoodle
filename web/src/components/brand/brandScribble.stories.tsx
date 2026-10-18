@@ -7,7 +7,7 @@ const meta = {
   component: BrandScribble,
   args: { shape: "ring", seed: 1, className: "size-24 text-sun" },
   play: async ({ canvasElement }) => {
-    const svg = canvasElement.querySelector("svg");
+    const svg = canvasElement.querySelector("path")?.closest("svg");
     await expect(svg).toHaveAttribute("aria-hidden", "true");
     await expect(svg?.querySelector("path")?.getAttribute("d")).toMatch(/^M/);
   },

@@ -1,23 +1,33 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
-import { RoomPlayground } from "./RoomPlayground.component";
-import { playersFixture, wordsFixture } from "./_fixtures/players.fixture";
+import { LabPlayground } from "./LabPlayground.component";
+import { playersFixture, roomCodeFixture, wordsFixture } from "@/components/room/_fixtures/players.fixture";
 
 const meta = {
-  title: "Room/RoomPlayground",
-  component: RoomPlayground,
+  title: "Lab/LabPlayground",
+  component: LabPlayground,
   parameters: { layout: "fullscreen" },
-  args: { players: playersFixture, youId: "juno", words: wordsFixture },
-} satisfies Meta<typeof RoomPlayground>;
+  args: {
+    players: playersFixture.slice(0, 4),
+    youId: "juno",
+    words: wordsFixture,
+    roomCode: roomCodeFixture,
+    view: "player",
+    role: "artist",
+    mode: "classic",
+    attribution: "free",
+    seats: "simulated",
+    surface: "paper",
+  },
+} satisfies Meta<typeof LabPlayground>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const OwnDevices: Story = {
+export const Phone: Story = {
   play: async ({ canvas, userEvent }) => {
-    await expect(canvas.getByRole("heading", { name: "Ready to doodle?" })).toBeVisible();
-    await expect(canvas.getByRole("radio", { name: /Own devices/ })).toBeChecked();
-    await expect(canvas.getByText("1:00")).toBeVisible();
+    await expect(canvas.getByText("bamdoodle.io")).toBeVisible();
+    await expect(canvas.getByText("Giraffe")).toBeVisible();
 
     await userEvent.click(canvas.getByRole("button", { name: "Start round" }));
     await expect(canvas.getByRole("img", { name: "Shared drawing. Pip is drawing." })).toBeVisible();
@@ -33,16 +43,33 @@ export const OwnDevices: Story = {
   },
 };
 
+export const Bamboozler: Story = {
+  args: { role: "bamboozler" },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText("You’re the bamboozler")).toBeVisible();
+    await expect(canvas.queryByText("Giraffe")).toBeNull();
+  },
+};
+
 export const OneDevice: Story = {
+  args: { seats: "shared" },
   play: async ({ canvas, userEvent }) => {
-    await userEvent.click(canvas.getByText("One device"));
     await userEvent.click(canvas.getByRole("button", { name: "Start round" }));
     await expect(canvas.getByRole("img", { name: "Shared drawing. Pip is drawing." })).toBeVisible();
-    await expect(canvas.getByRole("button", { name: /Pip\W+Drawing now/ })).toBeVisible();
-
     await userEvent.click(canvas.getByRole("button", { name: "End turn" }));
     await expect(canvas.getByRole("img", { name: "Shared drawing. Juno is drawing." })).toBeVisible();
-    await expect(canvas.getByRole("button", { name: /Mo\W+Up next/ })).toBeVisible();
+  },
+};
+
+export const PhoneAndHost: Story = {
+  args: { view: "both", attribution: "shades", players: playersFixture },
+  play: async ({ canvas, userEvent }) => {
+    await expect(canvas.getByRole("region", { name: "Juno’s phone" })).toBeVisible();
+    await expect(canvas.getByRole("region", { name: "Host screen" })).toBeVisible();
+    await expect(canvas.getAllByText("Giraffe")).toHaveLength(1);
+
+    await userEvent.click(canvas.getAllByRole("button", { name: "Start round" })[0] as HTMLElement);
+    await expect(canvas.getAllByRole("img", { name: "Shared drawing. Pip is drawing." })).toHaveLength(2);
   },
 };
 

@@ -10,11 +10,13 @@ type CanvasPaletteProps = {
 
 const blobs = ["rounded-[46%_54%_52%_48%]", "rounded-[55%_45%_48%_52%]", "rounded-[50%_50%_44%_56%]"];
 
+/** Colour swatches as a radio group. The full palette wraps to two rows, or one row when there's room. */
 export function CanvasPalette({ colours, value, onChange, disabled = false }: CanvasPaletteProps) {
+  const columns = colours.length > 10 ? "grid-cols-10 @2xl:grid-cols-20" : "max-w-64 grid-cols-5";
   return (
-    <fieldset disabled={disabled} className="min-w-0 disabled:opacity-40">
+    <fieldset disabled={disabled} className="@container min-w-0 disabled:opacity-40">
       <legend className="sr-only">Colour</legend>
-      <div className="grid grid-cols-10 gap-1.5">
+      <div className={`grid gap-1 ${columns}`}>
         {colours.map((colour, index) => (
           <label key={colour.value} className="relative grid aspect-square cursor-pointer place-items-center">
             <input
@@ -28,13 +30,14 @@ export function CanvasPalette({ colours, value, onChange, disabled = false }: Ca
             />
             <span
               style={{ backgroundColor: colour.value }}
-              className={`size-[78%] ring-1 ring-white/25 transition-transform peer-checked:scale-90 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-4 peer-focus-visible:outline-sun hover:scale-110 ${blobs[index % blobs.length]}`}
+              className={`size-[72%] ring-1 ring-white/25 transition-transform peer-checked:scale-90 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-4 peer-focus-visible:outline-white hover:scale-110 ${blobs[index % blobs.length]}`}
             />
             {colour.value === value && (
               <BrandScribble
                 shape="ring"
                 seed={index + 3}
-                className="pointer-events-none absolute inset-0 size-full text-white"
+                weight={2.2}
+                className="pointer-events-none absolute inset-0 size-full text-sun"
               />
             )}
           </label>

@@ -22,8 +22,8 @@ export function RoomTurnBar({ title, hint, mode, msLeft, msTotal }: RoomTurnBarP
   return (
     <div className="min-w-0">
       <p className="flex items-baseline justify-between gap-3">
-        <span className="truncate font-display text-xl font-bold text-sun">{title}</span>
-        <span className="font-display text-xl font-bold text-white tabular-nums">{seconds}s</span>
+        <span className="truncate font-display text-xl text-sun">{title}</span>
+        <span className="font-display text-xl text-white tabular-nums">{seconds}s</span>
       </p>
       <div
         role="progressbar"

@@ -25,10 +25,23 @@ const colours: CanvasColour[] = [
   { name: "Plum", value: "#9753a0" },
 ];
 
+/**
+ * The alternative to free colours: one shade family per player, light to dark, built around a logo colour.
+ * Six families for up to six players.
+ */
+const shadeFamilies: CanvasColour[][] = [
+  ["#fbc4d2", "#f7849f", "#f13866", "#c4204a", "#8a1232"].map((value, i) => ({ name: `Berry ${i + 1}`, value })),
+  ["#b5e6f0", "#6fcde0", "#2da8c3", "#1f7f95", "#135566"].map((value, i) => ({ name: `Lagoon ${i + 1}`, value })),
+  ["#fde3b0", "#fcc96f", "#fbb03b", "#d98a1c", "#9c5f0e"].map((value, i) => ({ name: `Sun ${i + 1}`, value })),
+  ["#e7b5ee", "#cf6fdc", "#af2cbe", "#852091", "#5a1563"].map((value, i) => ({ name: `Violet ${i + 1}`, value })),
+  ["#cdeba6", "#9fd65e", "#7ec42e", "#239447", "#1c5e31"].map((value, i) => ({ name: `Lime ${i + 1}`, value })),
+  ["#c9c7fe", "#8f8bfd", "#5651fb", "#3d38c9", "#26238a"].map((value, i) => ({ name: `Iris ${i + 1}`, value })),
+];
+
 const brushes: CanvasBrush[] = [
   { name: "Fine", size: 0.006 },
   { name: "Medium", size: 0.014 },
   { name: "Bold", size: 0.03 },
 ];
 
-export const CanvasTools = { colours, brushes };
+export const CanvasTools = { colours, shadeFamilies, brushes };

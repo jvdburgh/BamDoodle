@@ -16,6 +16,8 @@ export default defineConfig({
     alias: { "@": path.join(dirname, "src") },
   },
   server: {
+    // Reachable from phones on the same Wi-Fi, for trying the phone view on a real phone.
+    host: true,
     proxy: {
       "/api": serverUrl,
       "/ws": { target: serverUrl.replace(/^http/, "ws"), ws: true },

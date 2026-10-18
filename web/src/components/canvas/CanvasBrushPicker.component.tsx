@@ -26,7 +26,7 @@ export function CanvasBrushPicker({ brushes, value, onChange, color, disabled = 
             aria-label={brush.name}
             className="peer sr-only"
           />
-          <span className="grid size-9 place-items-center rounded-full bg-paper peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-sun">
+          <span className="grid size-9 place-items-center rounded-full bg-paper peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-white">
             <span
               style={{ backgroundColor: color, width: `${(brush.size / largest) * 75}%` }}
               className="aspect-square rounded-full ring-1 ring-night/15"
@@ -36,7 +36,8 @@ export function CanvasBrushPicker({ brushes, value, onChange, color, disabled = 
             <BrandScribble
               shape="ring"
               seed={index + 11}
-              className="pointer-events-none absolute inset-0 size-full text-white"
+              weight={2.2}
+              className="pointer-events-none absolute inset-0 size-full text-sun"
             />
           )}
         </label>

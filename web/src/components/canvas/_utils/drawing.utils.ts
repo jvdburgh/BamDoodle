@@ -19,7 +19,9 @@ export type Drawing = {
   end: () => Stroke | null;
   load: (strokes: Stroke[]) => void;
   clear: () => void;
-  resize: (width: number, height: number) => void;
+  /** A canvas showing this drawing asks for layers at least its size; layers follow the biggest claim. */
+  claim: (owner: object, width: number, height: number) => void;
+  release: (owner: object) => void;
   layer: (playerId: string) => OffscreenCanvas | null;
   subscribe: (listener: DrawingListener) => () => void;
 };
@@ -34,6 +36,7 @@ function createDrawing(): Drawing {
   const dirty = new Set<string>();
   const paths = new Map<string, Path2D>();
   const listeners = new Set<DrawingListener>();
+  const claims = new Map<object, { width: number; height: number }>();
 
   const strokesOf = (playerId: string) => {
     const own = strokes.filter((stroke) => stroke.playerId === playerId);
@@ -47,6 +50,20 @@ function createDrawing(): Drawing {
       dirty.add(playerId);
     }
     for (const listener of listeners) listener(playerId);
+  };
+
+  const fitClaims = () => {
+    let biggest = { width: 0, height: 0 };
+    for (const size of claims.values()) if (size.width > biggest.width) biggest = size;
+    if (biggest.width === width && biggest.height === height) return;
+    width = biggest.width;
+    height = biggest.height;
+    paths.clear();
+    for (const layer of layers.values()) {
+      layer.width = Math.max(1, width);
+      layer.height = Math.max(1, height);
+    }
+    changed(null);
   };
 
   const pathFor = (stroke: Stroke) => {
@@ -102,16 +119,13 @@ function createDrawing(): Drawing {
       paths.clear();
       changed(null);
     },
-    resize(nextWidth, nextHeight) {
-      if (nextWidth === width && nextHeight === height) return;
-      width = nextWidth;
-      height = nextHeight;
-      paths.clear();
-      for (const layer of layers.values()) {
-        layer.width = width;
-        layer.height = height;
-      }
-      changed(null);
+    claim(owner, claimWidth, claimHeight) {
+      claims.set(owner, { width: claimWidth, height: claimHeight });
+      fitClaims();
+    },
+    release(owner) {
+      claims.delete(owner);
+      fitClaims();
     },
     layer(playerId) {
       if (width === 0 || height === 0) return null;

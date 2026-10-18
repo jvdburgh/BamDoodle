@@ -21,7 +21,7 @@ export const Labelled: Story = {
 export const Decorative: Story = {
   play: async ({ canvas, canvasElement }) => {
     await expect(canvas.queryByRole("img")).toBeNull();
-    await expect(canvasElement.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
+    await expect(canvasElement.querySelector("circle")?.closest("svg")).toHaveAttribute("aria-hidden", "true");
   },
 };
 

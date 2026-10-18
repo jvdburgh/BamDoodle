@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { ScribbleUtils } from "@/components/brand/_utils/scribble.utils";
+import type { CanvasColour } from "@/components/canvas/_utils/canvasTools.utils";
 import type { Drawing } from "@/components/canvas/_utils/drawing.utils";
 import type { Round } from "@/components/room/_types/room.types";
 import { BotUtils } from "@/components/room/_utils/bot.utils";
@@ -18,6 +19,8 @@ export function useBotTurn(
   round: Round,
   botId: string | null,
   onStrokeEnd: (turnCount: number) => void,
+  /** The bot's shade family; free colours when left out. */
+  family?: CanvasColour[],
 ) {
   const strokeEnd = useRef(onStrokeEnd);
   useLayoutEffect(() => {
@@ -34,7 +37,7 @@ export function useBotTurn(
     let strokes = 0;
 
     const drawStroke = () => {
-      const { color, size, points } = BotUtils.stroke(rand);
+      const { color, size, points } = BotUtils.stroke(rand, family);
       if (mode === "timed" && Date.now() + points.length * POINT_MS > turnEndsAt - SAFETY_MS) return;
       drawing.begin({ playerId: botId, color, size, hasPressure: false }, points[0] ?? [0.5, 0.5, 0.5]);
       let next = 1;
@@ -58,5 +61,5 @@ export function useBotTurn(
       window.clearInterval(timer);
       if (drawing.live()?.playerId === botId) drawing.end();
     };
-  }, [drawing, phase, mode, turnCount, turnStartedAt, botId]);
+  }, [drawing, phase, mode, turnCount, turnStartedAt, botId, family]);
 }

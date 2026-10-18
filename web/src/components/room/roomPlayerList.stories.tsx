@@ -10,15 +10,14 @@ const meta = {
   component: RoomPlayerList,
   decorators: [
     (Story) => (
-      <div className="w-72">
+      <div className="@container/room w-[24rem]">
         <Story />
       </div>
     ),
   ],
-  parameters: { viewport: { defaultViewport: "desktop" } },
   argTypes: { drawing: { control: false } },
   args: {
-    players: playersFixture,
+    players: playersFixture.slice(0, 4),
     drawing: drawingFixture(),
     youId: "juno",
     activeId: "juno",
@@ -54,9 +53,9 @@ export const TurnOrder: Story = {
       expect.stringContaining("Mo"),
       expect.stringContaining("Kiki"),
     ]);
+    await expect(canvas.getByRole("button", { name: /Juno.*\(you\)/ })).toBeVisible();
     await expect(canvas.getByRole("button", { name: /Juno.*Drawing now/ })).toBeVisible();
     await expect(canvas.getByRole("button", { name: /Mo\W+Up next/ })).toBeVisible();
-    await expect(canvas.getByText("(you)")).toBeVisible();
   },
 };
 
@@ -92,5 +91,37 @@ export const SpotlightByKeyboard: Story = {
     await expect(canvas.getByRole("button", { name: /Spotlight Pip/ })).toHaveFocus();
     await userEvent.keyboard("{Enter}");
     await expect(args.onSpotlight).toHaveBeenLastCalledWith("pip");
+  },
+};
+
+export const SixInARail: Story = {
+  args: { players: playersFixture, colours: { pip: "#f13866", juno: "#2da8c3" } },
+  decorators: [
+    (Story) => (
+      <div className="@container/room w-[60rem]">
+        <div className="w-64">
+          <Story />
+        </div>
+      </div>
+    ),
+  ],
+  play: async ({ canvas }) => {
+    await expect(canvas.getAllByRole("listitem")).toHaveLength(6);
+    await expect(canvas.getByText("Drawing now")).toBeVisible();
+  },
+};
+
+export const HostRow: Story = {
+  args: { players: playersFixture, youId: null, layout: "row" },
+  decorators: [
+    (Story) => (
+      <div className="@container/room w-[60rem]">
+        <Story />
+      </div>
+    ),
+  ],
+  play: async ({ canvas }) => {
+    await expect(canvas.queryByText("(you)")).toBeNull();
+    await expect(canvas.getByRole("button", { name: /Spotlight Tess/ })).toBeVisible();
   },
 };

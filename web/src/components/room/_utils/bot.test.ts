@@ -28,6 +28,13 @@ describe("BotUtils.stroke", () => {
     }
   });
 
+  it("sticks to a player's shade family when given one", () => {
+    const family = CanvasTools.shadeFamilies[1] ?? [];
+    const rand = ScribbleUtils.random(9);
+    const values = family.map((colour) => colour.value);
+    for (let i = 0; i < 50; i++) expect(values).toContain(BotUtils.stroke(rand, family).color);
+  });
+
   it("uses the fine or medium brush", () => {
     const sizes = CanvasTools.brushes.slice(0, 2).map((brush) => brush.size);
     for (const stroke of strokes(3, 50)) expect(sizes).toContain(stroke.size);

@@ -61,4 +61,22 @@ describe("DrawingUtils.createDrawing", () => {
   it("has no layers until it knows its size", () => {
     expect(DrawingUtils.createDrawing().layer("pip")).toBeNull();
   });
+
+  it("sizes its layers to the biggest canvas that claims them", () => {
+    const drawing = DrawingUtils.createDrawing();
+    const listener = vi.fn();
+    drawing.subscribe(listener);
+    const phone = {};
+    const tv = {};
+
+    drawing.claim(phone, 400, 300);
+    drawing.claim(tv, 1600, 1200);
+    drawing.claim(phone, 420, 315);
+    expect(listener).toHaveBeenCalledTimes(2);
+
+    drawing.release(tv);
+    expect(listener).toHaveBeenCalledTimes(3);
+    drawing.release(phone);
+    expect(drawing.layer("pip")).toBeNull();
+  });
 });

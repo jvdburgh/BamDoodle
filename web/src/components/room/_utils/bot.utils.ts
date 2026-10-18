@@ -1,6 +1,6 @@
 import { ScribbleUtils } from "@/components/brand/_utils/scribble.utils";
 import type { StrokePoint } from "@/components/canvas/_types/stroke.types";
-import { CanvasTools } from "@/components/canvas/_utils/canvasTools.utils";
+import { CanvasTools, type CanvasColour } from "@/components/canvas/_utils/canvasTools.utils";
 
 /** Stand-ins for the other players in the prototype, until there is a server to bring their real strokes. */
 
@@ -9,8 +9,11 @@ export type BotStroke = { color: string; size: number; points: StrokePoint[] };
 const BLACK = "#000000";
 const visibleOnPaper = CanvasTools.colours.filter((colour) => !["White", "Cloud"].includes(colour.name));
 
-/** A small doodle somewhere on the sheet, fine or medium. Half the time in black, because that is what most people reach for. */
-function stroke(rand: () => number): BotStroke {
+/**
+ * A small doodle somewhere on the sheet, fine or medium. With the free palette it's black half the time, because that
+ * is what most people reach for; with a shade family it picks from that family.
+ */
+function stroke(rand: () => number, family?: CanvasColour[]): BotStroke {
   const between = (min: number, max: number) => min + rand() * (max - min);
   const pickFrom = <T>(items: T[]) => items[Math.floor(rand() * items.length)] as T;
   const cx = between(0.2, 0.8);
@@ -37,7 +40,7 @@ function stroke(rand: () => number): BotStroke {
   }
 
   return {
-    color: rand() < 0.5 ? BLACK : pickFrom(visibleOnPaper).value,
+    color: family ? pickFrom(family).value : rand() < 0.5 ? BLACK : pickFrom(visibleOnPaper).value,
     size: pickFrom(CanvasTools.brushes.slice(0, 2)).size,
     points: raw.map(([x = 0, y = 0]) => [Math.min(1, Math.max(0, x)), Math.min(1, Math.max(0, y)), 0.5]),
   };

@@ -16,3 +16,10 @@ export const Default: Story = {
     await expect(canvas.getByRole("img", { name: "BamDoodle" })).toBeVisible();
   },
 };
+
+export const HomeLink: Story = {
+  args: { href: "/?screen=start" },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("link", { name: "BamDoodle" })).toHaveAttribute("href", "/?screen=start");
+  },
+};

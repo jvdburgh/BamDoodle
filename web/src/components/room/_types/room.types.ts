@@ -1,3 +1,5 @@
+import type { TurnMode } from "@/protocol/generated/TurnMode";
+
 export type RoomPlayer = {
   id: string;
   name: string;
@@ -5,10 +7,13 @@ export type RoomPlayer = {
   avatarSeed: number;
 };
 
-export type TurnMode = "classic" | "timed";
+export type { TurnMode };
 
-/** Everyone on their own device (the main way to play), or one device passed round or on a big screen. */
-export type DeviceMode = "own" | "shared";
+/** In the prototype: you play one seat and the others are simulated, or everyone passes one device round. */
+export type Seats = "simulated" | "shared";
+
+/** Free colours for everyone, or one shade family per player: the attribution question the prototype compares. */
+export type Attribution = "free" | "shades";
 
 export type RoundPhase = "waiting" | "drawing" | "over";
 

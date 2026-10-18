@@ -6,6 +6,6 @@ import { DrawingUtils } from "@/components/canvas/_utils/drawing.utils";
 export function drawingFixture(strokes: Stroke[] = giraffeStrokesFixture) {
   const drawing = DrawingUtils.createDrawing();
   drawing.load(strokes);
-  drawing.resize(800, 600);
+  drawing.claim(drawing, 800, 600);
   return drawing;
 }

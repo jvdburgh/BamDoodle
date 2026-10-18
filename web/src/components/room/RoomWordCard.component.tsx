@@ -1,20 +1,31 @@
 import { BrandScribble } from "@/components/brand/BrandScribble.component";
+import type { Role } from "@/protocol/generated/Role";
 
 type RoomWordCardProps = {
   category: string;
-  word: string;
+  /** Only artists get the word; pass null to the bamboozler and the host screen, as the server will. */
+  word: string | null;
+  view: Role | "host";
 };
 
-export function RoomWordCard({ category, word }: RoomWordCardProps) {
+/** The secret, as little text as possible: a category chip and one big line. */
+export function RoomWordCard({ category, word, view }: RoomWordCardProps) {
+  const line = view === "artist" && word ? word : view === "bamboozler" ? "You’re the bamboozler" : "Who’s sketchy?";
   return (
-    <p className="flex flex-col items-center text-center leading-none">
-      <span className="text-sm text-white/60">The word, from {category}</span>
-      <span className="relative mt-1 px-2 font-display text-3xl font-extrabold sm:text-4xl">
-        {word}
+    <p className="flex flex-col items-center gap-1 text-center leading-none">
+      <span className="rounded-full bg-night-soft px-2.5 py-1 text-xs text-white/80">
+        <span className="sr-only">Category: </span>
+        {category}
+      </span>
+      <span
+        className={`relative px-2 font-display ${view === "artist" ? "text-3xl @4xl/room:text-4xl" : "text-2xl @4xl/room:text-3xl"} ${view === "bamboozler" ? "text-berry" : "text-white"}`}
+      >
+        {view === "artist" && <span className="sr-only">Secret word: </span>}
+        {line}
         <BrandScribble
           shape="underline"
-          seed={word.length}
-          className="absolute inset-x-0 -bottom-2.5 h-3 w-full text-berry"
+          seed={line.length}
+          className={`absolute inset-x-0 -bottom-2.5 h-3 w-full ${view === "bamboozler" ? "text-white/40" : "text-berry"}`}
         />
       </span>
     </p>

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useCanvasSize } from "@/components/canvas/_hooks/canvasSize.hook";
 import { useFrame } from "@/components/canvas/_hooks/frame.hook";
+import type { CanvasSurface } from "@/components/canvas/CanvasBoard.component";
 import type { Drawing } from "@/components/canvas/_utils/drawing.utils";
 
 type CanvasMiniMapProps = {
@@ -8,10 +9,11 @@ type CanvasMiniMapProps = {
   playerId: string;
   /** Leave out when the mini-map sits inside a control that already names the player; it is then decorative. */
   label?: string;
+  surface?: CanvasSurface;
 };
 
 /** The shared canvas in miniature, showing one player's strokes only, live. */
-export function CanvasMiniMap({ drawing, playerId, label }: CanvasMiniMapProps) {
+export function CanvasMiniMap({ drawing, playerId, label, surface = "paper" }: CanvasMiniMapProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const schedule = useFrame(() => {
@@ -38,5 +40,11 @@ export function CanvasMiniMap({ drawing, playerId, label }: CanvasMiniMapProps) 
   useEffect(schedule, [schedule, playerId]);
 
   const a11y = label ? { role: "img", "aria-label": label } : { "aria-hidden": true };
-  return <canvas ref={canvasRef} className="block aspect-[4/3] w-full rounded-[5px_7px_6px_4px] bg-paper" {...a11y} />;
+  return (
+    <canvas
+      ref={canvasRef}
+      className={`block aspect-[4/3] w-full rounded-[5px_7px_6px_4px] ${surface === "night" ? "bg-night-deep ring-1 ring-white/20" : "bg-paper"}`}
+      {...a11y}
+    />
+  );
 }

@@ -1,8 +1,8 @@
 import type { Round, TurnMode } from "@/components/room/_types/room.types";
 
-/** Starting points to tune in playtests: the round length is from docs/game-rules.md, the Classic turn is a guess. */
+/** The server's current defaults (docs/game-rules.md, "Current defaults"). */
 const ROUND_MS = 60_000;
-const TURN_MS: Record<TurnMode, number> = { classic: 8_000, timed: 10_000 };
+const TURN_MS: Record<TurnMode, number> = { classic: 15_000, timed: 10_000 };
 
 const turnLength = (mode: TurnMode) => TURN_MS[mode];
 

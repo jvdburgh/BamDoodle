@@ -1,11 +1,17 @@
 @import "tailwindcss";
 @import "@fontsource-variable/work-sans";
+@import "@fontsource/love-ya-like-a-sister";
+/* Alternatives for the playground's font switcher (docs/brand.md); browsers only download the one in use. */
 @import "@fontsource-variable/grandstander";
+@import "@fontsource-variable/dynapuff";
+@import "@fontsource-variable/fredoka";
+@import "@fontsource/gochi-hand";
+@import "@fontsource/patrick-hand";
 
 /* Brand tokens, taken from brand/logo.svg. Fonts and their reasons: docs/brand.md. */
 @theme {
   --font-body: "Work Sans Variable", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Grandstander Variable", "Work Sans Variable", ui-rounded, system-ui, sans-serif;
+  --font-display: "Love Ya Like A Sister", "Work Sans Variable", ui-rounded, system-ui, sans-serif;
 
   --color-night: #080357;
   --color-night-deep: #050238;
@@ -47,11 +53,32 @@
 }
 
 @layer base {
+  :root {
+    /* Display fonts differ in weight range; the playground's font switcher sets both together. */
+    --display-weight: 400;
+  }
+
   html {
     color-scheme: dark;
   }
 
   body {
     @apply bg-night font-body text-white antialiased;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-weight: var(--display-weight);
+  }
+
+  /* Wobbly outline for frames, via the #sketchy filter from BrandSketchFilter. Never on text. */
+  .sketchy {
+    filter: url(#sketchy);
   }
 }
