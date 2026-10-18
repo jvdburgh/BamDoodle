@@ -1,14 +1,16 @@
 @import "tailwindcss";
 @import "@fontsource-variable/work-sans";
+@import "@fontsource-variable/grandstander";
 
-/* Brand tokens, taken from brand/logo.svg. The display font is still open (see docs/brand.md). */
+/* Brand tokens, taken from brand/logo.svg. Fonts and their reasons: docs/brand.md. */
 @theme {
   --font-body: "Work Sans Variable", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Work Sans Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Grandstander Variable", "Work Sans Variable", ui-rounded, system-ui, sans-serif;
 
   --color-night: #080357;
   --color-night-deep: #050238;
   --color-night-soft: #14107a;
+  --color-paper: #f6f5fc;
 
   --color-berry: #f13866;
   --color-violet: #af2cbe;
@@ -21,6 +23,27 @@
   --color-lime: #7ec42e;
   --color-sun: #fbb03b;
   --color-amber: #f7a33a;
+
+  --animate-turn-call: turn-call 1100ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+
+  @keyframes turn-call {
+    0% {
+      opacity: 0;
+      transform: translateY(12px) rotate(-4deg) scale(0.9);
+    }
+    20% {
+      opacity: 1;
+      transform: translateY(0) rotate(-2deg) scale(1);
+    }
+    75% {
+      opacity: 1;
+      transform: translateY(0) rotate(-2deg) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-6px) rotate(-2deg) scale(0.98);
+    }
+  }
 }
 
 @layer base {
