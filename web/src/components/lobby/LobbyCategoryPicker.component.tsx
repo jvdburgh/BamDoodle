@@ -47,6 +47,7 @@ export function LobbyCategoryPicker({ categories, selected, onChange }: LobbyCat
               type="checkbox"
               checked={chosen.has(category.name)}
               onChange={() => toggle(category.name)}
+              aria-label={category.adult ? `${category.name} (18+)` : category.name}
               className="sr-only"
             />
             <span className="font-display text-lg leading-none">{category.name}</span>

@@ -56,7 +56,7 @@ export const Watching: Story = {
     await expect(canvas.getAllByRole("listitem")).toHaveLength(6);
     await expect(canvas.getAllByRole("radio", { name: /Black|Berry|Lagoon/ })).toHaveLength(3);
 
-    await userEvent.click(canvas.getByRole("button", { name: "Mark as suspicious (Mo)" }));
+    await userEvent.click(canvas.getByRole("button", { name: "Mark Mo as suspicious" }));
     await expect(args.send).toHaveBeenCalledWith({ type: "suspect", suspectId: 3 });
   },
 };
@@ -136,7 +136,7 @@ export const FinalVote: Story = {
   },
   play: async ({ args, canvas, userEvent }) => {
     await expect(canvas.getByRole("button", { name: "Lock in my vote for Kiki" })).toBeVisible();
-    await userEvent.click(canvas.getByRole("button", { name: "Pick (Mo)" }));
+    await userEvent.click(canvas.getByRole("button", { name: "Pick Mo" }));
     await userEvent.click(canvas.getByRole("button", { name: "Lock in my vote for Mo" }));
     await expect(args.send).toHaveBeenCalledWith({ type: "castVote", suspectId: 3 });
   },

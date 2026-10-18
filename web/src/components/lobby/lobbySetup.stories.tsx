@@ -41,7 +41,11 @@ type Story = StoryObj<typeof meta>;
 export const SetUpTheRoom: Story = {
   play: async ({ args, canvas, userEvent }) => {
     await expect(canvas.getByRole("heading", { name: "Set up your room" })).toBeVisible();
-    await expect(canvas.getByRole("radio", { name: /One stroke each/ })).toHaveFocus();
+    const oneStroke = canvas.getByRole("radio", { name: "One stroke each" });
+    await expect(oneStroke).toHaveFocus();
+    await expect(oneStroke).toHaveAccessibleDescription("Draw one line, pass it on");
+    await expect(canvas.getByRole("radio", { name: "English" })).toBeChecked();
+    await expect(canvas.getByRole("checkbox", { name: "Animals" })).toBeChecked();
     await expect(canvas.getByRole("radio", { name: "3 times" })).toBeChecked();
     await expect(canvas.queryByRole("group", { name: "Colours" })).toBeNull();
 

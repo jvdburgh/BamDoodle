@@ -151,6 +151,7 @@ export function RoomPlayerList({
               <button
                 type="button"
                 aria-pressed={spotlit}
+                aria-label={`Spotlight ${player.name}`}
                 onClick={() => {
                   onPeek(null);
                   onSpotlight(spotlit ? null : player.id);
@@ -159,7 +160,6 @@ export function RoomPlayerList({
                   rail ? "@5xl/room:col-start-2 @5xl/room:row-span-2 @5xl/room:row-start-1" : ""
                 }`}
               >
-                <span className="sr-only">Spotlight {player.name}</span>
                 <CanvasMiniMap drawing={drawing} playerId={player.id} />
                 <span
                   className={`absolute right-1 bottom-1 grid size-6 place-items-center rounded-full bg-night text-white transition-opacity ${
@@ -174,13 +174,13 @@ export function RoomPlayerList({
                 <button
                   type="button"
                   aria-pressed={chosen}
+                  aria-label={`${chosen ? "Picked" : "Pick"} ${player.name}`}
                   onClick={() => action.onChoose(chosen ? null : player.id)}
                   className={`min-h-9 rounded-full px-2 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
                     rail ? "@5xl/room:col-start-1 @5xl/room:row-start-2 @5xl/room:self-end" : ""
                   } ${chosen ? "bg-berry text-night" : "bg-night text-white/90 hover:bg-night-soft"}`}
                 >
                   {chosen ? "Picked" : "Pick"}
-                  <span className="sr-only"> ({player.name})</span>
                 </button>
               )}
             </li>

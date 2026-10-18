@@ -37,8 +37,8 @@ type Story = StoryObj<typeof meta>;
 
 export const PickAndClear: Story = {
   play: async ({ args, canvas, userEvent }) => {
-    await expect(canvas.getByRole("checkbox", { name: /Dieren/ })).toBeChecked();
-    await expect(canvas.getByRole("checkbox", { name: /Na middernacht.*18\+/ })).not.toBeChecked();
+    await expect(canvas.getByRole("checkbox", { name: "Dieren" })).toBeChecked();
+    await expect(canvas.getByRole("checkbox", { name: "Na middernacht (18+)" })).not.toBeChecked();
 
     await userEvent.click(canvas.getByText("Efteling"));
     await expect(args.onChange).toHaveBeenLastCalledWith(["Dieren", "Eten", "Efteling"]);

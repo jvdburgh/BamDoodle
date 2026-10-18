@@ -157,7 +157,7 @@ export function LobbySetup({
             <button
               type="submit"
               disabled={!ready}
-              className={`${BrandStyles.primaryButton} justify-self-end md:col-span-2`}
+              className={`${BrandStyles.primaryButton} sticky bottom-3 z-10 justify-self-end shadow-[0_6px_18px_var(--color-night-deep)] md:col-span-2`}
             >
               Go to the room
             </button>
@@ -200,10 +200,14 @@ function LobbyChoice<T extends string | number>({
               value={option.value}
               checked={value === option.value}
               onChange={() => onChange(option.value)}
+              aria-label={option.title}
+              aria-describedby={`${name}-${option.value}-detail`}
               className="sr-only"
             />
             <span className="block font-display text-lg leading-tight">{option.title}</span>
-            <span className="mt-0.5 block text-sm text-white/70">{option.detail}</span>
+            <span id={`${name}-${option.value}-detail`} className="mt-0.5 block text-sm text-white/70">
+              {option.detail}
+            </span>
           </label>
         ))}
       </div>
@@ -239,6 +243,7 @@ function LobbyPills<T extends string | number>({
               value={option.value}
               checked={value === option.value}
               onChange={() => onChange(option.value)}
+              aria-label={option.label}
               className="sr-only"
             />
             {option.label}

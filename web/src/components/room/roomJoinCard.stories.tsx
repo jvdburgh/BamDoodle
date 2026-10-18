@@ -30,6 +30,7 @@ export const RoomJustCreated: Story = {
   args: { reveal: true, children: <button type="button">Start round</button> },
   play: async ({ canvas }) => {
     await expect(canvas.getByText(`Room code ${roomCodeFixture}`)).toBeInTheDocument();
-    await waitFor(() => expect(canvas.getByRole("button", { name: "Start round" })).toBeVisible(), { timeout: 4000 });
+    // The host's action is there almost at once; only the code's letters take their time.
+    await waitFor(() => expect(canvas.getByRole("button", { name: "Start round" })).toBeVisible(), { timeout: 600 });
   },
 };

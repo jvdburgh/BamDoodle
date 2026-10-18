@@ -11,7 +11,8 @@ type RoomJoinCardProps = {
   big?: boolean;
   /**
    * Plays the one orchestrated moment of the app, right after you create a room: the card lands, its frame is drawn
-   * in, the code's letters pop in one by one and get underlined. Reduced motion skips it.
+   * in, the code's letters pop in one by one and get underlined, while the action below is there almost at once.
+   * Reduced motion skips it.
    */
   reveal?: boolean;
   /** Usually the Start round button. */
@@ -66,7 +67,8 @@ export function RoomJoinCard({ roomCode, big = false, reveal = false, children }
           <BrandScribble shape="underline" seed={roomCode.length + 5} weight={1.3} className="h-3 w-full text-berry" />
         </span>
       </p>
-      <div className={animate("animate-rise-in")} style={delay(lettersEnd + 300)}>
+      {/* The host's Start round can't wait for the letters: it rises in with the first line. */}
+      <div className={animate("animate-rise-in")} style={delay(300)}>
         {children}
       </div>
     </div>

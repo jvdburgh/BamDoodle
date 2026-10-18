@@ -24,11 +24,11 @@ export const Default: Story = {};
 
 export const Toggles: Story = {
   play: async ({ canvas }) => {
-    const button = canvas.getByRole("button", { name: "Mark as suspicious (Juno)" });
+    const button = canvas.getByRole("button", { name: "Mark Juno as suspicious" });
     await expect(button).toHaveAttribute("aria-pressed", "false");
     await userEvent.click(button);
     await expect(button).toHaveAttribute("aria-pressed", "true");
-    await expect(button).toHaveAccessibleName("Marked as suspicious (Juno)");
+    await expect(button).toHaveAttribute("aria-pressed", "true");
     await userEvent.click(button);
     await expect(button).toHaveAttribute("aria-pressed", "false");
   },
@@ -37,7 +37,7 @@ export const Toggles: Story = {
 export const Suspected: Story = {
   args: { suspected: true },
   play: async ({ canvas }) => {
-    await expect(canvas.getByRole("button", { name: "Marked as suspicious (Juno)" })).toHaveAttribute(
+    await expect(canvas.getByRole("button", { name: "Mark Juno as suspicious" })).toHaveAttribute(
       "aria-pressed",
       "true",
     );
@@ -48,7 +48,7 @@ export const LabelAfterATap: Story = {
   play: async ({ canvas }) => {
     const label = canvas.getByText("Mark as suspicious");
     await expect(label).toHaveClass("opacity-0");
-    await userEvent.click(canvas.getByRole("button", { name: "Mark as suspicious (Juno)" }));
+    await userEvent.click(canvas.getByRole("button", { name: "Mark Juno as suspicious" }));
     await expect(canvas.getByText("Marked as suspicious")).toHaveClass("opacity-100");
     await waitFor(() => expect(canvas.getByText("Marked as suspicious")).toHaveClass("opacity-0"), { timeout: 3000 });
   },

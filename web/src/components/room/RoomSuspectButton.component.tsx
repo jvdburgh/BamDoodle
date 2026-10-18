@@ -24,35 +24,38 @@ export function RoomSuspectButton({ name, suspected, onToggle }: RoomSuspectButt
   }, [flash, suspected]);
 
   return (
-    <button
-      type="button"
-      aria-pressed={suspected}
-      onClick={() => {
-        onToggle();
-        setFlash(true);
-      }}
-      className={`group grid size-8 shrink-0 place-items-center rounded-full bg-night ring-2 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
-        suspected ? "ring-berry" : "ring-transparent hover:ring-white/30"
-      }`}
-    >
-      <span className="relative grid place-items-center" aria-hidden="true">
-        <img src={HAT_SRC} alt="" className="w-6" />
-        <span
-          className={`absolute -top-2.5 -right-2.5 grid size-4 place-items-center rounded-full font-display text-xs leading-none ${
-            suspected ? "bg-berry text-night" : "bg-white text-night"
-          }`}
-        >
-          !
+    <>
+      <button
+        type="button"
+        aria-pressed={suspected}
+        aria-label={`Mark ${name} as suspicious`}
+        onClick={() => {
+          onToggle();
+          setFlash(true);
+        }}
+        className={`peer grid size-8 shrink-0 place-items-center rounded-full bg-night ring-2 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+          suspected ? "ring-berry" : "ring-transparent hover:ring-white/30"
+        }`}
+      >
+        <span className="relative grid place-items-center" aria-hidden="true">
+          <img src={HAT_SRC} alt="" className="w-6" />
+          <span
+            className={`absolute -top-2.5 -right-2.5 grid size-4 place-items-center rounded-full font-display text-xs leading-none ${
+              suspected ? "bg-berry text-night" : "bg-white text-night"
+            }`}
+          >
+            !
+          </span>
         </span>
-      </span>
+      </button>
       <span
+        aria-hidden="true"
         className={`pointer-events-none absolute inset-x-1 top-10 z-10 rounded-lg bg-night px-2 py-1 text-center text-xs font-semibold shadow-[0_3px_0_var(--color-night-deep)] transition-opacity motion-reduce:transition-none ${
           suspected ? "text-berry" : "text-white"
-        } ${flash ? "opacity-100" : "opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100"}`}
+        } ${flash ? "opacity-100" : "opacity-0 peer-hover:opacity-100 peer-focus-visible:opacity-100"}`}
       >
         {suspected ? "Marked as suspicious" : "Mark as suspicious"}
-        <span className="sr-only"> ({name})</span>
       </span>
-    </button>
+    </>
   );
 }
