@@ -95,6 +95,13 @@ export const RoomStateUtils = {
         });
       case "playerRemoved":
         return withRoom(state, { ...room, players: room.players.filter((player) => player.id !== message.playerId) });
+      case "avatarChanged":
+        return withRoom(state, {
+          ...room,
+          players: room.players.map((player) =>
+            player.id === message.playerId ? { ...player, avatar: message.strokes } : player,
+          ),
+        });
       case "hostChanged":
         return withRoom(state, { ...room, hostId: message.hostId });
       case "settingsChanged":

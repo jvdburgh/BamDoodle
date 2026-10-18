@@ -110,3 +110,34 @@ describe("AvatarUtils.edit", () => {
     expect(AvatarUtils.edit(empty, { kind: "clear" })).toBe(empty);
   });
 });
+
+describe("AvatarUtils.toWire and fromWire", () => {
+  const drawn: AvatarStroke[] = [
+    { color: "#fbb03b", size: AvatarUtils.brushSize, hasPressure: true, points: [[0.123_456, 0.5, 0.987_6]] },
+    { color: AvatarUtils.white, size: AvatarUtils.brushSize, hasPressure: false, points: [[0.25, 0.75, 0.5]] },
+  ];
+
+  it("sends colour, pressure and points at 3 decimals, without the size", () => {
+    expect(AvatarUtils.toWire(drawn)).toEqual([
+      { colour: "#fbb03b", pressure: true, points: [[0.123, 0.5, 0.988]] },
+      { colour: "#ffffff", pressure: false, points: [[0.25, 0.75, 0.5]] },
+    ]);
+  });
+
+  it("brings an avatar from the server back in the one avatar pen", () => {
+    const back = AvatarUtils.fromWire(AvatarUtils.toWire(drawn));
+    expect(back.map((stroke) => stroke.size)).toEqual([AvatarUtils.brushSize, AvatarUtils.brushSize]);
+    expect(back[1]).toEqual(drawn[1]);
+    expect(back[0]).toEqual({ ...drawn[0], points: [[0.123, 0.5, 0.988]] });
+  });
+
+  it("keeps every doodle face inside the server's limits", () => {
+    for (let seed = 0; seed < 50; seed++) {
+      const wire = AvatarUtils.toWire(AvatarUtils.face(seed));
+      const points = wire.reduce((count, stroke) => count + stroke.points.length, 0);
+      expect(wire.length).toBeLessThanOrEqual(AvatarUtils.limits.strokes);
+      expect(points).toBeLessThanOrEqual(AvatarUtils.limits.points);
+      expect(wire.every((stroke) => stroke.points.length > 0)).toBe(true);
+    }
+  });
+});

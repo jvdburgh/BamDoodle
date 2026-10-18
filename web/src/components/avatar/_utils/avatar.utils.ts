@@ -3,6 +3,7 @@ import { ScribbleUtils } from "@/components/brand/_utils/scribble.utils";
 import type { StrokePoint } from "@/components/canvas/_types/stroke.types";
 import { CanvasUtils } from "@/components/canvas/_utils/canvas.utils";
 import { CanvasTools } from "@/components/canvas/_utils/canvasTools.utils";
+import type { AvatarStroke as WireAvatarStroke } from "@/protocol/generated/AvatarStroke";
 
 type Points = number[][];
 
@@ -115,4 +116,40 @@ function edit(history: AvatarHistory, action: AvatarEdit): AvatarHistory {
   }
 }
 
-export const AvatarUtils = { brushSize, colours, white, limits, doodle, stroke, fromBox, face, isFull, edit };
+/** An avatar as it goes to the server: no size (one pen), points at 3 decimals to keep the message small. */
+function toWire(strokes: AvatarStroke[]): WireAvatarStroke[] {
+  return strokes.map(({ color, hasPressure, points }) => ({
+    colour: color,
+    pressure: hasPressure,
+    points: points.map(([x, y, pressure]) => [
+      CanvasUtils.round(x, 3),
+      CanvasUtils.round(y, 3),
+      CanvasUtils.round(pressure, 3),
+    ]),
+  }));
+}
+
+/** An avatar from the server, in the one avatar pen. */
+function fromWire(strokes: WireAvatarStroke[]): AvatarStroke[] {
+  return strokes.map(({ colour, pressure, points }) => ({
+    color: colour,
+    size: brushSize,
+    hasPressure: pressure,
+    points,
+  }));
+}
+
+export const AvatarUtils = {
+  brushSize,
+  colours,
+  white,
+  limits,
+  doodle,
+  stroke,
+  fromBox,
+  face,
+  isFull,
+  edit,
+  toWire,
+  fromWire,
+};

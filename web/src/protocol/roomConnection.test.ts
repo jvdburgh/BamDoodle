@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { AvatarStroke } from "@/protocol/generated/AvatarStroke";
 import type { ClientMessage } from "@/protocol/generated/ClientMessage";
 import type { RoomSnapshot } from "@/protocol/generated/RoomSnapshot";
 import type { RoundView } from "@/protocol/generated/RoundView";
@@ -43,7 +44,7 @@ class FakeSocket implements SocketLike {
 const room: RoomSnapshot = {
   code: "BKTZ",
   hostId: 1,
-  players: [{ id: 1, name: "Sam", score: 0, connected: true }],
+  players: [{ id: 1, name: "Sam", score: 0, connected: true, avatar: [] }],
   settings: {
     mode: "oneStroke",
     turnsPerPlayer: 3,
@@ -362,6 +363,109 @@ describe("RoomConnection: your vote", () => {
     connection.send({ type: "castVote", suspectId: 3 });
     socket().receive({ type: "revealed", reveal: { bamboozlerId: 2, votes: [], guessRemainingMs: 20_000 } });
     expect(connection.getState().pendingVote).toBeNull();
+  });
+});
+
+describe("RoomConnection: your avatar", () => {
+  const face: AvatarStroke[] = [{ colour: "#ffffff", pressure: false, points: [[0.5, 0.5, 0.5]] }];
+  const other: AvatarStroke[] = [{ colour: "#fbb03b", pressure: true, points: [[0.25, 0.5, 0.5]] }];
+  const avatarsSent = (socket: FakeSocket) => socket.sent.filter((message) => message.type === "setAvatar");
+
+  it("goes out once the edits pause, as one message", () => {
+    const { connection, socket } = joinedConnection();
+    connection.setAvatar(face);
+    advance(RoomConnectionTiming.avatarDebounceMs - 1);
+    connection.setAvatar(other);
+    advance(RoomConnectionTiming.avatarDebounceMs - 1);
+    expect(avatarsSent(socket())).toEqual([]);
+    advance(1);
+    expect(avatarsSent(socket())).toEqual([{ type: "setAvatar", strokes: other }]);
+  });
+
+  it("goes out right away when flushed, but never twice within the server's cooldown", () => {
+    const { connection, socket } = joinedConnection();
+    connection.setAvatar(face);
+    connection.flushAvatar();
+    advance(0);
+    expect(avatarsSent(socket())).toEqual([{ type: "setAvatar", strokes: face }]);
+
+    connection.setAvatar(other);
+    connection.flushAvatar();
+    advance(RoomConnectionTiming.avatarCooldownMs - 1);
+    expect(avatarsSent(socket())).toHaveLength(1);
+    advance(1);
+    expect(avatarsSent(socket())).toEqual([
+      { type: "setAvatar", strokes: face },
+      { type: "setAvatar", strokes: other },
+    ]);
+    connection.flushAvatar();
+    advance(RoomConnectionTiming.avatarCooldownMs);
+    expect(avatarsSent(socket())).toHaveLength(2);
+  });
+
+  it("waits for the room when set before joining or while reconnecting", () => {
+    const { connection, socket } = connect({ kind: "join", code: "BKTZ", name: "Sam" });
+    connection.setAvatar(face);
+    advance(RoomConnectionTiming.avatarDebounceMs);
+    socket().open();
+    socket().receive(joined());
+    advance(0);
+    expect(avatarsSent(socket())).toEqual([{ type: "setAvatar", strokes: face }]);
+
+    socket().drop();
+    connection.setAvatar(other);
+    advance(RoomConnection.backoff(0, 1));
+    socket().open();
+    socket().receive(joined());
+    advance(RoomConnectionTiming.avatarCooldownMs);
+    expect(avatarsSent(socket())).toEqual([{ type: "setAvatar", strokes: other }]);
+  });
+
+  it("is held during a round and goes out when it's over", () => {
+    const { connection, socket } = joinedConnection();
+    connection.setAvatar(face);
+    advance(RoomConnectionTiming.avatarDebounceMs - 1);
+    socket().receive({ type: "roundStarted", round });
+    advance(RoomConnectionTiming.avatarDebounceMs);
+    expect(avatarsSent(socket())).toEqual([]);
+
+    socket().receive({ type: "votingStarted", durationMs: 30_000 });
+    socket().receive({
+      type: "revealed",
+      reveal: { bamboozlerId: 2, votes: [], guessRemainingMs: 20_000 },
+    });
+    socket().receive({
+      type: "roundFinished",
+      result: {
+        number: 1,
+        rounds: 5,
+        gameOver: false,
+        category: "Animals",
+        word: "giraffe",
+        bamboozlerId: 2,
+        guess: null,
+        guessCorrect: false,
+        votes: [],
+        awards: [],
+        scores: [],
+      },
+    });
+    advance(0);
+    expect(avatarsSent(socket())).toEqual([{ type: "setAvatar", strokes: face }]);
+  });
+
+  it("waits while the connection is closed and goes out on joining again", () => {
+    const { connection, socket } = joinedConnection();
+    connection.setAvatar(face);
+    connection.close();
+    advance(RoomConnectionTiming.avatarDebounceMs);
+    expect(avatarsSent(socket())).toEqual([]);
+
+    connection.start();
+    socket().open();
+    socket().receive(joined());
+    advance(0);
+    expect(avatarsSent(socket())).toEqual([{ type: "setAvatar", strokes: face }]);
   });
 });
 

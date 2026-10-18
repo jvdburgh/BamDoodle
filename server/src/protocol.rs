@@ -50,6 +50,18 @@ pub enum Role {
     Bamboozler,
 }
 
+/// One line of a player's avatar, normalised to the avatar's square. Avatars use one pen, so there is no size.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct AvatarStroke {
+    /// One of the avatar palette's `#rrggbb` colours (`limits::AVATAR_COLOURS`).
+    pub colour: String,
+    /// False when the device had none: the client simulates it.
+    pub pressure: bool,
+    pub points: Vec<Point>,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export)]
@@ -105,6 +117,11 @@ pub enum ClientMessage {
     #[serde(rename_all = "camelCase")]
     UpdateSettings {
         settings: RoomSettings,
+    },
+    /// Any seated player, between rounds: replaces your whole avatar.
+    #[serde(rename_all = "camelCase")]
+    SetAvatar {
+        strokes: Vec<AvatarStroke>,
     },
     /// Host only, between rounds. After the final scoreboard, this starts a new game.
     StartRound,
@@ -165,6 +182,11 @@ pub enum ServerMessage {
     #[serde(rename_all = "camelCase")]
     PlayerRemoved {
         player_id: PlayerId,
+    },
+    #[serde(rename_all = "camelCase")]
+    AvatarChanged {
+        player_id: PlayerId,
+        strokes: Vec<AvatarStroke>,
     },
     #[serde(rename_all = "camelCase")]
     HostChanged {
@@ -258,7 +280,7 @@ pub enum RejectReason {
     Replaced,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export)]
 pub struct PlayerSummary {
@@ -266,6 +288,8 @@ pub struct PlayerSummary {
     pub name: String,
     pub score: u32,
     pub connected: bool,
+    /// Empty until the player sends one.
+    pub avatar: Vec<AvatarStroke>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
@@ -381,7 +405,7 @@ pub struct Reveal {
     pub guess_remaining_ms: u32,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export)]
 pub struct RoundResult {
@@ -436,6 +460,14 @@ mod tests {
 
         let message: ClientMessage = serde_json::from_str(r#"{ "type": "suspect", "suspectId": null }"#).unwrap();
         assert!(matches!(message, ClientMessage::Suspect { suspect_id: None }));
+
+        let message: ClientMessage = serde_json::from_str(
+            r##"{ "type": "setAvatar", "strokes": [{ "colour": "#ffffff", "pressure": false, "points": [[0.5, 0.25, 0.5]] }] }"##,
+        )
+        .unwrap();
+        assert!(
+            matches!(message, ClientMessage::SetAvatar { strokes } if strokes[0].points == vec![Point(0.5, 0.25, 0.5)])
+        );
     }
 
     #[test]
@@ -450,6 +482,43 @@ mod tests {
             json,
             serde_json::json!({ "type": "turnStarted", "playerId": 2, "durationMs": 10000, "turn": 1 })
         );
+
+        let message = ServerMessage::AvatarChanged {
+            player_id: 2,
+            strokes: vec![AvatarStroke {
+                colour: "#ffffff".into(),
+                pressure: true,
+                points: vec![Point(0.5, 0.25, 0.75)],
+            }],
+        };
+        let json = serde_json::to_value(&message).unwrap();
+        assert_eq!(
+            json,
+            serde_json::json!({
+                "type": "avatarChanged",
+                "playerId": 2,
+                "strokes": [{ "colour": "#ffffff", "pressure": true, "points": [[0.5, 0.25, 0.75]] }]
+            })
+        );
+    }
+
+    #[test]
+    fn the_biggest_avatar_fits_in_one_message() {
+        let points = vec![Point(0.123, 0.456, 0.789); crate::limits::AVATAR_POINTS / crate::limits::AVATAR_STROKES + 1];
+        let mut strokes = vec![
+            AvatarStroke {
+                colour: "#ffffff".into(),
+                pressure: false,
+                points,
+            };
+            crate::limits::AVATAR_STROKES
+        ];
+        let surplus = strokes.iter().map(|stroke| stroke.points.len()).sum::<usize>() - crate::limits::AVATAR_POINTS;
+        for stroke in &mut strokes[..surplus] {
+            stroke.points.pop();
+        }
+        let json = serde_json::to_string(&ClientMessage::SetAvatar { strokes }).unwrap();
+        assert!(json.len() <= crate::limits::MAX_MESSAGE_BYTES, "{} bytes", json.len());
     }
 
     #[test]

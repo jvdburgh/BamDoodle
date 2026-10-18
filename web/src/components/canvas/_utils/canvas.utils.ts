@@ -78,4 +78,4 @@ function strokeToPath(
   return freehandPath(points, stroke.size * width, stroke.hasPressure, complete);
 }
 
-export const CanvasUtils = { normalise, simplify, freehandPath, strokeToPath };
+export const CanvasUtils = { round, normalise, simplify, freehandPath, strokeToPath };

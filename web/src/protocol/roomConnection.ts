@@ -1,3 +1,4 @@
+import type { AvatarStroke } from "@/protocol/generated/AvatarStroke";
 import type { ClientMessage } from "@/protocol/generated/ClientMessage";
 import type { RejectReason } from "@/protocol/generated/RejectReason";
 import type { ServerMessage } from "@/protocol/generated/ServerMessage";
@@ -28,6 +29,10 @@ export const RoomConnectionTiming = {
   pongTimeoutMs: 10_000,
   /** The server gives a new connection the same time to say which room it wants. */
   helloTimeoutMs: 10_000,
+  /** Quiet time after the last avatar edit before it goes out, so the room hears about a face, not every stroke. */
+  avatarDebounceMs: 1_000,
+  /** The server drops a second avatar from the same player within a second (`limits::AVATAR_COOLDOWN`); with slack. */
+  avatarCooldownMs: 1_250,
 } as const;
 
 /** Reasons that mean trying again won't help. */
@@ -65,6 +70,9 @@ export class RoomConnection {
   #heartbeat: ReturnType<typeof setInterval> | null = null;
   #lastMessageAt = 0;
   #lastPingAt: number | null = null;
+  #avatar: AvatarStroke[] | null = null;
+  #avatarTimer: ReturnType<typeof setTimeout> | null = null;
+  #avatarSentAt = Number.NEGATIVE_INFINITY;
 
   constructor(intent: RoomIntent, options: RoomConnectionOptions = {}) {
     this.#intent = intent;
@@ -110,6 +118,18 @@ export class RoomConnection {
       this.#update(RoomStateUtils.withPendingVote(this.#state, message.suspectId));
     }
     return true;
+  }
+
+  /** Your avatar changed: it goes to the room once the edits pause (`AvatarUtils.toWire` makes the strokes). */
+  setAvatar(strokes: AvatarStroke[]): void {
+    this.#avatar = strokes;
+    this.#scheduleAvatar(RoomConnectionTiming.avatarDebounceMs);
+  }
+
+  /** Sends an avatar still waiting for its debounce as soon as the server takes it: when you leave the lobby. Held
+   * during a round, it goes out when the round is over. */
+  flushAvatar(): void {
+    if (this.#avatar !== null) this.#scheduleAvatar(0);
   }
 
   /** Leaves for good: no reconnects (until `start()` again). */
@@ -179,6 +199,7 @@ export class RoomConnection {
       state = RoomStateUtils.withStatus(state, "joined");
     }
     this.#update(state);
+    if (message.type === "roundFinished") this.flushAvatar();
   }
 
   #joined(code: string, sessionToken: string | null): void {
@@ -187,6 +208,30 @@ export class RoomConnection {
     if (this.#intent.kind === "create") this.#intent = { kind: "join", code, name: this.#intent.name };
     if (sessionToken && this.#intent.kind === "join") this.#tokens.set(code, this.#intent.name, sessionToken);
     this.#startHeartbeat();
+    // An avatar set while connecting or reconnecting couldn't go out yet.
+    this.flushAvatar();
+  }
+
+  #scheduleAvatar(delay: number): void {
+    this.#clearAvatarTimer();
+    const cooldownLeft = this.#avatarSentAt + RoomConnectionTiming.avatarCooldownMs - this.#now();
+    this.#avatarTimer = setTimeout(
+      () => {
+        this.#avatarTimer = null;
+        // The server only takes it between rounds; `roundFinished` flushes it.
+        if (this.#avatar === null || RoomStateUtils.round(this.#state) !== null) return;
+        if (this.send({ type: "setAvatar", strokes: this.#avatar })) {
+          this.#avatar = null;
+          this.#avatarSentAt = this.#now();
+        }
+      },
+      Math.max(delay, cooldownLeft),
+    );
+  }
+
+  #clearAvatarTimer(): void {
+    if (this.#avatarTimer !== null) clearTimeout(this.#avatarTimer);
+    this.#avatarTimer = null;
   }
 
   /** The socket is gone. Try again, unless a create may already have made a room: retrying would make another. */
@@ -236,6 +281,7 @@ export class RoomConnection {
     this.#reconnectTimer = null;
     this.#stopHeartbeat();
     this.#clearHelloTimer();
+    this.#clearAvatarTimer();
     this.#dropSocket();
     this.#update(RoomStateUtils.withStatus(this.#state, status, failure));
   }
