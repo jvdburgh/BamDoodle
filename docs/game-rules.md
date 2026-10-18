@@ -8,6 +8,16 @@ behaviour, and move answered items out of "Open questions".
 Everyone in the room draws the same secret word together on one canvas, taking turns. Everyone, that is, except
 the **bamboozler**: they don't know the word and have to bluff along while the others try to spot them.
 
+## Where it's played
+
+**Phone first.** Everyone plays on their own phone: join with a link, QR code or room code, and the phone shows
+everything you need (the canvas, players and mini-maps, timers, your secret, your vote). Tablets and desktops join the
+same way and get a roomier layout.
+
+**Optional host screen.** Like the well-known party-game boxes, someone can also open the room on a TV, beamer or
+laptop as a host screen. It shows the shared canvas big, with more detail (players, mini-maps, timers, who is drawing).
+It never shows the secret word and doesn't draw. It's a bonus, never required.
+
 ## Roles
 
 - **Artists** see the category and the secret word.
@@ -75,5 +85,5 @@ Split votes need no tie-break: points are per voter, not per majority.
 - The bamboozler's guess: free text with fuzzy matching, or pick from a few options?
 - Disconnects: does the round go on, pause, or end when the bamboozler leaves?
 - Can late joiners enter mid-round as spectators?
-- Big-screen mode: a watch-only view for a TV or Chromecast while people draw on their own devices.
+- Does the big screen need its own controls (start the next round, kick a player), or is that the host's phone?
 - A computer-controlled bamboozler (the original pitch said "player or AI"): later, if ever.

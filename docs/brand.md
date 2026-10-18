@@ -4,6 +4,9 @@
 
 - **BamDoodle**: bamboozle + doodle. Written with a capital D.
 - Tagline: **Draw • Guess • Deceive** (the dots in berry pink).
+- Second line, for the game itself (round start, reveal, loading): **Who's sketchy?** The logo is a sketchy
+  character, the game is about finding the sketchy one, and everything is sketched. Use it as a playful question,
+  not as the main tagline.
 - Never refer to other games or their names in the product, the docs or the marketing.
 
 ## Colours
@@ -28,8 +31,9 @@ The logo pairs every colour with a slightly darker shade; that pairing is a good
 All self-hosted through Fontsource npm packages. No Google Fonts CDN (privacy, GDPR) and no Adobe.
 
 - **Body:** Work Sans (Wei Huang, SIL OFL 1.1), `@fontsource-variable/work-sans`. Already installed.
-- **Display:** to pick in the design prototype. The original pitch used Chaloops, which is a commercial font (Chank
-  Fonts), so we need an OFL alternative with the same springy, hand-made feel. Candidates, all OFL and on Fontsource:
+- **Display:** **Love Ya Like A Sister** (Kimberly Geswein, SIL OFL 1.1), `@fontsource/love-ya-like-a-sister`,
+  the maintainer's pick. Single weight, hand-lettered, a little scruffy. The original pitch used Chaloops, which is
+  commercial (Chank Fonts). The playground has a font switcher to compare these alternatives, all OFL on Fontsource:
   - Grandstander (`@fontsource-variable/grandstander`): wonky, playful, hand-lettered
   - DynaPuff (`@fontsource-variable/dynapuff`): puffy, very characterful
   - Fredoka (`@fontsource-variable/fredoka`): soft and rounded, calmer

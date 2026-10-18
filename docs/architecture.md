@@ -20,6 +20,11 @@ choices get a short record in [decisions/](decisions/).
 
 - **One process, one container image.** The server serves the built web app and the WebSocket. No database, no
   cache, no queue.
+- **Phone first, optional host screen:** every *player device* (phone first, also tablet or desktop) shows the whole
+  game: canvas, players, timers, secret, vote. An optional *host screen* (TV, beamer, laptop) shows the canvas big
+  with more detail and never the word. Both are routes in the same web app and speak the same protocol; the server
+  sends each the view it's allowed to see. See
+  [game-rules.md](game-rules.md#where-its-played).
 - **The server is the referee.** Clients send intents ("I drew these points", "I vote for Sam"). The server
   decides what is allowed and tells everyone the result.
 
