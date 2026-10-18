@@ -3,6 +3,11 @@ import { BrandSketchFilter } from "../src/components/brand/BrandSketchFilter.com
 import "../src/index.css";
 
 const preview: Preview = {
+  // Components that focus something when they mount need the story's document to have focus; in headless Firefox the
+  // test frame often doesn't, so `.focus()` silently does nothing there.
+  beforeEach: () => {
+    window.focus();
+  },
   parameters: {
     layout: "centered",
     backgrounds: { disable: true },
