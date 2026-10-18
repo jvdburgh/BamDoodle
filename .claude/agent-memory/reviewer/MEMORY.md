@@ -1,2 +1,3 @@
 - [Client lifecycle patterns](feedback_client_lifecycle_patterns.md) — recurring WebSocket client bugs (throttled heartbeat, perf.now sleep, votes, tokens) to check first
-- [Server room patterns](feedback_server_room_patterns.md) — new broadcast msgs without own rate limit, Finished-result fields stale after settings change
+- [Server room patterns](feedback_server_room_patterns.md) — LEAD: client input fanned out to Everyone without own bound (rate, Vec length/dupes); stale Finished fields
+- [Word list patterns](feedback_word_list_patterns.md) — word equal to its category leaks to the bamboozler; themed proper names; script check

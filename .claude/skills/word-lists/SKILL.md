@@ -1,6 +1,6 @@
 ---
 name: word-lists
-description: Add, curate or review BamDoodle word packs (English and Dutch, base and adults) - which sources are allowed, licences and credits, file format, and what makes a good drawable word. Use when touching words/ or when asked for new words, categories or languages.
+description: Add, curate or review BamDoodle word lists (English and Dutch; everyday, themed and 18+ categories) - which sources are allowed, licences and credits, file format, and what makes a good drawable word. Use when touching words/ or when asked for new words, categories or languages.
 ---
 
 # Word lists
@@ -12,7 +12,7 @@ Read [docs/words.md](../../../docs/words.md) first: it has the allowed sources a
 - Concrete and drawable in a few strokes by an average person: "lighthouse" yes, "freedom" no.
 - One obvious meaning (no "bat" without a category that settles it).
 - Common enough that most players know it, in the target language (not a translation nobody uses).
-- Adults pack: suggestive or rude is fine, hateful never. No slurs, nothing about protected groups, nothing sexual
+- 18+ categories: suggestive or rude is fine, hateful never. No slurs, nothing about protected groups, nothing sexual
   involving minors. When in doubt, leave it out.
 
 ## Rules
@@ -24,3 +24,5 @@ Read [docs/words.md](../../../docs/words.md) first: it has the allowed sources a
 - Credit sources in `words/NOTICE`. Our curated lists are CC BY-SA 4.0.
 - Keep files sorted alphabetically per category; no duplicates across categories in the same pack.
 - Dutch: check spelling against OpenTaal.
+- Never a word equal to its category name: the bamboozler sees the category. The server refuses to load such a list,
+  or a category that is 18+ in one file and everyday in another.

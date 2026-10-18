@@ -1,15 +1,19 @@
 ---
 name: server-room-patterns
-description: Bug classes seen in server/src/room (rate limits on new broadcasts, state cached across settings changes) to check first in room/protocol reviews
+description: Bug classes seen in server/src/room (unbounded broadcast payloads, rate limits, state cached across settings changes) to check first in room/protocol reviews
 metadata:
   type: feedback
 ---
 
-First seen 2026-10-18 (round-flow rework: laps, suspicions, final vote, games). Promote to "lead with" if seen again:
+LEAD WITH (seen twice by 2026-10-18): client input that fans out to Everyone without its own bound.
+- New client message broadcast (e.g. `suspect` -> `suspicionChanged`) with only the generic 60 msg/s limit;
+  .claude/rules/protocol.md wants a per-message limit.
+- A `Vec` added to a client-sent struct (e.g. `settings.categories`) validated for membership only: duplicates and
+  length up to MAX_MESSAGE_BYTES are stored and rebroadcast as `settingsChanged` to every connection.
 
-- New client message that fans out to Everyone (e.g. `suspect` -> `suspicionChanged`) with only the generic 60 msg/s per-connection limit; .claude/rules/protocol.md wants a per-message rate limit.
-- Derived state frozen in `Phase::Finished(result)` (e.g. `game_over`) while `updateSettings` is allowed in Finished: a later settings change makes it stale ("round 3 of 1").
-- Paths into a phase change that skip the follow-up check: e.g. `disconnect` -> `next_turn` -> voting; check each entry point has a test.
+Also check:
+- Derived state frozen in `Phase::Finished(result)` (e.g. `game_over`) while `updateSettings` is allowed in Finished.
+- Paths into a phase change that skip the follow-up check: e.g. `disconnect` -> `next_turn` -> voting.
 
-**Why:** both first two confirmed with scratch Rust tests appended to server/src/room/tests.rs (back up first, restore after).
-**How to apply:** in server reviews, grep each new ClientMessage for a dedicated limit and each cached Finished field against update_settings.
+**Why:** each confirmed with scratch Rust tests appended to server/src/room/tests.rs (back up first, restore after).
+**How to apply:** grep each new ClientMessage / new client field for a dedicated limit (rate, count, dedupe).
