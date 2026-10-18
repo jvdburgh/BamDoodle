@@ -1,0 +1,14 @@
+{
+  "name": "BamDoodle",
+  "short_name": "BamDoodle",
+  "description": "Draw, guess, deceive. A free party drawing game where one player is bluffing.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#080357",
+  "theme_color": "#080357",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
