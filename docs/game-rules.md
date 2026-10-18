@@ -141,6 +141,9 @@ These are implemented in the server (`server/src/limits.rs`) and easy to change:
 - **Everyone votes, the bamboozler too**, so not voting doesn't give them away; their vote earns nothing. Final votes
   stay secret until the reveal; everyone sees who has voted. Suspicions during the drawing are public.
 - **The guess** is free text, forgiving about case, accents, spaces and one typo in words of five letters or more.
+  The word may sit inside a longer guess ("Donald Trump" for Trump, "ice bucket challenge" for ice-bucket), but a
+  guess that also names, or is, another word of the same category is wrong ("Wit-Rusland" isn't Rusland), so listing
+  words doesn't pay.
 - **Disconnects:** the round goes on. A drawer who drops loses their turn. A player who drops still counts for the
   vote for 15 seconds (a locked phone shouldn't end it); after that they no longer hold it up. A session token
   takes your seat and score back, and a second device with the same token takes over from the first. After a round,

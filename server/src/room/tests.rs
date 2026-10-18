@@ -1096,6 +1096,19 @@ mod reveal_and_points {
     }
 
     #[test]
+    fn a_longer_guess_counts_but_a_list_of_the_category_does_not() {
+        let mut game = caught_game(3);
+        let guess = format!("the tall {}", game.round().word);
+        game.send(game.bamboozler(), ClientMessage::GuessWord { guess });
+        assert!(result(&game).guess_correct);
+
+        let mut game = caught_game(3);
+        let guess = WORDS.join(" ");
+        game.send(game.bamboozler(), ClientMessage::GuessWord { guess });
+        assert!(!result(&game).guess_correct);
+    }
+
+    #[test]
     fn stayed_hidden_and_guessed_wrong() {
         let mut game = Game::voting(4);
         let bamboozler = game.bamboozler();

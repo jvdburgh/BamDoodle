@@ -726,9 +726,13 @@ impl Room {
         let Phase::Guessing { round, .. } = std::mem::replace(&mut self.phase, Phase::Lobby) else {
             return Vec::new();
         };
-        let guess_correct = guess
-            .as_deref()
-            .is_some_and(|guess| guess::is_correct(guess, &round.word));
+        let guess_correct = guess.as_deref().is_some_and(|guess| {
+            guess::is_correct(
+                guess,
+                &round.word,
+                self.words.words_in(self.settings.language, &round.category),
+            )
+        });
         let awards = score(&round, guess_correct);
         for award in &awards {
             if let Some(player) = self.player_mut(award.player_id) {

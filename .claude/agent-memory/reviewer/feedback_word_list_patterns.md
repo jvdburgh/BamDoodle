@@ -11,8 +11,9 @@ metadata:
   "Fata Morgana" included) plus figures; a Logos category lists brand names. Don't flag these as not drawable.
 - Maintainer decision (2026-10-18): Famous people may be living, politicians, controversial; not mass murderers
   or people known mainly for abuse.
-- Check entries against server/src/room/guess.rs (exact after normalise, 1 typo at 5+ letters): surname-only or
-  shortened names ("Trump", "Gaga", "ice-bucket") fail the bamboozler's natural full-name guess.
+- guess.rs (2026-10-18 diff): word may sit inside a longer guess unless the extras name a category rival. Check
+  rivals that CONTAIN the word (Wit-Rusland/Rusland, T-shirt/shirt, Efteling "Draak") and typo-rivals hitting
+  common extras (house~horse/mouse in Animals). Script: python3 -I over words/*/*.toml for whole-token containment.
 - Still check: duplicates per category, files sorted per category, an 18+ / everyday clash for one category name
   (the server refuses to load it), nothing hateful.
 

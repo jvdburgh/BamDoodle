@@ -158,6 +158,14 @@ impl WordLibrary {
             })
     }
 
+    /// Every word of one category, empty when it doesn't exist.
+    pub fn words_in(&self, language: Language, name: &str) -> &[String] {
+        self.categories
+            .iter()
+            .find(|category| category.language == language && category.name == name)
+            .map_or(&[], |category| &category.words)
+    }
+
     /// A random word from the picked categories. Prefers words not in `used`; when every word has been used, any
     /// word will do.
     pub fn pick(
