@@ -1,0 +1,8 @@
+# Themed pack, hand-written for BamDoodle. CC BY-SA 4.0, see words/NOTICE.
+language = "en"
+
+[categories]
+"Very British" = ["bagpipes", "Beefeater", "Big Ben", "black cab", "corgi", "cricket", "crumpet", "cup of tea", "double-decker bus", "fish and chips", "full English breakfast", "Loch Ness monster", "pub", "queue", "red phone box", "scone", "Sherlock Holmes", "Stonehenge", "Tower Bridge"]
+Christmas = ["candy cane", "chimney", "Christmas cracker", "Christmas jumper", "Christmas tree", "elf", "gingerbread man", "mistletoe", "reindeer", "Santa Claus", "sleigh", "snow globe", "snowflake", "stocking", "wreath"]
+"Fairy tales" = ["big bad wolf", "Cinderella", "frog prince", "gingerbread house", "glass slipper", "Goldilocks", "Hansel and Gretel", "Jack and the Beanstalk", "Little Red Riding Hood", "magic mirror", "Pinocchio", "poisoned apple", "pumpkin carriage", "Rapunzel", "Sleeping Beauty", "Snow White", "Three Little Pigs"]
+Landmarks = ["Atomium", "Brandenburg Gate", "Colosseum", "Easter Island heads", "Eiffel Tower", "Golden Gate Bridge", "Great Wall of China", "Leaning Tower of Pisa", "Machu Picchu", "Mount Fuji", "Mount Rushmore", "Sphinx", "Statue of Liberty", "Sydney Opera House", "Taj Mahal", "windmills of Kinderdijk"]

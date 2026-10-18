@@ -1,0 +1,9 @@
+# Themapakket Nederland, met de hand geschreven voor BamDoodle. CC BY-SA 4.0, zie words/NOTICE.
+# Namen van attracties en figuren zijn hier alleen woorden om te tekenen.
+language = "nl"
+
+[categories]
+Efteling = ["Doornroosje", "Draak", "Holle Bolle Gijs", "Joris en de Draak", "Kabouter", "Kleine Zeemeermin", "Langnek", "Pardoes", "Roodkapje", "Spookslot", "Sprookjesboom", "Vliegende Hollander", "Vrouw Holle"]
+Sinterklaas = ["chocoladeletter", "gedicht", "marsepein", "mijter", "paard op het dak", "pepernoten", "schoen zetten", "schoorsteen", "Sint op zijn paard", "speculaas", "staf", "stoomboot", "surprise", "taai-taai", "verlanglijstje", "zak met cadeaus"]
+"Typisch Nederlands" = ["bakfiets", "Deltawerken", "dijk", "Elfstedentocht", "fietsenstalling", "grachtenpand", "kaasmarkt", "klompen", "Koningsdag", "oranje kroon", "polder", "regenpak", "schaatsen", "sluis", "tulp", "verjaardagskring", "vrijmarkt", "woonboot"]
+"Lekker Nederlands" = ["appeltaart", "bitterbal", "boterletter", "drop", "erwtensoep", "frikandel", "hagelslag", "haring", "kaassoufflé", "kroket", "oliebol", "ontbijtkoek", "patatje oorlog", "poffertjes", "stamppot", "stroopwafel", "tompouce", "vla"]

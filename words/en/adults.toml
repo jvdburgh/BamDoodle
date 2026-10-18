@@ -4,5 +4,5 @@ language = "en"
 adult = true
 
 [categories]
-"After dark" = ["hangover", "handcuffs", "bikini", "skinny dipping", "walk of shame", "love bite", "strip poker", "beer belly", "booty call", "speed dating"]
-"Bodily matters" = ["fart", "burp", "pimple", "toilet paper", "hairy back", "belly button", "underpants", "bra", "wedgie", "sweaty armpit"]
+"After dark" = ["beer belly", "bikini", "booty call", "handcuffs", "hangover", "love bite", "skinny dipping", "speed dating", "strip poker", "walk of shame"]
+"Bodily matters" = ["belly button", "bra", "burp", "fart", "hairy back", "pimple", "sweaty armpit", "toilet paper", "underpants", "wedgie"]
