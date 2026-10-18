@@ -127,6 +127,7 @@ function identities(families: Record<number, CanvasColour[]> | null): Record<num
 
 const problems: Record<RejectReason, string> = {
   roomNotFound: "There’s no room with that code. Check the code and try again.",
+  roomClosed: "This room was closed after 30 minutes without play. Start a new one from the start page.",
   roomFull: "That room is full.",
   tooManyRooms: "The server is full right now. Try again in a bit.",
   invalidName: "That name won’t do. Try another one.",

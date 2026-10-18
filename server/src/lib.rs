@@ -27,6 +27,12 @@ use tower_http::{
 
 use crate::registry::Registry;
 
+/// The release this binary was built for, baked in by the Docker build (`BAMDOODLE_VERSION`); `dev` otherwise.
+pub const VERSION: &str = match option_env!("BAMDOODLE_VERSION") {
+    Some(version) => version,
+    None => "dev",
+};
+
 /// Only our own origin for scripts, sockets, fonts, images and sounds. Inline styles are allowed because React sets
 /// canvas sizes and player colours with `style`; there are no inline scripts.
 const CONTENT_SECURITY_POLICY: &str = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; \
@@ -40,6 +46,7 @@ pub fn app(registry: Arc<Registry>, static_dir: &Path) -> Router {
 
     Router::new()
         .route("/api/health", get(|| async { "ok" }))
+        .route("/api/version", get(|| async { VERSION }))
         .route("/ws", get(websocket))
         .with_state(registry)
         .fallback_service(ServeDir::new(static_dir).fallback(app_routes))

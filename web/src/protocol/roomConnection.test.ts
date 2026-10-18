@@ -4,7 +4,13 @@ import type { ClientMessage } from "@/protocol/generated/ClientMessage";
 import type { RoomSnapshot } from "@/protocol/generated/RoomSnapshot";
 import type { RoundView } from "@/protocol/generated/RoundView";
 import type { ServerMessage } from "@/protocol/generated/ServerMessage";
-import { RoomConnection, RoomConnectionTiming, type RoomIntent, type SocketLike } from "@/protocol/roomConnection";
+import {
+  RoomConnection,
+  type RoomConnectionOptions,
+  RoomConnectionTiming,
+  type RoomIntent,
+  type SocketLike,
+} from "@/protocol/roomConnection";
 import { RoomStateUtils } from "@/protocol/roomState.utils";
 import { SessionTokenUtils } from "@/protocol/sessionTokens.utils";
 
@@ -74,13 +80,24 @@ const round: RoundView = {
   yourVote: null,
 };
 
-const joined = (token = "token-1"): ServerMessage => ({ type: "joined", you: 1, sessionToken: token, room });
+const joined = (token = "token-1"): ServerMessage => ({
+  type: "joined",
+  serverVersion: "dev",
+  you: 1,
+  sessionToken: token,
+  room,
+});
 
 let sockets: FakeSocket[];
 let now: number;
 
-function connect(intent: RoomIntent, tokens = SessionTokenUtils.memory()) {
+function connect(
+  intent: RoomIntent,
+  tokens = SessionTokenUtils.memory(),
+  extra: Pick<RoomConnectionOptions, "appVersion" | "fetchVersion" | "onNewVersion"> = {},
+) {
   const connection = new RoomConnection(intent, {
+    ...extra,
     url: "ws://test/ws",
     createSocket: () => {
       const socket = new FakeSocket();
@@ -466,6 +483,83 @@ describe("RoomConnection: your avatar", () => {
     socket().receive(joined());
     advance(0);
     expect(avatarsSent(socket())).toEqual([{ type: "setAvatar", strokes: face }]);
+  });
+});
+
+describe("RoomConnection: releases and closed rooms", () => {
+  const flush = () => vi.advanceTimersByTimeAsync(0);
+
+  it("reloads before saying hello when the server runs another release", async () => {
+    const onNewVersion = vi.fn(() => true);
+    const fetchVersion = vi.fn(async () => "v0.2.0");
+    const { socket } = connect({ kind: "create", name: "Sam" }, undefined, {
+      appVersion: "v0.1.0",
+      fetchVersion,
+      onNewVersion,
+    });
+    socket().open();
+    await flush();
+    expect(fetchVersion).toHaveBeenCalledWith("ws://test/ws");
+    expect(onNewVersion).toHaveBeenCalledWith("v0.2.0");
+    expect(socket().sent).toEqual([]);
+  });
+
+  it("carries on when the reload is skipped, the version matches, the server is local or can't be asked", async () => {
+    for (const [serverVersion, reloads] of [
+      ["v0.2.0", false],
+      ["v0.1.0", true],
+      ["dev", true],
+      [null, true],
+    ] as const) {
+      const onNewVersion = vi.fn(() => reloads);
+      const { socket } = connect({ kind: "join", code: "BKTZ", name: "Sam" }, undefined, {
+        appVersion: "v0.1.0",
+        fetchVersion: async () => serverVersion,
+        onNewVersion,
+      });
+      socket().open();
+      await flush();
+      expect(socket().sent).toEqual([{ type: "joinRoom", code: "BKTZ", name: "Sam", sessionToken: null }]);
+    }
+  });
+
+  it("doesn't ask at all in a local build", () => {
+    const fetchVersion = vi.fn(async () => "v0.2.0");
+    const { socket } = connect({ kind: "watch", code: "BKTZ" }, undefined, { appVersion: "dev", fetchVersion });
+    socket().open();
+    expect(fetchVersion).not.toHaveBeenCalled();
+    expect(socket().sent).toEqual([{ type: "watchRoom", code: "BKTZ" }]);
+  });
+
+  it("reloads at most once per release", () => {
+    const items = new Map<string, string>();
+    const reload = vi.fn();
+    vi.stubGlobal("sessionStorage", {
+      getItem: (key: string) => items.get(key) ?? null,
+      setItem: (key: string, value: string) => void items.set(key, value),
+    });
+    vi.stubGlobal("location", { reload });
+    expect(RoomConnection.reloadOnce("v0.2.0")).toBe(true);
+    expect(RoomConnection.reloadOnce("v0.2.0")).toBe(false);
+    expect(RoomConnection.reloadOnce("v0.3.0")).toBe(true);
+    expect(reload).toHaveBeenCalledTimes(2);
+
+    vi.stubGlobal("sessionStorage", {
+      getItem: () => {
+        throw new Error("blocked");
+      },
+    });
+    expect(RoomConnection.reloadOnce("v0.4.0")).toBe(false);
+    vi.unstubAllGlobals();
+  });
+
+  it("stops for good when the room is closed for inactivity", () => {
+    const { connection, socket } = joinedConnection();
+    socket().receive({ type: "rejected", reason: "roomClosed" });
+    socket().drop();
+    expect(connection.getState()).toMatchObject({ status: "failed", failure: "roomClosed" });
+    advance(60_000);
+    expect(sockets).toHaveLength(1);
   });
 });
 

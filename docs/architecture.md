@@ -52,7 +52,8 @@ All live state lives in the process ([decision 0002](decisions/0002-in-memory-st
   seat and every player summary carries it, so joiners and reconnects see everyone's faces. Until a player sends one,
   every device shows the same doodle face seeded from the room code and player id.
 - **Cleanup:** a player who is gone between rounds loses their seat after 2 minutes; a room with no players
-  connected closes after 5 minutes (30 seconds if nobody ever joined it). Host screens don't keep a room open.
+  connected closes after 5 minutes (30 seconds if nobody ever joined it), and any room closes after 30 minutes without
+  play (`roomClosed`). Host screens and pings don't keep a room open.
 - **Words** come from `words/<language>/<pack>.toml`, loaded at startup (`WORDS_DIR`). Players pick categories, not
   files: the room snapshot lists every category (`wordCategories`), and `settings.categories` says which are in play.
 - **Limits** are all in `server/src/limits.rs`.
@@ -128,7 +129,8 @@ and solve problems we don't have).
 - **A create is never retried once its hello went out:** that could make a second room. The client fails instead
   and the player taps again.
 - **It stops for good** on `replaced` (another device took the seat), on a rejection that retrying can't fix
-  (`roomNotFound`, `roomFull`, `nameTaken`, …) and on `close()`. The status says which: `connecting`, `joined`,
+  (`roomNotFound`, `roomFull`, `nameTaken`, …), on `roomClosed` (a room closed for inactivity, also after
+  joining) and on `close()`. The status says which: `connecting`, `joined`,
   `reconnecting`, `failed`, `replaced`, `closed`.
 - **State** (`roomState.utils.ts`) is a pure reducer from server messages to a `RoomState`: the snapshot kept up to
   date, timers as deadlines on the device's clock, the last rejection and your own vote (the server only says *that*
@@ -206,6 +208,11 @@ Conventions (see AGENTS.md):
 - Releases: a `v*` tag runs `.github/workflows/release.yml`: build, push, redeploy, then a health check and a short game
   over a real WebSocket. The runbook, with every command, is [infra/README.md](../infra/README.md).
 - `scripts/ws-soak.mjs` (`just soak`) is the smoke and soak test for any running server.
+- Versions: the release tag (e.g. `v0.1.0`) is baked into both the server binary and the web build
+  (`BAMDOODLE_VERSION`, `/api/version`). Before it says hello, the web app asks `/api/version`; built for another release,
+  it reloads itself once (a guard per version stops loops), so it never creates or joins with old code. After a
+  deploy, an open tab's reconnect does the same. New releases always reach browsers: build files
+  have hashed names and everything else is revalidated. The start page footer shows the version.
 - HTTP: every response carries HSTS, a Content Security Policy (scripts, sockets, fonts, images and sounds from our
   own origin only; inline styles allowed for React's `style`), `X-Frame-Options: DENY`, `nosniff` and a referrer and
   permissions policy (`server/src/lib.rs`). Hashed build files in `/assets/` are cached for a year, everything else is

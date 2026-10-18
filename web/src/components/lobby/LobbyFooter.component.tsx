@@ -1,6 +1,9 @@
+import { APP_VERSION } from "@/protocol/version";
+
 const MAKER_URL = "https://github.com/jvdburgh";
 const REPO_URL = "https://github.com/jvdburgh/BamDoodle";
 const DONATE_URL = "https://u24.gov.ua/";
+const RELEASE_URL = `${REPO_URL}/releases/tag/`;
 
 const link =
   "rounded-sm underline decoration-white/30 underline-offset-3 hover:text-white hover:decoration-sun focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white";
@@ -40,6 +43,17 @@ export function LobbyFooter() {
             🇺🇦
           </span>
         </span>
+      </p>
+      <p>
+        {APP_VERSION === "dev" ? (
+          "Development build"
+        ) : !APP_VERSION.startsWith("v") ? (
+          `Version ${APP_VERSION}`
+        ) : (
+          <a href={RELEASE_URL + APP_VERSION} target="_blank" rel="noopener noreferrer" className={link}>
+            Version {APP_VERSION}
+          </a>
+        )}
       </p>
     </footer>
   );

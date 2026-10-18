@@ -54,3 +54,6 @@ pub const AVATAR_COLOURS: [&str; 10] = [
 pub const AVATAR_COOLDOWN: Duration = Duration::from_secs(1);
 /// A host who drops out keeps the role this long (a refresh, a locked phone) before it moves to the next player.
 pub const HOST_GRACE: Duration = Duration::from_secs(15);
+/// A room where nobody has done anything (joined, drawn, voted, changed settings) for this long is closed, even with
+/// tabs still open.
+pub const ROOM_IDLE_LIMIT: Duration = Duration::from_secs(30 * 60);

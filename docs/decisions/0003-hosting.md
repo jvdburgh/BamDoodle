@@ -1,6 +1,6 @@
 # 0003: Scaleway Serverless Containers, Instance as fallback
 
-Status: accepted, set up in infra/ (2026-10-18); the WebSocket soak test runs at the first deploy (infra/README.md, step 6)
+Status: accepted and verified (2026-10-18)
 
 ## Context
 
@@ -36,3 +36,10 @@ Fallback if that test disappoints: a STARDUST1-S or DEV1-S Instance with Docker 
 - Deploy when no games are running.
 - DNS: Scaleway Domains & DNS can host the existing domain (about €5 a month per zone at the time of writing) if we
   want to move off a non-EU DNS provider.
+
+## Verified (2026-10-18)
+
+The soak test (`scripts/ws-soak.mjs --rooms 20 --screens 1 --idle 3 --minutes 55`) against the live container in
+nl-ams: 92 WebSockets (above the documented 80 concurrent requests) held open for 55 minutes, including silent ones,
+with 0 drops; ping round trip p50 83 ms, p95 180 ms, max 290 ms from a Dutch home connection. The Instance fallback
+isn't needed.

@@ -65,6 +65,8 @@ jobs:
           context: .
           platforms: linux/amd64
           push: true
+          build-args: |
+            BAMDOODLE_VERSION=${{ steps.tags.outputs.primary }}
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tags.outputs.primary }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tags.outputs.sha }}
@@ -108,3 +110,6 @@ jobs:
         run: |
           curl -fsS "https://${{ steps.ready.outputs.host }}/api/health"
           node scripts/ws-soak.mjs --url "wss://${{ steps.ready.outputs.host }}/ws" --rooms 1 --minutes 0
+          deployed=$(curl -fsS "https://${{ steps.ready.outputs.host }}/api/version")
+          echo "deployed version: $deployed"
+          test "$deployed" = "${{ steps.tags.outputs.primary }}"

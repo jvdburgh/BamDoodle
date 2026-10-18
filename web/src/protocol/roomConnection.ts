@@ -4,6 +4,7 @@ import type { RejectReason } from "@/protocol/generated/RejectReason";
 import type { ServerMessage } from "@/protocol/generated/ServerMessage";
 import { type RoomState, RoomStateUtils } from "@/protocol/roomState.utils";
 import { type SessionTokenStore, SessionTokenUtils } from "@/protocol/sessionTokens.utils";
+import { APP_VERSION } from "@/protocol/version";
 
 export type RoomIntent =
   | { kind: "create"; name: string }
@@ -19,6 +20,13 @@ export type RoomConnectionOptions = {
   /** For tests: the jitter in reconnect delays and the clock used for timers. */
   random?: () => number;
   now?: () => number;
+  /**
+   * The release this app was built for; how to ask the server for its own; and what to do when they differ: by
+   * default reload once, returning whether it did (if not, the connection just carries on).
+   */
+  appVersion?: string;
+  fetchVersion?: (url: string) => Promise<string | null>;
+  onNewVersion?: (serverVersion: string) => boolean;
 };
 
 export const RoomConnectionTiming = {
@@ -59,6 +67,9 @@ export class RoomConnection {
   readonly #tokens: SessionTokenStore;
   readonly #random: () => number;
   readonly #now: () => number;
+  readonly #appVersion: string;
+  readonly #fetchVersion: (url: string) => Promise<string | null>;
+  readonly #onNewVersion: (serverVersion: string) => boolean;
 
   #state: RoomState = RoomStateUtils.initial();
   #listeners = new Set<() => void>();
@@ -82,6 +93,34 @@ export class RoomConnection {
     this.#random = options.random ?? Math.random;
     // Wall-clock time: performance.now() stops while a phone sleeps, which would hide how long it was away.
     this.#now = options.now ?? Date.now;
+    this.#appVersion = options.appVersion ?? APP_VERSION;
+    this.#fetchVersion = options.fetchVersion ?? RoomConnection.fetchServerVersion;
+    this.#onNewVersion = options.onNewVersion ?? RoomConnection.reloadOnce;
+  }
+
+  /** `/api/version` next to the socket's `/ws`, or null when it can't be read. */
+  static async fetchServerVersion(socketUrl: string): Promise<string | null> {
+    try {
+      const url = socketUrl.replace(/^ws/, "http").replace(/\/ws$/, "/api/version");
+      const response = await fetch(url, { cache: "no-store" });
+      return response.ok ? (await response.text()).trim() : null;
+    } catch {
+      return null;
+    }
+  }
+
+  /** Reloads to fetch the new release, at most once per version so a stale cache can never loop. */
+  static reloadOnce(serverVersion: string): boolean {
+    const key = "bamdoodle:reloaded-for";
+    try {
+      if (globalThis.sessionStorage?.getItem(key) === serverVersion) return false;
+      globalThis.sessionStorage?.setItem(key, serverVersion);
+    } catch {
+      return false;
+    }
+    if (!globalThis.location) return false;
+    globalThis.location.reload();
+    return true;
   }
 
   static defaultUrl(location: Pick<Location, "protocol" | "host"> = globalThis.location): string {
@@ -143,8 +182,7 @@ export class RoomConnection {
     this.#helloSent = false;
     socket.onopen = () => {
       this.#lastMessageAt = this.#now();
-      this.#helloSent = true;
-      socket.send(JSON.stringify(this.#hello()));
+      void this.#sayHello(socket);
     };
     socket.onmessage = (event) => this.#receive(event.data);
     socket.onclose = () => {
@@ -155,6 +193,21 @@ export class RoomConnection {
       this.#helloTimer = null;
       if (this.#socket === socket && this.#state.status !== "joined") this.#lost();
     }, RoomConnectionTiming.helloTimeoutMs);
+  }
+
+  /**
+   * Checks the server's release before the hello, so an old app reloads before it creates or joins anything (after a
+   * deploy, an open tab's reconnect lands here too). A local build skips the check.
+   */
+  async #sayHello(socket: SocketLike): Promise<void> {
+    if (this.#appVersion !== "dev") {
+      const serverVersion = await this.#fetchVersion(this.#url ?? RoomConnection.defaultUrl());
+      if (this.#socket !== socket) return;
+      const outdated = serverVersion !== null && serverVersion !== "dev" && serverVersion !== this.#appVersion;
+      if (outdated && this.#onNewVersion(serverVersion)) return;
+    }
+    this.#helloSent = true;
+    socket.send(JSON.stringify(this.#hello()));
   }
 
   #hello(): ClientMessage {
@@ -185,6 +238,11 @@ export class RoomConnection {
 
     if (message.type === "rejected" && message.reason === "replaced") {
       this.#stop("replaced");
+      return;
+    }
+    if (message.type === "rejected" && message.reason === "roomClosed") {
+      this.#update(RoomStateUtils.apply(this.#state, message, this.#now()));
+      this.#stop("failed", "roomClosed");
       return;
     }
     if (message.type === "rejected" && this.#state.status !== "joined" && fatalBeforeJoining.has(message.reason)) {

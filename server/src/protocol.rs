@@ -168,7 +168,9 @@ pub enum ServerMessage {
     Joined {
         you: Option<PlayerId>,
         session_token: Option<String>,
-        room: RoomSnapshot,
+        room: Box<RoomSnapshot>,
+        /// The release the server runs, e.g. `v0.1.0` (`dev` locally). A web app built for another release reloads.
+        server_version: String,
     },
     #[serde(rename_all = "camelCase")]
     PlayerJoined {
@@ -278,6 +280,8 @@ pub enum RejectReason {
     NotBamboozler,
     /// Your seat was taken over by a newer connection with the same session token. Don't reconnect.
     Replaced,
+    /// The room was closed after a long time without play. Don't reconnect; start or join another room.
+    RoomClosed,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]

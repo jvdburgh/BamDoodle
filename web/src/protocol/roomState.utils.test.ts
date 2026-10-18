@@ -45,7 +45,7 @@ function play(messages: ServerMessage[], start: RoomState = RoomStateUtils.initi
   return messages.reduce((state, message) => RoomStateUtils.apply(state, message, now), start);
 }
 
-const joined: ServerMessage = { type: "joined", you: 1, sessionToken: "token", room: lobby };
+const joined: ServerMessage = { type: "joined", serverVersion: "dev", you: 1, sessionToken: "token", room: lobby };
 
 describe("RoomStateUtils.apply", () => {
   it("takes the snapshot from joined and ignores everything before it", () => {
@@ -116,6 +116,7 @@ describe("RoomStateUtils.apply", () => {
   it("resets scores when a new game starts", () => {
     const scored: ServerMessage = {
       type: "joined",
+      serverVersion: "dev",
       you: 1,
       sessionToken: "token",
       room: { ...lobby, players: lobby.players.map((player) => ({ ...player, score: 4 })) },
@@ -260,6 +261,7 @@ describe("RoomStateUtils.apply", () => {
       RoomStateUtils.initial(),
       {
         type: "joined",
+        serverVersion: "dev",
         you: 3,
         sessionToken: "t",
         room: { ...lobby, phase: { phase: "finished", result, strokes: [stroke] } },

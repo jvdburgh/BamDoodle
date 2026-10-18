@@ -56,6 +56,8 @@ async fn run(mut room: Room, mut commands: mpsc::Receiver<RoomCommand>, registry
     let mut next_connection: ConnectionId = 1;
     let mut seated_anyone = false;
     let mut empty_since = Some(Instant::now());
+    // Anything a person does: joining, drawing, voting, settings. Pings and server timers don't count.
+    let mut last_activity = Instant::now();
 
     loop {
         let grace = if seated_anyone {
@@ -64,8 +66,9 @@ async fn run(mut room: Room, mut commands: mpsc::Receiver<RoomCommand>, registry
             limits::UNUSED_ROOM_GRACE
         };
         let close_at = empty_since.map(|since| since + grace);
+        let idle_at = Some(last_activity + limits::ROOM_IDLE_LIMIT);
         let tick_at = room.next_deadline(Instant::now().into_std()).map(Instant::from_std);
-        let wake_at = [close_at, tick_at].into_iter().flatten().min();
+        let wake_at = [close_at, idle_at, tick_at].into_iter().flatten().min();
 
         let command = tokio::select! {
             command = commands.recv() => match command {
@@ -75,6 +78,13 @@ async fn run(mut room: Room, mut commands: mpsc::Receiver<RoomCommand>, registry
             () = sleep_until(wake_at.unwrap_or_else(Instant::now)), if wake_at.is_some() => None,
         };
         let now = Instant::now();
+        match &command {
+            Some(RoomCommand::Join { .. } | RoomCommand::Watch { .. }) => last_activity = now,
+            Some(RoomCommand::Message { message, .. }) if !matches!(message, ClientMessage::Ping) => {
+                last_activity = now;
+            }
+            _ => {}
+        }
         let mut connect =
             |viewer: Viewer, connections: &mut HashMap<ConnectionId, Connection>, first: ServerMessage| {
                 let (sender, receiver) = mpsc::channel(limits::OUTBOX_CAPACITY);
@@ -99,7 +109,8 @@ async fn run(mut room: Room, mut commands: mpsc::Receiver<RoomCommand>, registry
                     let joined = ServerMessage::Joined {
                         you: Some(seat.player_id),
                         session_token: Some(seat.session_token),
-                        room: room.snapshot(viewer, now.into_std()),
+                        room: Box::new(room.snapshot(viewer, now.into_std())),
+                        server_version: crate::VERSION.into(),
                     };
                     let entered = connect(viewer, &mut connections, joined);
                     let id = entered.0;
@@ -129,7 +140,8 @@ async fn run(mut room: Room, mut commands: mpsc::Receiver<RoomCommand>, registry
                     let joined = ServerMessage::Joined {
                         you: None,
                         session_token: None,
-                        room: room.snapshot(Viewer::Screen, now.into_std()),
+                        room: Box::new(room.snapshot(Viewer::Screen, now.into_std())),
+                        server_version: crate::VERSION.into(),
                     };
                     let entered = connect(Viewer::Screen, &mut connections, joined);
                     let id = entered.0;
@@ -166,6 +178,18 @@ async fn run(mut room: Room, mut commands: mpsc::Receiver<RoomCommand>, registry
         };
 
         deliver(&mut connections, &mut room, outbox, now);
+
+        if now >= last_activity + limits::ROOM_IDLE_LIMIT {
+            tracing::debug!(code = room.code(), "closing a room nobody has played in for a while");
+            let closed = vec![(
+                Audience::Everyone,
+                ServerMessage::Rejected {
+                    reason: RejectReason::RoomClosed,
+                },
+            )];
+            dispatch(&connections, closed);
+            break;
+        }
 
         let players_here = connections
             .values()
@@ -282,6 +306,58 @@ mod tests {
         registry.create().unwrap();
         tokio::time::sleep(limits::UNUSED_ROOM_GRACE + Duration::from_secs(1)).await;
         assert_eq!(registry.room_count(), 0);
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn a_room_nobody_plays_in_closes_and_everyone_hears_why() {
+        let registry = registry();
+        let (_, room) = registry.create().unwrap();
+        let (sam, mut sam_outbox) = join(&room, "Sam", None).await.unwrap();
+        let (_, mut screen) = watch(&room).await.unwrap();
+
+        // Pings keep the socket alive but aren't play.
+        for _ in 0..10 {
+            tokio::time::sleep(limits::ROOM_IDLE_LIMIT / 10).await;
+            room.commands
+                .send(RoomCommand::Message {
+                    connection: sam,
+                    message: ClientMessage::Ping,
+                })
+                .await
+                .unwrap();
+        }
+        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+        assert_eq!(registry.room_count(), 0);
+
+        let closed = ServerMessage::Rejected {
+            reason: RejectReason::RoomClosed,
+        };
+        for outbox in [&mut sam_outbox, &mut screen] {
+            let mut seen = Vec::new();
+            while let Some(message) = outbox.recv().await {
+                seen.push(message);
+            }
+            assert!(seen.contains(&closed));
+        }
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn playing_keeps_a_room_open() {
+        let registry = registry();
+        let (_, room) = registry.create().unwrap();
+        let (sam, _sam_outbox) = join(&room, "Sam", None).await.unwrap();
+        for _ in 0..3 {
+            tokio::time::sleep(limits::ROOM_IDLE_LIMIT - std::time::Duration::from_secs(60)).await;
+            room.commands
+                .send(RoomCommand::Message {
+                    connection: sam,
+                    message: ClientMessage::StartRound,
+                })
+                .await
+                .unwrap();
+        }
+        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+        assert_eq!(registry.room_count(), 1);
     }
 
     #[tokio::test(start_paused = true)]

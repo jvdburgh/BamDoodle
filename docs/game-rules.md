@@ -141,6 +141,8 @@ These are implemented in the server (`server/src/limits.rs`) and easy to change:
   vote for 15 seconds (a locked phone shouldn't end it); after that they no longer hold it up. A session token
   takes your seat and score back, and a second device with the same token takes over from the first. After a round,
   the seat of someone who is gone is kept for 2 minutes.
+- **Inactive rooms** close after 30 minutes in which nobody joins, draws, votes or changes a setting (an open tab
+  alone doesn't keep a room alive); everyone still there is told the room was closed.
 - **Late joiners** watch the current round (no word, no vote) and play from the next one.
 - **The host** is whoever created the room; when they drop out, the role waits 15 seconds for them (a refresh or a locked phone)
   and then goes to the next player who joined.

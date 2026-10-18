@@ -10,6 +10,9 @@ COPY web/package.json ./web/
 RUN pnpm install --frozen-lockfile --filter bamdoodle-web
 
 FROM web-deps AS web-build
+# The release, e.g. v0.1.0: shown in the footer and compared with the server's to reload old tabs.
+ARG BAMDOODLE_VERSION=dev
+ENV VITE_BAMDOODLE_VERSION=$BAMDOODLE_VERSION
 COPY web/ ./web/
 RUN pnpm --filter bamdoodle-web exec vite build
 
@@ -25,6 +28,8 @@ FROM rust-chef AS rust-builder
 COPY --from=rust-planner /app/recipe.json recipe.json
 RUN cargo chef cook --release --recipe-path recipe.json
 COPY server/ ./
+ARG BAMDOODLE_VERSION=dev
+ENV BAMDOODLE_VERSION=$BAMDOODLE_VERSION
 RUN cargo build --release --bin bamdoodle-server
 
 FROM debian:trixie-slim AS runtime

@@ -53,7 +53,11 @@ impl Client {
                 you,
                 session_token,
                 room,
-            } => Some((you, session_token, room.code, room.phase)),
+                server_version,
+            } => {
+                assert_eq!(server_version, bamdoodle_server::VERSION);
+                Some((you, session_token, room.code, room.phase))
+            }
             _ => None,
         })
         .await
