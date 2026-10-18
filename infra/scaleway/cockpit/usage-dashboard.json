@@ -428,6 +428,81 @@
           "queryType": "range"
         }
       ]
+    },
+    {
+      "id": 12,
+      "type": "bargauge",
+      "title": "Rounds per category (the word's)",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_SCALEWAY_LOGS}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 26,
+        "w": 16,
+        "h": 10
+      },
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "basic",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "values": false
+        },
+        "showUnfilled": true
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_SCALEWAY_LOGS}"
+          },
+          "queryType": "range",
+          "legendFormat": "{{category}}",
+          "expr": "sort_desc(sum by (category) (count_over_time({resource_type=\"serverless_container\", resource_name=~\"(.+-)?bamdoodle-game\"} | json message=\"message\" | line_format \"{{.message}}\" | json target=\"target\", event=\"event\", category=\"category\" | target=\"bamdoodle::usage\" | event=\"round_finished\" [$__range])))"
+        }
+      ],
+      "interval": "1h"
+    },
+    {
+      "id": 13,
+      "type": "piechart",
+      "title": "Rounds with an 18+ category on",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_SCALEWAY_LOGS}"
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 26,
+        "w": 8,
+        "h": 10
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_SCALEWAY_LOGS}"
+          },
+          "queryType": "range",
+          "legendFormat": "18+ on: {{adult}}",
+          "expr": "sum by (adult) (count_over_time({resource_type=\"serverless_container\", resource_name=~\"(.+-)?bamdoodle-game\"} | json message=\"message\" | line_format \"{{.message}}\" | json target=\"target\", event=\"event\", adult=\"adult\" | target=\"bamdoodle::usage\" | event=\"round_finished\" [$__range]))"
+        }
+      ],
+      "interval": "1h"
     }
   ],
   "description": "Anonymous usage and errors from the game server's logs (decision 0005). Import in Cockpit's Grafana: Dashboards > New > Import."

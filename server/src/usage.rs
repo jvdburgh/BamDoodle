@@ -24,7 +24,8 @@ pub fn room_created(open_rooms: usize) {
     tracing::info!(target: TARGET, event = "room_created", open_rooms);
 }
 
-pub fn round_finished(result: &RoundResult, settings: &RoomSettings, players: usize) {
+/// `adult`: whether any 18+ category was in play.
+pub fn round_finished(result: &RoundResult, settings: &RoomSettings, players: usize, adult: bool) {
     let artists = players.saturating_sub(1);
     let caught = result
         .votes
@@ -51,7 +52,11 @@ pub fn round_finished(result: &RoundResult, settings: &RoomSettings, players: us
             Language::En => "en",
             Language::Nl => "nl",
         },
-        categories = settings.categories.len(),
+        // The category the word came from (never the word), and every category in play.
+        category = %result.category,
+        categories = %settings.categories.join(","),
+        category_count = settings.categories.len(),
+        adult,
     );
 }
 

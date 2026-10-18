@@ -761,7 +761,12 @@ impl Room {
             awards,
             scores: self.players.iter().map(summary).collect(),
         };
-        crate::usage::round_finished(&result, &self.settings, players);
+        let adult = self
+            .settings
+            .categories
+            .iter()
+            .any(|name| self.words.is_adult(self.settings.language, name));
+        crate::usage::round_finished(&result, &self.settings, players, adult);
         self.last_strokes = round.strokes.iter().map(stroke_view).collect();
         // The seat grace starts when the round ends, not when they dropped out during it.
         for player in &mut self.players {

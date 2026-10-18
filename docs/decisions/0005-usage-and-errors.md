@@ -15,8 +15,9 @@ Cockpit can keep them for up to five years and send alerts by email.
 ## Decision
 
 - **Usage: anonymous events in the server's own log.** One JSON line per room created, round finished and room
-  closed (`server/src/usage.rs`, target `bamdoodle::usage`), with counts and settings only: how many players, the
-  mode, the language, how many caught the bamboozler, whether they guessed. Never a name, a room code, a word, a
+  closed (`server/src/usage.rs`, target `bamdoodle::usage`), with counts and settings only: how many players, every
+  setting (mode, turns, seconds, rounds, language, the categories in play and whether any is 18+), the category the
+  round's word came from, how many caught the bamboozler, whether they guessed. Never a name, a room code, a word, a
   guess, an IP address or anything else that points at a person. No cookies, no IDs across visits, nothing in the
   browser.
 - **Errors: in the same log.** Server panics are logged as errors. The web app sends uncaught errors and rejected

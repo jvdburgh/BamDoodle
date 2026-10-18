@@ -158,6 +158,13 @@ impl WordLibrary {
             })
     }
 
+    /// Whether a category is 18+; false when it doesn't exist.
+    pub fn is_adult(&self, language: Language, name: &str) -> bool {
+        self.categories
+            .iter()
+            .any(|category| category.language == language && category.name == name && category.adult)
+    }
+
     /// Every word of one category, empty when it doesn't exist.
     pub fn words_in(&self, language: Language, name: &str) -> &[String] {
         self.categories
@@ -229,6 +236,15 @@ mod tests {
 
     fn names(names: &[&str]) -> Vec<String> {
         names.iter().map(|name| name.to_string()).collect()
+    }
+
+    #[test]
+    fn knows_which_categories_are_18_plus() {
+        let library = library();
+        assert!(library.is_adult(Language::En, "After dark"));
+        assert!(!library.is_adult(Language::En, "Animals"));
+        assert!(!library.is_adult(Language::Nl, "After dark"), "per language");
+        assert!(!library.is_adult(Language::En, "Nope"));
     }
 
     #[test]

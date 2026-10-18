@@ -235,8 +235,9 @@ Scaleway Cockpit. No cookies, no third-party script, nothing that points at a pe
   At most 60 lines a minute (`LOG_LINES_PER_MINUTE`, `server/src/logging.rs`): the one cost that grows with use is
   log storage, so whatever anyone sends, it stays capped.
 - **Usage events** (`server/src/usage.rs`, `target="bamdoodle::usage"`): `room_created` (rooms open), `round_finished`
-  (round of rounds, game over, players, how many caught the bamboozler, guessed, mode, turns, language, number of
-  categories) and `room_closed` (unused, empty or idle, and minutes open).
+  (round of rounds, game over, players, how many caught the bamboozler, guessed, mode, turns, seconds, language, the
+  categories in play and how many, whether any is 18+, and the category the word came from, never the word) and
+  `room_closed` (unused, empty or idle, and minutes open).
 - **Server errors:** anything at `ERROR`, including panics (`bamdoodle::panic`, from a panic hook in `main.rs`).
 - **Browser errors:** `ErrorReportUtils.install()` (`web/src/app/errorReport.utils.ts`, before the app starts)
   sends uncaught errors and rejected promises to `POST /api/client-error`: each different one once, at most five per

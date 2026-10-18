@@ -1117,6 +1117,14 @@ mod reveal_and_points {
         assert_eq!(round["caught_by_all"], "true");
         assert_eq!(round["guessed"], "true");
         assert_eq!(round["mode"], "one_stroke");
+        let settings = &game.room.settings;
+        assert_eq!(round["categories"], settings.categories.join(","));
+        assert_eq!(round["category_count"], settings.categories.len().to_string());
+        assert!(settings.categories.contains(&round["category"]));
+        assert_eq!(
+            round["adult"], "false",
+            "a new room starts with everyday categories only"
+        );
         let logged = format!("{round:?}");
         assert!(!logged.contains(&word), "the word stays out of the logs");
         for player in &game.room.players {
