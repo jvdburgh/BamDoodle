@@ -219,7 +219,10 @@ function loadMusic(audio: AudioContext) {
   musicTrack ??= fetch(MUSIC_SRC)
     .then((response) => response.arrayBuffer())
     .then((data) => audio.decodeAudioData(data))
-    .catch(() => null);
+    .catch(() => {
+      musicTrack = null;
+      return null;
+    });
   return musicTrack;
 }
 
@@ -282,6 +285,18 @@ function updateMusic() {
   });
 }
 
+/** Forget this device's music choice, back to the screen's default. */
+function clearMusicChoice() {
+  musicChoice = null;
+  try {
+    window.localStorage.removeItem(MUSIC_KEY);
+  } catch {
+    // Nothing remembered to forget.
+  }
+  for (const listener of listeners) listener();
+  updateMusic();
+}
+
 /** What this screen wants now (no music while drawing or voting), and whether it plays music unless told not to. */
 function setMusicWanted(wanted: boolean, byDefault: boolean) {
   const changedDefault = musicByDefault !== byDefault;
@@ -337,6 +352,7 @@ export const SoundPlayer = {
   setMuted,
   isMusicOn: musicOn,
   setMusicOn,
+  clearMusicChoice,
   setMusicWanted,
   subscribe,
 };
