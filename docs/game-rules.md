@@ -82,7 +82,8 @@ can change the number of rounds between rounds; when that's already been reached
    away."), back with "Back to the room"; every change there reaches the room at once. Then everyone draws their avatar
    (an empty round pad with one pen and the colours that read on navy; Randomize for a doodle face to start from,
    Clear to start over; left empty, they get a random doodle face; on a phone on its side the pad is on the left and
-   the colours and "Go to the room" beside it) and goes to the room. Everyone in the room sees
+   the colours beside it) and taps "Yep, that's me!" (after the pad and its controls, not pinned over them; a phone
+   shows it all on one screen) to go to the room. Everyone in the room sees
    each other's faces, also a face finished
    just after a round started. Until a player goes to the room their card says "drawing their face", and the host
    sees "Mo is still drawing their face" next to Start round (they can still start). In the room's lobby, on a phone

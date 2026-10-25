@@ -27,26 +27,17 @@ export const Waiting: Story = {
     await userEvent.click(canvas.getByRole("button", { name: "Clear" }));
     await expect(args.onAvatarChange).toHaveBeenCalledWith([]);
 
-    await userEvent.click(canvas.getByRole("button", { name: "Go to the room" }));
+    await userEvent.click(canvas.getByRole("button", { name: "Yep, that’s me!" }));
     await expect(args.onStart).toHaveBeenCalledOnce();
   },
 };
 
-/** On a short phone the button stays on screen: pinned to the bottom, not under the fold. */
-export const ShortPhone: Story = {
-  decorators: [
-    (Story) => (
-      <div style={{ height: "560px", overflow: "auto" }} data-testid="phone">
-        <Story />
-      </div>
-    ),
-  ],
+/** In the flow after the pad and its controls, not pinned over them: a phone shows it all on one screen. */
+export const AfterTheControls: Story = {
   play: async ({ canvas }) => {
-    const phone = canvas.getByTestId("phone");
-    const button = canvas.getByRole("button", { name: "Go to the room" });
-    const inView = () => button.getBoundingClientRect().bottom <= phone.getBoundingClientRect().bottom;
-    await expect(inView()).toBe(true);
-    phone.scrollTop = 0;
-    await expect(inView()).toBe(true);
+    const done = canvas.getByRole("button", { name: "Yep, that’s me!" });
+    await expect(getComputedStyle(done).position).toBe("static");
+    const clear = canvas.getByRole("button", { name: "Clear" });
+    await expect(done.getBoundingClientRect().top).toBeGreaterThan(clear.getBoundingClientRect().bottom);
   },
 };
