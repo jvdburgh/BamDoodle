@@ -26,25 +26,25 @@ function LobbyHowToPlayCard({ card, tilt }: { card: Card; tilt: "left" | "right"
 }
 
 /**
- * The rules in three steps, then who wins and what you need, as cards under the start page's buttons: a column on a
- * phone, a grid on a laptop. For new players and for search engines.
+ * The rules in six cards: three steps, then the points, the rounds and what you need. Under the start page's buttons
+ * (a column on a phone, two rows of three on a laptop) and behind the room's "?" button. Also what search engines read.
  */
 export function LobbyHowToPlay() {
   const headingId = useId();
   return (
     <section
       aria-labelledby={headingId}
-      className="mx-auto grid w-full max-w-xl content-start gap-6 px-5 py-10 lg:max-w-6xl lg:px-8"
+      className="@container/howto mx-auto grid w-full max-w-xl content-start gap-6 px-5 py-10 lg:max-w-6xl lg:px-8"
     >
       <h2 id={headingId} className="font-display text-4xl">
         How to play
       </h2>
-      <ol className="grid gap-4 lg:grid-cols-3">
+      <ol className="grid gap-4 @3xl/howto:grid-cols-3">
         {HowToPlayUtils.steps.map((card, index) => (
           <LobbyHowToPlayCard key={card.title} card={card} tilt={index % 2 ? "right" : "left"} />
         ))}
       </ol>
-      <ul className="grid gap-4 lg:grid-cols-2">
+      <ul className="grid gap-4 @3xl/howto:grid-cols-3">
         {HowToPlayUtils.more.map((card, index) => (
           <LobbyHowToPlayCard key={card.title} card={card} tilt={index % 2 ? "left" : "right"} />
         ))}

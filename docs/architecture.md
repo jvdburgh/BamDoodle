@@ -69,11 +69,11 @@ The catch: a deploy or crash ends all running games. At hobby scale that's accep
 - [ts-rs](https://github.com/Aleph-Alpha/ts-rs) generates the TypeScript types into `web/src/protocol/generated/`
   (`just protocol`). The generated files are committed, and CI fails if they are stale.
 - **The first message picks the room:** `createRoom { name, settings? }` (you become host; the settings are checked
-  like any `updateSettings`), `joinRoom { code, name, sessionToken? }`, `hostRoom { settings? }` for a screen that
+  like any `updateSettings`), `joinRoom { code, name, sessionToken? }`, `hostRoom { name, settings? }` for a screen that
   creates the room and hosts it without playing, or `watchRoom { code, sessionToken? }` for a screen (with the token
   `hostRoom` got, the host screen takes its role back after a reload). The answer is `joined` with your player id
   (none for a screen), your session token (a screen's only when it hosts) and a snapshot of the room as you may see
-  it, or `rejected` with a reason. `RoomSnapshot.hostScreen` says a screen hosts: no player does while it's connected
+  it, or `rejected` with a reason. `RoomSnapshot.hostScreen` names who hosts on a screen: no player does while it's connected
   (`hostId` is null), its `updateSettings` and `startRound` count like a host player's, anything else it sends is
   dropped, and after `HOST_GRACE` away the first player becomes host (`hostChanged`).
 - **Avatars:** any player sends `setAvatar { strokes }` at any time (also during a round: a face finished just as the

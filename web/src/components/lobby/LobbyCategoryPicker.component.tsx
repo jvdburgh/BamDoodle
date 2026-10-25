@@ -14,7 +14,6 @@ type LobbyCategoryPickerProps = {
 export function LobbyCategoryPicker({ categories, selected, onChange }: LobbyCategoryPickerProps) {
   const hintId = useId();
   const legendId = useId();
-  const aboutId = useId();
   const [touched, setTouched] = useState(false);
   const chosen = new Set(selected);
   const family = categories.filter((category) => !category.adult).map((category) => category.name);
@@ -26,17 +25,14 @@ export function LobbyCategoryPicker({ categories, selected, onChange }: LobbyCat
     pick(chosen.has(name) ? selected.filter((other) => other !== name) : [...selected, name]);
 
   return (
-    <fieldset aria-labelledby={legendId} aria-describedby={`${aboutId} ${hintId}`}>
-      <legend id={legendId} className="font-display text-xl">
-        Categories{" "}
-        <span className="font-body text-base text-white/60">
-          ({selected.length} of {categories.length} selected)
-        </span>
-      </legend>
+    <fieldset aria-labelledby={legendId} aria-describedby={hintId}>
       <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <p id={aboutId} className="text-sm text-white/70">
-          Where the secret word comes from. 18+ ones only play when you pick them.
-        </p>
+        <legend id={legendId} className="font-display text-xl">
+          Categories{" "}
+          <span className="font-body text-base text-white/60">
+            ({selected.length} of {categories.length} selected)
+          </span>
+        </legend>
         <span className="flex shrink-0 gap-3 text-sm">
           <button
             type="button"
@@ -59,7 +55,7 @@ export function LobbyCategoryPicker({ categories, selected, onChange }: LobbyCat
         {categories.map((category) => (
           <label
             key={category.name}
-            className="group relative flex min-h-9 cursor-pointer items-center gap-1.5 rounded-full bg-night-deep py-1 pr-3 pl-2 text-sm text-white/70 hover:text-white has-checked:text-white has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-white"
+            className="group relative flex min-h-10 cursor-pointer items-center gap-1.5 rounded-full bg-night-deep py-1 pr-3.5 pl-2.5 text-base text-white/70 hover:text-white has-checked:text-white has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-white"
           >
             <BrandSketchyFrame whenChecked traceIn={touched} className="text-sun" />
             <input
@@ -72,7 +68,7 @@ export function LobbyCategoryPicker({ categories, selected, onChange }: LobbyCat
             <BrandScribble
               shape={chosen.has(category.name) ? "check" : "plus"}
               seed={category.name.length}
-              className={`size-4 shrink-0 ${chosen.has(category.name) ? "text-sun" : "text-white/50"}`}
+              className={`size-5 shrink-0 ${chosen.has(category.name) ? "text-sun" : "text-white/50"}`}
             />
             <span className="font-display leading-none">{category.name}</span>
             {category.adult && (

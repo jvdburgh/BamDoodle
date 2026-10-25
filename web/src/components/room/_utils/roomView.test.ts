@@ -182,8 +182,12 @@ describe("RoomViewUtils.waitingForPlayers", () => {
     });
 
   it("says how many more players a round needs, counting only those here", () => {
-    expect(RoomViewUtils.waitingForPlayers(seats([]))).toBe("Waiting for 3 players to join");
-    expect(RoomViewUtils.waitingForPlayers(seats([true, true, false]))).toBe("Waiting for 1 more player");
+    expect(RoomViewUtils.waitingForPlayers(seats([]))).toBe(
+      "Waiting for at least 3 more players (3 to 8 players can play)",
+    );
+    expect(RoomViewUtils.waitingForPlayers(seats([true, true, false]))).toBe(
+      "Waiting for at least 1 more player (3 to 8 players can play)",
+    );
     expect(RoomViewUtils.waitingForPlayers(seats([true, true, true]))).toBeNull();
   });
 });
@@ -205,5 +209,38 @@ describe("RoomViewUtils.names", () => {
     expect(RoomViewUtils.names([4, 2], seats, 2)).toBe("you and Kiki");
     expect(RoomViewUtils.names([1, 3, 4, 2], seats, 2)).toBe("you, Pip and 2 more");
     expect(RoomViewUtils.names([3], seats, null)).toBe("Mo");
+  });
+});
+
+describe("RoomViewUtils.rulesOf", () => {
+  const settings = {
+    mode: "timed" as const,
+    turnsPerPlayer: 3,
+    turnSeconds: 20,
+    rounds: 4,
+    language: "en" as const,
+    categories: ["Animals", "Food"],
+  };
+
+  it("says how this room plays, in a few lines", () => {
+    expect(RoomViewUtils.rulesOf(settings)).toEqual([
+      "Timed turns: 20 seconds to draw, 2 turns each per round",
+      "4 rounds, each with a new secret word and a new bamboozler",
+      "English words from 2 categories",
+    ]);
+    expect(
+      RoomViewUtils.rulesOf({
+        ...settings,
+        mode: "oneStroke",
+        turnsPerPlayer: 1,
+        rounds: 1,
+        language: "nl",
+        categories: ["Dieren"],
+      }),
+    ).toEqual([
+      "One stroke each: one line per turn, 1 turn each per round",
+      "1 round, with a new secret word and a new bamboozler",
+      "Dutch words from 1 category",
+    ]);
   });
 });

@@ -50,7 +50,7 @@ class FakeSocket implements SocketLike {
 const room: RoomSnapshot = {
   code: "BKTZ",
   hostId: 1,
-  hostScreen: false,
+  hostScreen: null,
   players: [{ id: 1, name: "Sam", score: 0, connected: true, avatar: [], ready: true }],
   settings: {
     mode: "oneStroke",
@@ -251,14 +251,14 @@ describe("RoomConnection: hosting on a screen", () => {
     serverVersion: "dev",
     you: null,
     sessionToken: "screen-token",
-    room: { ...room, hostId: null, hostScreen: true },
+    room: { ...room, hostId: null, hostScreen: "Joris" },
   };
 
   it("hosts a new room, then takes the host role back with its token after a reload or a drop", () => {
     const tokens = SessionTokenUtils.memory();
-    const { socket } = connect({ kind: "host", settings: room.settings }, tokens);
+    const { socket } = connect({ kind: "host", name: "Joris", settings: room.settings }, tokens);
     socket().open();
-    expect(socket().sent).toEqual([{ type: "hostRoom", settings: room.settings }]);
+    expect(socket().sent).toEqual([{ type: "hostRoom", name: "Joris", settings: room.settings }]);
     socket().receive(hostJoined);
 
     socket().drop();
@@ -272,7 +272,7 @@ describe("RoomConnection: hosting on a screen", () => {
   });
 
   it("never makes a second room when the first hello drops", () => {
-    const { connection, socket } = connect({ kind: "host" });
+    const { connection, socket } = connect({ kind: "host", name: "Joris" });
     socket().open();
     socket().drop();
     expect(connection.getState().status).toBe("failed");

@@ -10,9 +10,10 @@ export type RoomSnapshot = { code: string,
  */
 hostId: number | null, 
 /**
- * A screen hosts this room (`hostRoom`): no player starts rounds or changes settings while it's there.
+ * Who hosts this room on a screen (`hostRoom`); none when a player hosts. No player starts rounds or changes
+ * settings while it's there.
  */
-hostScreen: boolean, players: Array<PlayerSummary>, settings: RoomSettings, 
+hostScreen: string | null, players: Array<PlayerSummary>, settings: RoomSettings, 
 /**
  * Every category the host can pick from, in every language.
  */

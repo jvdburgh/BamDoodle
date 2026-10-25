@@ -398,6 +398,25 @@ async fn a_rejected_create_leaves_no_room_behind() {
 }
 
 #[tokio::test]
+async fn a_host_screen_needs_a_name_too() {
+    let (address, registry) = start_server_with_registry().await;
+    let mut tv = Client::connect(&address).await;
+    tv.send(&ClientMessage::HostRoom {
+        name: "   ".into(),
+        settings: None,
+    })
+    .await;
+    let reason = tv
+        .expect(|message| match message {
+            ServerMessage::Rejected { reason } => Some(reason),
+            _ => None,
+        })
+        .await;
+    assert_eq!(reason, RejectReason::InvalidName);
+    assert_eq!(registry.room_count(), 0);
+}
+
+#[tokio::test]
 async fn a_second_device_with_the_same_token_replaces_the_first() {
     let address = start_server().await;
     let mut first = Client::connect(&address).await;
@@ -438,6 +457,7 @@ async fn a_host_screen_runs_the_room_without_playing_and_takes_it_back_after_a_r
     };
     let mut tv = Client::connect(&address).await;
     tv.send(&ClientMessage::HostRoom {
+        name: "Joris".into(),
         settings: Some(settings),
     })
     .await;

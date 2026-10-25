@@ -8,7 +8,7 @@ import { type RoomState, RoomStateUtils } from "@/protocol/roomState.utils";
 const lobby: RoomSnapshot = {
   code: "BKTZ",
   hostId: 1,
-  hostScreen: false,
+  hostScreen: null,
   players: [
     { id: 1, name: "Sam", score: 0, connected: true, avatar: [], ready: true },
     { id: 2, name: "Noor", score: 0, connected: true, avatar: [], ready: true },
@@ -64,14 +64,14 @@ describe("RoomStateUtils.apply", () => {
       serverVersion: "dev",
       you: null,
       sessionToken: "screen",
-      room: { ...lobby, hostId: null, hostScreen: true },
+      room: { ...lobby, hostId: null, hostScreen: "Joris" },
     };
     expect(play([hosted]).hosting).toBe(true);
     expect(play([{ ...hosted, sessionToken: null } as ServerMessage]).hosting).toBe(false);
     expect(play([joined]).hosting).toBe(false);
     const state = play([hosted, { type: "hostChanged", hostId: 2 }]);
     expect(state.hosting).toBe(false);
-    expect(state.room?.hostScreen).toBe(false);
+    expect(state.room?.hostScreen).toBeNull();
     expect(state.room?.hostId).toBe(2);
   });
 

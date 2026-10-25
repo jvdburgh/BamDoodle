@@ -7,6 +7,7 @@ import { BrandStyles } from "@/components/brand/_utils/brandStyles.utils";
 import { LobbyCategoryPicker } from "@/components/lobby/LobbyCategoryPicker.component";
 import { LobbySetupSketch, type LobbySetupSketchKind } from "@/components/lobby/LobbySetupSketch.component";
 import { LobbySetupUtils } from "@/components/lobby/_utils/lobbySetup.utils";
+import { RoomViewUtils } from "@/components/room/_utils/roomView.utils";
 import { SoundToggle } from "@/components/sound/SoundToggle.component";
 import type { Language } from "@/protocol/generated/Language";
 import type { RoomSettings } from "@/protocol/generated/RoomSettings";
@@ -78,13 +79,16 @@ export function LobbySetup({
         <div className="flex flex-1 flex-col justify-center">
           <form
             onSubmit={submit}
-            className="relative grid w-full gap-5 rounded-[18px_24px_20px_16px] bg-night-soft/50 p-5 md:grid-cols-[minmax(0,1.15fr)_minmax(0,1.25fr)] md:gap-x-10 md:gap-y-5 md:p-6"
+            className="relative grid w-full gap-5 rounded-[18px_24px_20px_16px] bg-night-soft/50 p-5 md:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)] md:gap-x-12 md:gap-y-6 md:p-8"
           >
             <BrandSketchyFrame className="text-white/25" />
-            <h2 className="font-display text-2xl md:col-span-2">Set up your room</h2>
-            <div className="grid content-start gap-7">
+            <div className="md:col-span-2">
+              <h2 className="font-display text-2xl md:text-3xl">Set up your room</h2>
+              <p className="text-white/70">For {RoomViewUtils.playerCount}, each on their own device.</p>
+            </div>
+            <div className="grid content-start gap-7 md:gap-8">
               <LobbyChoice
-                legend="Turns"
+                legend="Mode"
                 hint="Everyone takes turns adding to the same drawing."
                 name="lobby-mode"
                 options={turnOptions}
@@ -130,7 +134,7 @@ export function LobbySetup({
               />
             </div>
 
-            <div className="grid content-start gap-7 border-t-2 border-white/10 pt-6 md:border-t-0 md:border-l-2 md:pt-0 md:pl-10">
+            <div className="grid content-start gap-7 border-t-2 border-white/10 pt-6 md:gap-8 md:border-t-0 md:border-l-2 md:pt-0 md:pl-12">
               <LobbyPills<Language>
                 legend="Language"
                 hint="Of the secret words."
@@ -152,7 +156,7 @@ export function LobbySetup({
               />
             </div>
 
-            <div className="sticky bottom-[calc(0.75rem_+_var(--browser-bar))] z-10 flex items-center justify-end gap-3 md:col-span-2 md:bottom-3">
+            <div className="sticky bottom-[calc(0.75rem_+_var(--browser-bar))] z-10 -mx-2 flex items-center justify-end gap-3 rounded-[14px_18px_16px_12px] bg-night-soft/95 p-2 shadow-[0_6px_18px_var(--color-night-deep)] md:col-span-2 md:bottom-3">
               {onBack && (
                 <button type="button" onClick={onBack} className={`${BrandStyles.quietButton} mr-auto`}>
                   Back
@@ -220,7 +224,7 @@ function LobbyChoice<T extends string | number>({
   const [touched, setTouched] = useState(false);
   return (
     <LobbyField legend={legend} hint={hint}>
-      <div className="grid gap-2 sm:grid-cols-2">
+      <div className="grid gap-2">
         {options.map((option) => (
           <label
             key={option.value}

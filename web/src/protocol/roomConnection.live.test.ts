@@ -111,10 +111,10 @@ describe.skipIf(!url)("RoomConnection against the real server", () => {
   });
 
   it("lets a screen host a room it doesn't play in", async () => {
-    const tv = open({ kind: "host" });
+    const tv = open({ kind: "host", name: "Joris" });
     const { room, hosting } = await until(tv, (state) => state.status === "joined");
     expect(hosting).toBe(true);
-    expect(room?.hostScreen).toBe(true);
+    expect(room?.hostScreen).toBe("Joris");
     const code = room!.code;
 
     const players = ["Sam", "Noor", "Jip"].map((name) => open({ kind: "join", code, name }));

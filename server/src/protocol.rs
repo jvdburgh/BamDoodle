@@ -115,6 +115,8 @@ pub enum ClientMessage {
     /// runs the game (settings, starting rounds) but doesn't play and never sees the word.
     #[serde(rename_all = "camelCase")]
     HostRoom {
+        /// Who hosts: the players see "Joris starts the round", not just "the host".
+        name: String,
         settings: Option<RoomSettings>,
     },
     /// First message on a new connection: follow a room as a screen that never sees the word. With the session token
@@ -322,8 +324,9 @@ pub struct RoomSnapshot {
     pub code: String,
     /// The player who hosts; none while a host screen does.
     pub host_id: Option<PlayerId>,
-    /// A screen hosts this room (`hostRoom`): no player starts rounds or changes settings while it's there.
-    pub host_screen: bool,
+    /// Who hosts this room on a screen (`hostRoom`); none when a player hosts. No player starts rounds or changes
+    /// settings while it's there.
+    pub host_screen: Option<String>,
     pub players: Vec<PlayerSummary>,
     pub settings: RoomSettings,
     /// Every category the host can pick from, in every language.
@@ -575,8 +578,9 @@ mod tests {
     #[test]
     fn a_host_screen_says_so_and_comes_back_with_its_token() {
         let host: ClientMessage =
-            serde_json::from_value(serde_json::json!({ "type": "hostRoom", "settings": null })).unwrap();
-        assert!(matches!(host, ClientMessage::HostRoom { settings: None }));
+            serde_json::from_value(serde_json::json!({ "type": "hostRoom", "name": "Joris", "settings": null }))
+                .unwrap();
+        assert!(matches!(host, ClientMessage::HostRoom { name, settings: None } if name == "Joris"));
         let back: ClientMessage =
             serde_json::from_value(serde_json::json!({ "type": "watchRoom", "code": "BKTZ", "sessionToken": "t" }))
                 .unwrap();

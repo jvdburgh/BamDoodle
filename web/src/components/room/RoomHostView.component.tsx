@@ -182,7 +182,7 @@ export function RoomHostView({ state, revealCode = false, home = "/", controls }
                   {view.host
                     ? `${view.host.name} starts the round from their phone.`
                     : room.hostScreen
-                      ? "The host screen starts the round."
+                      ? `${room.hostScreen} starts the round from the host screen.`
                       : "Waiting for players…"}
                 </p>
               )}

@@ -1,11 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, waitFor } from "storybook/test";
-import { VoteSheet } from "./VoteSheet.component";
+import { BrandSheet } from "./BrandSheet.component";
 
 const meta = {
-  title: "Vote/VoteSheet",
-  component: VoteSheet,
+  title: "Brand/BrandSheet",
+  component: BrandSheet,
   args: {
+    label: "Who’s sketchy?",
     children: (
       <>
         <p>Time’s up! Who’s sketchy?</p>
@@ -15,22 +16,31 @@ const meta = {
       </>
     ),
   },
-} satisfies Meta<typeof VoteSheet>;
+} satisfies Meta<typeof BrandSheet>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** Over everything until the vote ends: the page behind can't be reached, and Esc doesn't close it. */
-export const OverEverything: Story = {
+/** Without `onClose` (the vote): over everything until it's done, and Esc doesn't close it. */
+export const UntilItsDone: Story = {
   play: async ({ canvas, userEvent }) => {
     const sheet = canvas.getByRole("dialog", { name: "Who’s sketchy?" });
     await expect(sheet).toBeVisible();
-    await expect(sheet).toHaveAttribute("open");
     await expect(canvas.getByRole("button", { name: "Vote for Mo" })).toHaveFocus();
+    await expect(canvas.queryByRole("button", { name: "Close" })).toBeNull();
     await userEvent.keyboard("{Escape}");
     await expect(sheet).toHaveAttribute("open");
     // Browsers let a page refuse Esc (or Android's back) only so often, then close it anyway: it opens again.
     (sheet as HTMLDialogElement).close();
     await waitFor(() => expect(sheet).toHaveAttribute("open"));
+  },
+};
+
+/** With `onClose` (how to play): a Close button, and Esc closes it too. */
+export const Dismissible: Story = {
+  args: { label: "How to play", onClose: fn(), children: <p>Draw together.</p> },
+  play: async ({ args, canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Close" }));
+    await expect(args.onClose).toHaveBeenCalledTimes(1);
   },
 };

@@ -7,12 +7,11 @@ import { BrandTagline } from "@/components/brand/BrandTagline.component";
 import { BrandStyles } from "@/components/brand/_utils/brandStyles.utils";
 import { LobbyHowToPlay } from "@/components/lobby/LobbyHowToPlay.component";
 import { SoundToggle } from "@/components/sound/SoundToggle.component";
+import { RoomViewUtils } from "@/components/room/_utils/roomView.utils";
 import { RoomCodeUtils } from "@/protocol/roomCode.utils";
 
-export type LobbyEntry =
-  | ({ name: string } & ({ kind: "create" } | { kind: "join"; code: string }))
-  /** A new room hosted by this screen, which doesn't play: no name needed. */
-  | { kind: "host" };
+/** "create" plays in a new room; "host" makes one hosted on this screen, which doesn't play. */
+export type LobbyEntry = { name: string } & ({ kind: "create" } | { kind: "host" } | { kind: "join"; code: string });
 
 type LobbyStartProps = {
   onEnter: (entry: LobbyEntry) => void;
@@ -151,6 +150,7 @@ export function LobbyStart({
                 <BrandScribble shape="pencilPlus" className="size-7 text-sun motion-safe:group-hover:animate-wiggle" />
                 {busy ? "Just a sec…" : "Create a room"}
               </button>
+              <p className="text-center text-white/70">For {RoomViewUtils.playerCount}, on any device.</p>
               {problem && (
                 <p role="alert" className="text-center text-sm text-berry">
                   {problem}
@@ -208,8 +208,8 @@ export function LobbyStart({
                   </p>
                   <button
                     type="button"
-                    disabled={busy}
-                    onClick={() => onEnter({ kind: "host" })}
+                    disabled={busy || cleanName.length === 0}
+                    onClick={() => onEnter({ kind: "host", name: cleanName })}
                     className={`${BrandStyles.ghostButton} group gap-2 text-white`}
                   >
                     <BrandScribble shape="screen" className="size-6 text-sun motion-safe:group-hover:animate-wiggle" />

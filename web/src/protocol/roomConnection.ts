@@ -11,8 +11,8 @@ export type RoomIntent =
   /** With the settings picked before the room existed. */
   | { kind: "create"; name: string; settings?: RoomSettings }
   | { kind: "join"; code: string; name: string }
-  /** A new room this screen hosts without playing, with the settings picked before it existed. */
-  | { kind: "host"; settings?: RoomSettings }
+  /** A new room this screen hosts without playing, for `name`, with the settings picked before it existed. */
+  | { kind: "host"; name: string; settings?: RoomSettings }
   /** A screen following a room; the host screen, when this device has the room's host token. */
   | { kind: "watch"; code: string };
 
@@ -247,7 +247,7 @@ export class RoomConnection {
           sessionToken: this.#tokens.get(this.#intent.code, this.#intent.name),
         };
       case "host":
-        return { type: "hostRoom", settings: this.#intent.settings ?? null };
+        return { type: "hostRoom", name: this.#intent.name, settings: this.#intent.settings ?? null };
       case "watch":
         return {
           type: "watchRoom",

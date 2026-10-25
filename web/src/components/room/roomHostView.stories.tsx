@@ -18,7 +18,10 @@ type Props = {
 /** A host screen's state (`watchRoom`): made at render time, so the countdowns start when the story does. */
 function HostFromState({ phase, reconnecting = false, hosting = false, players, onStart, onSettings }: Props) {
   const [state] = useState(() => {
-    const fixture = { ...roomStateFixture({ phase, you: null, hostScreen: hosting, players }), hosting };
+    const fixture = {
+      ...roomStateFixture({ phase, you: null, hostScreen: hosting ? "Joris" : null, players }),
+      hosting,
+    };
     return reconnecting ? { ...fixture, status: "reconnecting" as const } : fixture;
   });
   return (
@@ -81,7 +84,7 @@ export const HostingWaitsForPlayers: Story = {
   args: { phase: { phase: "lobby" }, hosting: true, players: 2, onStart: fn(), onSettings: fn() },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("button", { name: "Start round" })).toBeDisabled();
-    await expect(canvas.getByText("Waiting for 1 more player")).toBeVisible();
+    await expect(canvas.getByText(/Waiting for at least 1 more player/)).toBeVisible();
   },
 };
 

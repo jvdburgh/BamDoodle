@@ -1596,7 +1596,7 @@ mod host_screen {
     fn hosted() -> (Room, String, Vec<Seat>, Instant) {
         let now = Instant::now();
         let mut room = Room::new("BKTZ".into(), library(), 3);
-        let (token, _) = room.attach_host_screen(HostClaim::New, now);
+        let (token, _) = room.attach_host_screen(HostClaim::New("Joris".into()), now);
         let token = token.expect("the creator hosts");
         let seats = ["Sam", "Noor", "Jip"]
             .iter()
@@ -1610,7 +1610,7 @@ mod host_screen {
         let (room, _, _, now) = hosted();
         assert_eq!(room.host_id, None);
         let snapshot = room.snapshot(Viewer::Player(1), now);
-        assert!(snapshot.host_screen);
+        assert_eq!(snapshot.host_screen.as_deref(), Some("Joris"));
         assert_eq!(snapshot.host_id, None);
     }
 
@@ -1681,7 +1681,7 @@ mod host_screen {
 
         let (stranger, _) = room.attach_host_screen(HostClaim::Resume("not-the-token".into()), now);
         assert_eq!(stranger, None);
-        let (late, _) = room.attach_host_screen(HostClaim::New, now);
+        let (late, _) = room.attach_host_screen(HostClaim::New("Joris".into()), now);
         assert_eq!(late, None, "a room already has its host");
 
         let (back, outbox) = room.attach_host_screen(HostClaim::Resume(token.clone()), now + limits::HOST_GRACE / 2);
@@ -1708,7 +1708,7 @@ mod host_screen {
             &outbox,
             |message| matches!(message, ServerMessage::HostChanged { host_id } if *host_id == sam)
         ));
-        assert!(!room.snapshot(Viewer::Screen, now).host_screen);
+        assert_eq!(room.snapshot(Viewer::Screen, now).host_screen, None);
 
         let (back, _) = room.attach_host_screen(HostClaim::Resume(token), now + limits::HOST_GRACE);
         assert_eq!(back, None, "too late: a player hosts now");

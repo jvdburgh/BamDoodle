@@ -123,7 +123,7 @@ export const RoomStateUtils = {
         });
       case "hostChanged":
         // Only a player is ever handed the role: a host screen that was gone for good is no longer the host.
-        return { ...withRoom(state, { ...room, hostId: message.hostId, hostScreen: false }), hosting: false };
+        return { ...withRoom(state, { ...room, hostId: message.hostId, hostScreen: null }), hosting: false };
       case "settingsChanged":
         return withRoom(state, { ...room, settings: message.settings });
       case "gameStarted":

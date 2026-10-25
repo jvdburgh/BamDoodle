@@ -15,7 +15,8 @@ everything you need (the canvas, players and mini-maps, timers, your secret, you
 same way and get a roomier layout.
 
 **Optional host screen.** Like a quiz night, whoever creates the room can host it on a TV, beamer or laptop instead
-of playing: after the setup, **Host on this screen** (or **Play** with your name). The host screen shows the code and
+of playing: after the setup, your name and then **Host on this screen** (or **Play**); the name is needed either way,
+so the players read who hosts. The host screen shows the code and
 `bamdoodle.io` first, big, then who's in; it starts the rounds and has the room settings, and shows the shared canvas
 big during the round. It never shows the secret word and doesn't draw or vote. While it's there, no player hosts; a
 host screen that reloads takes the role back (its token is on that device), and one gone for 15 seconds hands the
@@ -27,11 +28,13 @@ goal for now.
 ## Roles
 
 - **Artists** see the category and the secret word.
-- **The bamboozler** sees only the category. They draw along, trying to look like they know the word. Their screen
-  says so without shouting: a small "You're the bamboozler" where an artist sees the word, their own card's face wears
-  the fedora (on their screen only), and the logo in the corner raises its collar and swirls its hat twice as each
-  round starts (a quiet static badge with reduced motion), so
-  it's clear to the one holding the phone and easy to miss across the table.
+- **The bamboozler** sees only the category. They draw along, trying to look like they know the word.
+- **Right in your face** as each round starts, a card says it for a few seconds (or until a tap): "The secret word is
+  GIRAFFE. Everyone knows it, except the bamboozler", or "You're the bamboozler!" with the category. Clarity wins over
+  a glance across the table. After that the header keeps it: the word, or a small "You're the bamboozler"; the
+  bamboozler's own face wears the fedora (on their screen only), and the logo in the corner raises its collar and
+  swirls its hat twice (a quiet static badge with reduced motion).
+- **"?"** in the room's header opens this room's rules (mode, turns, rounds, words) and how to play, any time.
 - Exactly one bamboozler per round, picked at random by the server. Nobody but the server knows who it is
   until the reveal.
 
@@ -58,7 +61,7 @@ can change the number of rounds between rounds; when that's already been reached
    each other's faces, also a face finished
    just after a round started. Until a player goes to the room their card says "drawing their face", and the host
    sees "Mo is still drawing their face" next to Start round (they can still start). The others wait on the join card
-   until the host starts (or "The host screen starts the round" in a room hosted by a screen).
+   until the host starts ("Joris starts the round from the big screen" in a room hosted by a screen).
 2. **Secret.** The server picks a word from the chosen categories and tells each player their role.
 3. **Drawing.** Players take turns on the shared canvas in a shuffled order shown on screen; each player
    gets the same number of turns. The player whose turn it is is highlighted, and their strokes appear live for everyone.

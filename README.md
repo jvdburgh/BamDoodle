@@ -16,7 +16,7 @@
   <a href="https://github.com/jvdburgh/BamDoodle/actions/workflows/ci.yml"><img src="https://github.com/jvdburgh/BamDoodle/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
 </p>
 
-A multiplayer drawing and bluffing party game for your phone. Everyone draws the secret word together on one
+A multiplayer drawing and bluffing party game in your browser, on phones, tablets and laptops. Everyone draws the secret word together on one
 canvas, taking turns. Everyone except the **bamboozler**: they don't know the word and bluff their way through, while
 the rest try to find out who's sketchy.
 

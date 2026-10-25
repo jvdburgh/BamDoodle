@@ -105,7 +105,7 @@ export function GameRoute({ joinCode }: { joinCode?: string }) {
 
   const navigation: LobbyNavigation = {
     onEnter: (entry) => {
-      if (entry.kind !== "host") saveName(entry.name);
+      saveName(entry.name);
       setAttempt((last) => ({ number: (last?.number ?? 0) + 1, entry }));
     },
     onCreate: create,
@@ -161,7 +161,7 @@ function GameConnection({ entry, settings, onEnter, onCreate, onBackToSetup }: G
     entry.kind === "create"
       ? { kind: "create", name: entry.name, settings }
       : entry.kind === "host"
-        ? { kind: "host", settings }
+        ? { kind: "host", name: entry.name, settings }
         : entry,
   );
   const status = state?.status;
@@ -181,7 +181,7 @@ function GameConnection({ entry, settings, onEnter, onCreate, onBackToSetup }: G
         : UNREACHABLE;
   return (
     <LobbyStart
-      defaultName={entry.kind === "host" ? savedName() : entry.name}
+      defaultName={entry.name}
       defaultCode={entry.kind === "join" ? entry.code : undefined}
       step={entry.kind === "host" ? "create" : entry.kind}
       problem={problem}

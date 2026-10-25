@@ -78,8 +78,8 @@ type Options = {
   you?: number | null;
   /** The host player; leave out with `hostScreen`. */
   hostId?: number | null;
-  /** A screen hosts the room (`hostRoom`). */
-  hostScreen?: boolean;
+  /** Who hosts the room on a screen (`hostRoom`). */
+  hostScreen?: string | null;
   phase?: PhaseView;
   players?: number;
 };
@@ -90,7 +90,7 @@ type Options = {
  */
 export function roomStateFixture({
   you = 2,
-  hostScreen = false,
+  hostScreen = null,
   hostId = hostScreen ? null : 2,
   phase = { phase: "lobby" },
   players = 6,

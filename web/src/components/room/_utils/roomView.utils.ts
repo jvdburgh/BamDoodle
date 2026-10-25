@@ -1,9 +1,11 @@
 import { AvatarUtils } from "@/components/avatar/_utils/avatar.utils";
+import { LobbySetupUtils } from "@/components/lobby/_utils/lobbySetup.utils";
 import type { RoomOutcome, RoomPlayer, RoomViewState, RoundScore } from "@/components/room/_types/room.types";
 import type { PlayerSummary } from "@/protocol/generated/PlayerSummary";
 import type { RejectReason } from "@/protocol/generated/RejectReason";
 import type { RoomSnapshot } from "@/protocol/generated/RoomSnapshot";
 import type { Reveal } from "@/protocol/generated/Reveal";
+import type { RoomSettings } from "@/protocol/generated/RoomSettings";
 import type { RoundResult } from "@/protocol/generated/RoundResult";
 import type { RoundView } from "@/protocol/generated/RoundView";
 import type { Vote } from "@/protocol/generated/Vote";
@@ -41,6 +43,22 @@ function players(room: Pick<RoomSnapshot, "code" | "players">): RoomPlayer[] {
   });
 }
 
+const count = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+
+/** How this room plays, in a few lines: the room's rules card behind the "?" button. */
+function rulesOf(settings: RoomSettings): string[] {
+  const turns =
+    settings.mode === "timed"
+      ? `Timed turns: ${settings.turnSeconds} seconds to draw, ${count(LobbySetupUtils.timedTurnsPerPlayer, "turn", "turns")} each per round`
+      : `One stroke each: one line per turn, ${count(settings.turnsPerPlayer, "turn", "turns")} each per round`;
+  const rounds =
+    settings.rounds === 1
+      ? "1 round, with a new secret word and a new bamboozler"
+      : `${settings.rounds} rounds, each with a new secret word and a new bamboozler`;
+  const language = settings.language === "nl" ? "Dutch" : "English";
+  return [turns, rounds, `${language} words from ${count(settings.categories.length, "category", "categories")}`];
+}
+
 /** A player as the viewer reads them: "you" for yourself. */
 const nameOf = (id: number, players: RoomPlayer[], youId: number | null) =>
   id === youId ? "you" : (players.find((player) => player.id === id)?.name ?? "?");
@@ -54,16 +72,18 @@ function names(ids: number[], players: RoomPlayer[], youId: number | null): stri
   return `${all.slice(0, 2).join(", ")} and ${all.length - 2} more`;
 }
 
-/** Same as the server: `MIN_PLAYERS_TO_START` in limits.rs. */
+/** Same as the server: `MIN_PLAYERS_TO_START` and `MAX_PLAYERS` in limits.rs. */
 const MIN_PLAYERS_TO_START = 3;
+const MAX_PLAYERS = 8;
+/** Who a room is for, as the start page and the setup say it. */
+const playerCount = `${MIN_PLAYERS_TO_START} to ${MAX_PLAYERS} players`;
 
 /** Why a round can't start yet (too few players here), or null when it can. */
 function waitingForPlayers(players: RoomPlayer[]): string | null {
   const here = players.filter((player) => player.connected).length;
   const missing = MIN_PLAYERS_TO_START - here;
   if (missing <= 0) return null;
-  if (here === 0) return `Waiting for ${MIN_PLAYERS_TO_START} players to join`;
-  return `Waiting for ${missing} more ${missing === 1 ? "player" : "players"}`;
+  return `Waiting for at least ${missing} more ${missing === 1 ? "player" : "players"} (${playerCount} can play)`;
 }
 
 /** For the host in the lobby: who's still drawing their face, or null when everyone's in. */
@@ -188,6 +208,8 @@ export const RoomViewUtils = {
   nameOf,
   names,
   waitingForPlayers,
+  playerCount,
+  rulesOf,
   seed,
   players,
   active,

@@ -16,11 +16,11 @@ export const Default: Story = {
     await expect(canvas.getByRole("heading", { name: "How to play", level: 2 })).toBeVisible();
     const steps = [...canvasElement.querySelectorAll("ol > li h3")];
     await expect(steps.map((step) => step.textContent)).toEqual([
-      "Draw the secret word together",
-      "One of you is bluffing",
-      "Vote who’s sketchy",
+      "Draw together",
+      "One of you bluffs",
+      "Spot the bamboozler",
     ]);
-    await expect(canvas.getByRole("heading", { name: "Rounds and the winner" })).toBeVisible();
+    await expect(canvas.getByRole("heading", { name: "Play a few rounds" })).toBeVisible();
     await expect(canvas.getByRole("heading", { name: "Free, on any device" })).toBeVisible();
   },
 };

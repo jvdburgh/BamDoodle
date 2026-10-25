@@ -11,8 +11,8 @@ type Props = {
   phase: PhaseView;
   you: number;
   hostId: number;
-  /** A screen hosts the room: no player starts rounds. */
-  hostScreen?: boolean;
+  /** Who hosts the room on a screen: no player starts rounds. */
+  hostScreen?: string;
   width: string;
   rejection?: RejectReason;
   /** A vote you sent that the server hasn't confirmed yet. */
@@ -28,7 +28,7 @@ function PlayerFromState({
   phase,
   you,
   hostId,
-  hostScreen = false,
+  hostScreen,
   width,
   rejection,
   pendingVote,
@@ -37,7 +37,7 @@ function PlayerFromState({
   onSettings,
 }: Props) {
   const [state] = useState(() => {
-    const base = roomStateFixture({ phase, you, hostScreen, hostId: hostScreen ? null : hostId });
+    const base = roomStateFixture({ phase, you, hostScreen: hostScreen ?? null, hostId: hostScreen ? null : hostId });
     const room = base.room && {
       ...base.room,
       players: base.room.players.map((player) => ({ ...player, ready: !drawingFaces.includes(player.id) })),
@@ -79,7 +79,9 @@ export const Watching: Story = {
   play: async ({ args, canvas, userEvent }) => {
     await settle();
     await expect(wornHats(canvas.getByRole("list", { name: "Players" }))).toHaveLength(0);
-    await expect(canvas.getByText("Giraffe")).toBeVisible();
+    // In the header, and right in your face as the round starts.
+    await expect(canvas.getAllByText("Giraffe")).toHaveLength(2);
+    await expect(canvas.getByRole("status", { name: "" })).toHaveTextContent("The secret word is");
     await expect(canvas.getByRole("img", { name: "Shared drawing. Pip is drawing." })).toBeVisible();
     // On a phone: everyone in the strip at the top, no tools while someone else draws.
     await expect(within(canvas.getByRole("list", { name: "Players" })).getAllByRole("listitem")).toHaveLength(6);
@@ -133,6 +135,8 @@ export const YourTurn: Story = {
 export const Bamboozler: Story = {
   args: { phase: { phase: "drawing", round: roundFixture({ word: null, role: "bamboozler" }) } },
   play: async ({ canvas }) => {
+    // Right in their face as the round starts, then just in the header.
+    await expect(canvas.getByText("You’re the bamboozler!")).toBeInTheDocument();
     await expect(canvas.getByText("You’re the bamboozler")).toBeVisible();
     await expect(canvas.queryByText("Giraffe")).toBeNull();
     // Only on their own screen, only on their own face.
@@ -142,10 +146,23 @@ export const Bamboozler: Story = {
   },
 };
 
+/** The "?" opens this room's rules and how to play, over the game, and closes again. */
+export const HowToPlay: Story = {
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "How to play" }));
+    const sheet = within(canvas.getByRole("dialog", { name: "How to play" }));
+    await expect(sheet.getByRole("heading", { name: "This room" })).toBeVisible();
+    await expect(sheet.getByText(/rounds, each with a new secret word/)).toBeVisible();
+    await expect(sheet.getByRole("heading", { name: "Spot the bamboozler" })).toBeVisible();
+    await userEvent.click(sheet.getByRole("button", { name: "Close" }));
+    await expect(canvas.queryByRole("dialog", { name: "How to play" })).toBeNull();
+  },
+};
+
 export const InARoomWithAHostScreen: Story = {
-  args: { phase: { phase: "lobby" }, hostScreen: true },
+  args: { phase: { phase: "lobby" }, hostScreen: "Joris" },
   play: async ({ canvas }) => {
-    await expect(canvas.getByText("The host screen starts the round…")).toBeVisible();
+    await expect(canvas.getByText("Joris starts the round from the big screen…")).toBeVisible();
     await expect(canvas.queryByRole("button", { name: "Start round" })).toBeNull();
   },
 };

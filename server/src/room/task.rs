@@ -487,7 +487,7 @@ mod tests {
     async fn a_host_screen_keeps_its_room_open_while_it_waits_for_players() {
         let registry = registry();
         let (_, room) = registry.create().unwrap();
-        let _tv = screen(&room, Some(HostClaim::New)).await.unwrap();
+        let _tv = screen(&room, Some(HostClaim::New("Joris".into()))).await.unwrap();
         tokio::time::sleep(limits::UNUSED_ROOM_GRACE + limits::EMPTY_ROOM_GRACE).await;
         assert_eq!(registry.room_count(), 1);
     }
@@ -496,7 +496,7 @@ mod tests {
     async fn a_second_host_tab_takes_over_and_the_first_hears_why() {
         let registry = registry();
         let (_, room) = registry.create().unwrap();
-        let (_, mut first) = screen(&room, Some(HostClaim::New)).await.unwrap();
+        let (_, mut first) = screen(&room, Some(HostClaim::New("Joris".into()))).await.unwrap();
         let token = host_token(&mut first).await;
 
         let (_, mut second) = screen(&room, Some(HostClaim::Resume(token))).await.unwrap();
@@ -514,7 +514,7 @@ mod tests {
     async fn the_host_screen_gets_back_in_when_watchers_fill_the_screens() {
         let registry = registry();
         let (_, room) = registry.create().unwrap();
-        let (tv, mut tv_outbox) = screen(&room, Some(HostClaim::New)).await.unwrap();
+        let (tv, mut tv_outbox) = screen(&room, Some(HostClaim::New("Joris".into()))).await.unwrap();
         let token = host_token(&mut tv_outbox).await;
         let mut watchers = Vec::new();
         for _ in 1..limits::MAX_SCREENS {
@@ -532,7 +532,7 @@ mod tests {
     async fn a_host_screen_that_cant_keep_up_hands_over_like_one_that_left() {
         let now = std::time::Instant::now();
         let mut room = Room::new("BKTZ".into(), Arc::new(WordLibrary::default()), 1);
-        room.attach_host_screen(HostClaim::New, now);
+        room.attach_host_screen(HostClaim::New("Joris".into()), now);
         let (slow, _slow_outbox) = mpsc::channel(1);
         let mut connections = HashMap::from([(
             1,

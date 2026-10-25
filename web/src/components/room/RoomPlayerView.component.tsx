@@ -1,9 +1,11 @@
-import { useLayoutEffect, useRef, useState } from "react";
+import { useId, useLayoutEffect, useRef, useState } from "react";
 import { BrandFooter } from "@/components/brand/BrandFooter.component";
 import { BrandLogo } from "@/components/brand/BrandLogo.component";
+import { BrandSheet } from "@/components/brand/BrandSheet.component";
 import { BrandSketchyFrame } from "@/components/brand/BrandSketchyFrame.component";
 import { BrandStyles } from "@/components/brand/_utils/brandStyles.utils";
 import { CanvasBoard } from "@/components/canvas/CanvasBoard.component";
+import { LobbyHowToPlay } from "@/components/lobby/LobbyHowToPlay.component";
 import { CanvasBrushPicker } from "@/components/canvas/CanvasBrushPicker.component";
 import { CanvasPalette } from "@/components/canvas/CanvasPalette.component";
 import { CanvasTools } from "@/components/canvas/_utils/canvasTools.utils";
@@ -17,6 +19,7 @@ import { RoomPodium } from "@/components/room/RoomPodium.component";
 import { RoomProgress } from "@/components/room/RoomProgress.component";
 import { RoomResults } from "@/components/room/RoomResults.component";
 import { RoomReveal } from "@/components/room/RoomReveal.component";
+import { RoomSecretReveal } from "@/components/room/RoomSecretReveal.component";
 import { RoomSpotlightChip } from "@/components/room/RoomSpotlightChip.component";
 import { RoomTurnCall } from "@/components/room/RoomTurnCall.component";
 import { RoomWordCard } from "@/components/room/RoomWordCard.component";
@@ -30,7 +33,6 @@ import { StrokeWireUtils } from "@/components/room/_utils/strokeWire.utils";
 import { SoundToggle } from "@/components/sound/SoundToggle.component";
 import { SoundPlayer } from "@/components/sound/_utils/soundPlayer.utils";
 import { VotePrompt } from "@/components/vote/VotePrompt.component";
-import { VoteSheet } from "@/components/vote/VoteSheet.component";
 import type { ClientMessage } from "@/protocol/generated/ClientMessage";
 import { RoomStateUtils } from "@/protocol/roomState.utils";
 
@@ -62,6 +64,9 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
   /** The final round's results are shown first; the podium once you ask for it. */
   const [podiumFor, setPodiumFor] = useState<string | null>(null);
   const spotlight = useSpotlight();
+  /** The "?" sheet: this room's rules and how to play. */
+  const [infoOpen, setInfoOpen] = useState(false);
+  const rulesHeading = useId();
   const toolsRef = useRef<HTMLElement>(null);
   const cardsRef = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -157,6 +162,18 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
     </p>
   );
 
+  const infoButton = (
+    <button
+      type="button"
+      aria-haspopup="dialog"
+      onClick={() => setInfoOpen(true)}
+      className="grid size-11 shrink-0 place-items-center rounded-full bg-night-soft/70 font-display text-2xl text-white hover:bg-night-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+    >
+      <span aria-hidden="true">?</span>
+      <span className="sr-only">How to play</span>
+    </button>
+  );
+
   const countdown = phase === "voting" ? state.timers.voting : state.timers.turn;
   const progress = (
     <RoomProgress
@@ -206,10 +223,33 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
                 {room.code}
               </span>
             </p>
+            <div className="hidden @5xl/room:block">{infoButton}</div>
             <SoundToggle channel="music" />
             <SoundToggle />
           </div>
         </header>
+
+        {/* The word, or that you're the bamboozler, right in your face as the round starts. */}
+        {phase === "drawing" && playing && round && (
+          <RoomSecretReveal key={round.number} category={round.category} word={round.word} />
+        )}
+
+        {infoOpen && (
+          <BrandSheet label="How to play" onClose={() => setInfoOpen(false)}>
+            <section aria-labelledby={rulesHeading} className={`${BrandStyles.panel} relative mx-5 grid gap-2 lg:mx-8`}>
+              <BrandSketchyFrame className="text-sun/60" />
+              <h2 id={rulesHeading} className="font-display text-2xl">
+                This room
+              </h2>
+              <ul className="grid gap-1 text-white/80">
+                {RoomViewUtils.rulesOf(room.settings).map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
+              </ul>
+            </section>
+            <LobbyHowToPlay />
+          </BrandSheet>
+        )}
 
         {notice}
 
@@ -228,7 +268,11 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
         ) : (
           // A phone on its side: the drawing on the left at the height there is, everything else beside it.
           <div className="flex min-h-0 flex-1 flex-col gap-3 @5xl/room:grid @5xl/room:grid-cols-[17rem_minmax(0,1fr)] @5xl/room:grid-rows-[minmax(0,1fr)_auto] @5xl/room:gap-x-5 @5xl/room:gap-y-3 sideways:@max-5xl/room:grid sideways:@max-5xl/room:grid-cols-[auto_minmax(14rem,1fr)] sideways:@max-5xl/room:content-start sideways:@max-5xl/room:items-start sideways:@max-5xl/room:*:col-start-2">
-            <div className="order-first @5xl/room:hidden">{progress}</div>
+            {/* On a phone the "?" sits next to the round, where there's room for it. */}
+            <div className="order-first flex items-start gap-2 @5xl/room:hidden">
+              <div className="min-w-0 flex-1">{progress}</div>
+              {infoButton}
+            </div>
             {phase !== "lobby" && (
               <div ref={stripRef} tabIndex={-1} className="order-first outline-none @5xl/room:hidden">
                 <RoomPlayerStrip
@@ -315,7 +359,7 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
                         ) : (
                           <p className="text-center text-white/80">
                             {room.hostScreen
-                              ? "The host screen starts the round…"
+                              ? `${room.hostScreen} starts the round from the big screen…`
                               : `Waiting for ${view.host?.name ?? "the host"} to start…`}
                           </p>
                         )}
@@ -357,7 +401,7 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
 
             {/* The final call: a sheet over everything, with the drawing and a big Vote button per player. */}
             {phase === "voting" && playing && round && (
-              <VoteSheet>
+              <BrandSheet label="Who’s sketchy?">
                 {notice}
                 <VotePrompt
                   players={players.filter((player) => round.turnOrder.includes(player.id))}
@@ -392,7 +436,7 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
                   youWearTheHat={youAreBamboozler}
                   layout="sheet"
                 />
-              </VoteSheet>
+              </BrandSheet>
             )}
 
             {/*
@@ -469,7 +513,7 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
                 {result && !result.gameOver && !isHost && (
                   <p className="text-center text-white/70">
                     {room.hostScreen
-                      ? "The host screen starts the next round…"
+                      ? `${room.hostScreen} starts the next round from the big screen…`
                       : `Waiting for ${view.host?.name ?? "the host"} to start the next round…`}
                   </p>
                 )}

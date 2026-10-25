@@ -102,9 +102,10 @@ async fn enter(
             let (connection, outbox) = join(&room, name, session_token).await?;
             Ok((room, connection, outbox))
         }
-        ClientMessage::HostRoom { settings } => {
+        ClientMessage::HostRoom { name, settings } => {
+            let name = clean_name(&name).ok_or(RejectReason::InvalidName)?;
             let (_, room) = registry.create()?;
-            let (connection, outbox) = watch(&room, Some(HostClaim::New)).await?;
+            let (connection, outbox) = watch(&room, Some(HostClaim::New(name))).await?;
             if let Some(settings) = settings {
                 let message = ClientMessage::UpdateSettings { settings };
                 let _ = room.commands.send(RoomCommand::Message { connection, message }).await;

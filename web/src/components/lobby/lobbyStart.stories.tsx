@@ -71,12 +71,15 @@ export const NameYourself: Story = {
   },
 };
 
-/** A TV or laptop everyone can see hosts without a name and without playing. */
+/** A TV or laptop everyone can see hosts without playing, under the host's name. */
 export const HostOnThisScreen: Story = {
   args: { step: "create" },
   play: async ({ args, canvas, userEvent }) => {
+    // Hosting needs a name too: the players read "Joris starts the round", not just "the host".
+    await expect(canvas.getByRole("button", { name: "Host on this screen" })).toBeDisabled();
+    await userEvent.type(canvas.getByLabelText("Your name"), "Joris");
     await userEvent.click(canvas.getByRole("button", { name: "Host on this screen" }));
-    await expect(args.onEnter).toHaveBeenCalledWith({ kind: "host" });
+    await expect(args.onEnter).toHaveBeenCalledWith({ kind: "host", name: "Joris" });
   },
 };
 

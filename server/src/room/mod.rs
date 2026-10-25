@@ -44,6 +44,8 @@ pub type Outbox = Vec<(Audience, ServerMessage)>;
 /// The screen that hosts a room: its session token takes the role back after a reload.
 #[derive(Debug)]
 struct HostScreen {
+    /// Who hosts, already tidied (`clean_name`).
+    name: String,
     session_token: String,
     connected: bool,
 }
@@ -51,7 +53,8 @@ struct HostScreen {
 /// A screen asking to host: the one creating the room, or one coming back with its session token.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum HostClaim {
-    New,
+    /// The room's creator, with their name.
+    New(String),
     Resume(String),
 }
 
@@ -292,9 +295,10 @@ impl Room {
     pub fn attach_host_screen(&mut self, claim: HostClaim, now: Instant) -> (Option<String>, Outbox) {
         let mut outbox = Vec::new();
         let token = match (claim, &mut self.host_screen) {
-            (HostClaim::New, None) if self.players.is_empty() => {
+            (HostClaim::New(name), None) if self.players.is_empty() => {
                 let session_token = new_token(&mut self.rng);
                 self.host_screen = Some(HostScreen {
+                    name,
                     session_token: session_token.clone(),
                     connected: true,
                 });
@@ -395,7 +399,7 @@ impl Room {
         RoomSnapshot {
             code: self.code.clone(),
             host_id: self.host_id,
-            host_screen: self.host_screen.is_some(),
+            host_screen: self.host_screen.as_ref().map(|screen| screen.name.clone()),
             players: self.players.iter().map(summary).collect(),
             settings: self.settings.clone(),
             word_categories: self.words.catalogue(),
