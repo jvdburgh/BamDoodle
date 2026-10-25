@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, waitFor } from "storybook/test";
-import { BrandLogo } from "./BrandLogo.component";
+import { expect, fn, waitFor, within } from "storybook/test";
+import { BrandLogo, LEAVING_EVENT } from "./BrandLogo.component";
 
 const meta = {
   title: "Brand/BrandLogo",
@@ -59,6 +59,48 @@ export const SlyHomeLink: Story = {
   args: { sly: true, href: "/?screen=start", className: "size-11" },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("link", { name: "BamDoodle" })).toHaveAttribute("href", "/?screen=start");
+  },
+};
+
+/** Links don't navigate away from the story (a broken question would end the test run). */
+const stayOnTheStory = () => {
+  const stay = (event: Event) => {
+    if (event.target instanceof Element && event.target.closest("a")) event.preventDefault();
+  };
+  document.addEventListener("click", stay, true);
+  return () => document.removeEventListener("click", stay, true);
+};
+
+/** In a room the logo asks first: Stay closes the question, and nothing leaves. */
+export const InARoomAsksFirst: Story = {
+  args: { named: true, href: "/", className: "size-10", confirmLeave: true },
+  beforeEach: stayOnTheStory,
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole("link", { name: /^BamDoodle/ }));
+    const question = canvas.getByRole("dialog", { name: "Leave the game?" });
+    await expect(question).toHaveTextContent("Are you sure you want to leave the game?");
+    await expect(within(question).getByRole("link", { name: "Leave" })).toHaveAttribute("href", "/");
+    await userEvent.click(within(question).getByRole("button", { name: "Stay" }));
+    await waitFor(() => expect(canvas.queryByRole("dialog", { name: "Leave the game?" })).toBeNull());
+  },
+};
+
+/** Leave tells the room first, so its own "leave this page?" (`beforeunload`) doesn't ask a second time. */
+export const LeaveAsksOnlyOnce: Story = {
+  args: { named: true, href: "/", className: "size-10", confirmLeave: true },
+  beforeEach: stayOnTheStory,
+  play: async ({ canvas, userEvent }) => {
+    const room = fn();
+    window.addEventListener(LEAVING_EVENT, room);
+    try {
+      await userEvent.click(canvas.getByRole("link", { name: /^BamDoodle/ }));
+      await expect(room).not.toHaveBeenCalled();
+      const question = canvas.getByRole("dialog", { name: "Leave the game?" });
+      await userEvent.click(within(question).getByRole("link", { name: "Leave" }));
+      await expect(room).toHaveBeenCalledTimes(1);
+    } finally {
+      window.removeEventListener(LEAVING_EVENT, room);
+    }
   },
 };
 

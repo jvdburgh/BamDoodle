@@ -55,7 +55,7 @@ const faq = (): { question: string; answer: string }[] => [
 const primer = [
   "Everyone gets the same word, except the bamboozler.",
   "Take turns drawing it on one canvas.",
-  "Vote who didn’t know it.",
+  "Vote who was sketchy.",
 ];
 
 export const HowToPlayUtils = { steps, primer, more: [points, rounds, anyDevice], faq };

@@ -1,6 +1,19 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { StrictMode, useEffect, useRef, type ReactNode } from "react";
+import { createRoot } from "react-dom/client";
 import { expect, fn, waitFor } from "storybook/test";
 import { BrandSheet } from "./BrandSheet.component";
+
+/** Its own React root in StrictMode: a StrictMode element inside the story's root doesn't remount effects. */
+function StrictRoot({ children }: { children: ReactNode }) {
+  const host = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const root = createRoot(host.current!);
+    root.render(<StrictMode>{children}</StrictMode>);
+    return () => root.unmount();
+  }, [children]);
+  return <div ref={host} />;
+}
 
 const meta = {
   title: "Brand/BrandSheet",
@@ -47,5 +60,25 @@ export const Dismissible: Story = {
     sheet.showModal();
     sheet.close();
     await waitFor(() => expect(args.onClose).toHaveBeenCalledTimes(2));
+  },
+};
+
+/**
+ * React's StrictMode (the dev server) mounts, unmounts and mounts again: the `close` event of that unmount arrives
+ * after the sheet opened again, and must not close it (the room's "?" closed by itself on a phone).
+ */
+export const SurvivesARemount: Story = {
+  args: { label: "How to play", onClose: fn(), children: <p>Draw together.</p> },
+  decorators: [
+    (Story) => (
+      <StrictRoot>
+        <Story />
+      </StrictRoot>
+    ),
+  ],
+  play: async ({ args, canvas }) => {
+    await new Promise((settle) => setTimeout(settle, 100));
+    await expect(args.onClose).not.toHaveBeenCalled();
+    await expect(canvas.getByRole("dialog", { name: "How to play" })).toHaveAttribute("open");
   },
 };

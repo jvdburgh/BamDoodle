@@ -6,6 +6,11 @@ type BrandSheetProps = {
   label: string;
   /** Lets it be closed (Esc, Android's back, a Close button). Without it the sheet stays until it unmounts. */
   onClose?: () => void;
+  /**
+   * A short question (leave the game?): a small card in the middle of every screen, without the Close button, as its
+   * own buttons answer it. A button in a `<form method="dialog">` inside closes it through the dialog.
+   */
+  question?: boolean;
   children: ReactNode;
 };
 
@@ -13,7 +18,7 @@ type BrandSheetProps = {
  * A sheet over everything: a modal `<dialog>` that opens as it mounts and closes as it goes. Full screen on a phone,
  * a centred sheet on a laptop. The final vote can't be dismissed (it ends by itself); how to play can.
  */
-export function BrandSheet({ label, onClose, children }: BrandSheetProps) {
+export function BrandSheet({ label, onClose, question = false, children }: BrandSheetProps) {
   const sheet = useRef<HTMLDialogElement>(null);
   const closeRef = useRef(onClose);
   useEffect(() => {
@@ -26,8 +31,12 @@ export function BrandSheet({ label, onClose, children }: BrandSheetProps) {
     if (!dialog) return;
     if (!dialog.open) dialog.showModal();
     // Closed by the browser (Esc, back): tell the owner, or, when it can't be dismissed, open it again. Browsers
-    // let a page refuse those only so often.
-    const closed = () => (closeRef.current ? closeRef.current() : dialog.showModal());
+    // let a page refuse those only so often. A `close` that finds it open again is from its own remount (StrictMode).
+    const closed = () => {
+      if (dialog.open) return;
+      if (closeRef.current) closeRef.current();
+      else dialog.showModal();
+    };
     dialog.addEventListener("close", closed);
     return () => {
       dialog.removeEventListener("close", closed);
@@ -40,10 +49,16 @@ export function BrandSheet({ label, onClose, children }: BrandSheetProps) {
       ref={sheet}
       aria-label={label}
       onCancel={dismissible ? undefined : (event) => event.preventDefault()}
-      className="m-0 h-dvh max-h-none w-full max-w-none overflow-y-auto overscroll-contain bg-night p-0 text-white backdrop:bg-night-deep/85 md:m-auto md:h-auto md:max-h-[calc(100dvh-2rem)] md:max-w-4xl md:rounded-[20px_28px_24px_18px]"
+      className={`overflow-y-auto overscroll-contain bg-night p-0 text-white backdrop:bg-night-deep/85 ${
+        question
+          ? "m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-md rounded-[20px_28px_24px_18px]"
+          : "m-0 h-dvh max-h-none w-full max-w-none md:m-auto md:h-auto md:max-h-[calc(100dvh-2rem)] md:max-w-4xl md:rounded-[20px_28px_24px_18px]"
+      }`}
     >
-      <div className="grid gap-3 p-3 pb-[calc(1rem+var(--browser-bar))] md:gap-4 md:p-5">
-        {dismissible && (
+      <div
+        className={question ? "grid gap-5 p-5" : "grid gap-3 p-3 pb-[calc(1rem+var(--browser-bar))] md:gap-4 md:p-5"}
+      >
+        {dismissible && !question && (
           <button
             type="button"
             // Through the dialog, so the browser hands the focus back to what opened it; `close` then tells the owner.

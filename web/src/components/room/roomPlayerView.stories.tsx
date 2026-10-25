@@ -127,6 +127,26 @@ export const Watching: Story = {
   },
 };
 
+/** Mid-game the logo doesn't just leave: it asks first, and Stay keeps you in the room. */
+export const LogoAsksBeforeLeaving: Story = {
+  beforeEach: () => {
+    // A logo that didn't ask would take the test run with it.
+    const stay = (event: Event) => {
+      if (event.target instanceof Element && event.target.closest("a")) event.preventDefault();
+    };
+    document.addEventListener("click", stay, true);
+    return () => document.removeEventListener("click", stay, true);
+  },
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole("link", { name: /^BamDoodle/ }));
+    const question = canvas.getByRole("dialog", { name: "Leave the game?" });
+    await expect(question).toHaveTextContent("Are you sure you want to leave the game?");
+    await userEvent.click(within(question).getByRole("button", { name: "Stay" }));
+    await waitFor(() => expect(canvas.queryByRole("dialog", { name: "Leave the game?" })).toBeNull());
+    await expect(canvas.getByRole("img", { name: "Shared drawing. Pip is drawing." })).toBeVisible();
+  },
+};
+
 /** One stroke each: the banner says it's one line, and after you lift the pen that the turn is passing on. */
 export const YourTurn: Story = {
   args: { phase: { phase: "drawing", round: roundFixture({ activePlayerId: 2, strokes: [] }) } },
@@ -257,10 +277,10 @@ export const HostInTheLobby: Story = {
     await expect(canvas.queryByRole("status", { name: "Round progress" })).toBeNull();
     await expect(canvas.queryByRole("img", { name: /Shared drawing/ })).toBeNull();
     await expect(canvas.getByText("One stroke · 3 turns each · 5 rounds · English · 2 categories")).toBeVisible();
-    await expect(canvas.getByRole("button", { name: "Share link" })).toBeVisible();
+    await expect(canvas.getByRole("button", { name: "Copy link" })).toBeVisible();
     const primer = within(canvas.getByRole("list", { name: "How it goes" }));
     await expect(primer.getAllByRole("listitem")).toHaveLength(3);
-    await expect(primer.getByText("Vote who didn’t know it.")).toBeVisible();
+    await expect(primer.getByText("Vote who was sketchy.")).toBeVisible();
     await expect(canvas.queryByRole("link", { name: /TV/ })).toBeNull();
     await userEvent.click(canvas.getByRole("button", { name: "Room settings" }));
     await expect(args.onSettings).toHaveBeenCalled();
@@ -285,7 +305,7 @@ export const GuestInTheLobby: Story = {
   play: async ({ canvas }) => {
     await expect(canvas.getByText("5 rounds · waiting for Juno to start")).toBeVisible();
     await expect(canvas.getByText("One stroke · 3 turns each · 5 rounds · English · 2 categories")).toBeVisible();
-    await expect(canvas.getByRole("button", { name: "Share link" })).toBeVisible();
+    await expect(canvas.getByRole("button", { name: "Copy link" })).toBeVisible();
     await expect(canvas.queryByRole("button", { name: "Start round" })).toBeNull();
     await expect(canvas.queryByRole("button", { name: "Room settings" })).toBeNull();
   },

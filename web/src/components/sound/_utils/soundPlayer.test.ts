@@ -99,8 +99,15 @@ describe("SoundPlayer", () => {
   };
   /** The level the music's own output gain was last sent to. */
   const musicLevel = () => {
-    const output = audio.musicSources()[0]?.output as { gain: FakeParam } | undefined;
-    return output?.gain.setTargetAtTime.mock.lastCall?.[0] as number | undefined;
+    const output = audio.musicSources()[0]?.output as
+      | { gain: FakeParam & { setValueAtTime: ReturnType<typeof vi.fn> } }
+      | undefined;
+    if (!output) return undefined;
+    const { setTargetAtTime, setValueAtTime } = output.gain;
+    const latest = [setTargetAtTime, setValueAtTime]
+      .filter((automation) => automation.mock.lastCall)
+      .sort((a, b) => (b.mock.invocationCallOrder.at(-1) ?? 0) - (a.mock.invocationCallOrder.at(-1) ?? 0))[0];
+    return (latest?.mock.lastCall?.[0] as number | undefined) ?? output.gain.value;
   };
 
   beforeEach(() => {
@@ -159,6 +166,38 @@ describe("SoundPlayer", () => {
     await vi.advanceTimersByTimeAsync(10);
     expect(fetchMusic).toHaveBeenCalledTimes(1);
     expect(audio.musicSources()).toHaveLength(1);
+  });
+
+  it("has the track ready on a phone with music off: switched on, it plays that very moment", async () => {
+    const player = await load();
+    player.setMusic({ ...screen, byDefault: false });
+    await vi.advanceTimersByTimeAsync(10);
+    expect(fetchMusic).toHaveBeenCalledTimes(1);
+    tap();
+    await vi.advanceTimersByTimeAsync(10);
+    expect(audio.musicSources()).toHaveLength(0);
+    player.setMusicOn(true);
+    const [music] = audio.musicSources();
+    expect(music?.start).toHaveBeenCalledWith(0, music?.loopStart);
+    const output = music?.output as { gain: FakeParam } | undefined;
+    expect(output?.gain.value).toBeGreaterThan(0);
+  });
+
+  it("switched back on while fading out, it's at its volume at once", async () => {
+    const player = await load();
+    tap();
+    player.setMusic(screen);
+    await vi.advanceTimersByTimeAsync(10);
+    const full = musicLevel()!;
+    const [music] = audio.musicSources();
+    const { gain } = music!.output as { gain: FakeParam & Record<string, ReturnType<typeof vi.fn>> };
+    player.setMusicOn(false);
+    await vi.advanceTimersByTimeAsync(1000);
+    gain.setTargetAtTime.mockClear();
+    player.setMusicOn(true);
+    expect(gain.setTargetAtTime).not.toHaveBeenCalled();
+    expect(gain.cancelScheduledValues).toHaveBeenCalled();
+    expect(gain.setValueAtTime).toHaveBeenLastCalledWith(full, expect.any(Number));
   });
 
   it("starts at its volume straight away: no fade-in that sounds like nothing happened", async () => {

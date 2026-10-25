@@ -87,12 +87,14 @@ can change the number of rounds between rounds; when that's already been reached
    sees "Mo is still drawing their face" next to Start round (they can still start). In the room's lobby, on a phone
    and a laptop alike, the header says how many are in the room and "4 rounds · waiting for Juno to start" ("you
    start when everyone's in" for the host, "Joris starts it from the big screen" in a room hosted by a screen). The
-   join card sits on the room's navy and is the one place with the code, with **Share link** for everyone (the
-   phone's own share sheet, or `bamdoodle.io/CODE` copied with "Link copied"); the host's Start round is on it too,
-   switched off with "2 more players needed to start (up to 8 can play)" while fewer than 3 are here. Under the card
-   everyone reads what's picked ("Timed · 20 s · 2 turns each · 4 rounds · English · 12 categories"), with Room
-   settings for the host. Under the players, how it goes in three lines: everyone gets the same word, except the
-   bamboozler; take turns drawing it on one canvas; vote who didn't know it.
+   join card sits on the room's navy and is the one place with the code; the host's Start round is on it,
+   switched off with "2 more players needed to start (up to 8 can play)" while fewer than 3 are here. Under that, for
+   everyone, the room's link written out to read aloud ("Send the link bamdoodle.io/CODE") and **Copy link**, which
+   puts `https://bamdoodle.io/CODE` on the clipboard and says "Link copied" (never the phone's share sheet; where the
+   page can't use the clipboard, the written link is selected and copied, or left selected with "Couldn't copy it:
+   copy the link above by hand"). Under the card everyone reads what's picked ("Timed · 20 s · 2 turns each · 4
+   rounds · English · 12 categories"), with a **Room settings** button for the host. Under the players, how it goes in three lines: everyone gets the same word, except the
+   bamboozler; take turns drawing it on one canvas; vote who was sketchy.
 2. **Secret.** The server picks a word from the chosen categories and tells each player their role.
 3. **Drawing.** Players take turns on the shared canvas in a shuffled order shown on screen; each player
    gets the same number of turns. The player whose turn it is is highlighted, and their strokes appear live for everyone.
@@ -162,7 +164,10 @@ change it until time's up." and whose suspicion counts if you don't vote. Then t
 room for the cards, and a small card for every other player: face, name, "voted ✓" beside it once they have (never
 for whom), their mini-map as a thumbnail and a quiet Vote button that turns sun with "Your vote ✓". Two columns on a
 phone, three when there's room, four on its side or on a laptop; the sheet closes when the vote ends. The room's
-header is just the logo, the "?" (with the room code in it during play) and the sound. The round banner says where
+header is just the logo, the "?" (with the room code in it during play) and the sound. Tapping the logo in a room
+(lobby or game, phone, laptop or host screen) asks "Are you sure you want to leave the game?" with Stay and Leave
+before it goes to the start page; mid-round, reloading or closing the tab still gets the browser's own prompt, but
+not after Leave. The round banner says where
 the round is: the category and the word (or the bamboozler's "???") on top, then "Noor's turn (1 of 2 each) · 15s",
 "Word 1 of 4" at the right and the countdown as a bar across. Rounds are words there, so "Round" never sits next to
 "Turn". On a laptop everything fits one screen (the banner in the middle of the header, cards in one column on the

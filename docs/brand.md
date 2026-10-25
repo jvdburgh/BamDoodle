@@ -6,7 +6,9 @@
 - Tagline: **Draw • Guess • Deceive** (the dots in berry pink).
 - The top left of every screen is the logo with the name and tagline beside it (`BrandLogo named`), and the whole
   block is one link to the start page. In the room, below the laptop layout, the logo stands alone: the word, the
-  players and the room code need the space.
+  players and the room code need the space. In a room (a phone, a laptop and the host screen) the logo asks "Are you
+  sure you want to leave the game?" first, in a small card in the middle of the screen (`BrandLogo confirmLeave`, a
+  `BrandSheet question`), with Stay (the sun button, focused) and Leave.
 - Second line, for the game itself (round start, reveal, loading): **Who's sketchy?** The logo is a sketchy
   character, the game is about finding the sketchy one, and everything is sketched. Use it as a playful question,
   not as the main tagline.
@@ -78,10 +80,12 @@ playing (`SoundPlayer.playInTurn`), and muting silences those still waiting too.
 Pixabay Content License, not the AGPL; `web/public/sounds/NOTICE` says so, for forks. It loops the track's audible span
 seamlessly (the silence before and the quiet tail after are left out) and keeps playing for as long as the room is
 open, and from the start page on (the room picks it up without restarting): softer while someone draws or votes, so the ticks and cues stay clear, and never stopped or restarted by a sound
-effect. It has its own Music toggle next to the sound toggle, remembered per device: on by default on the host screen
-and on a laptop or desktop, off by default on phones and tablets, so a table full of phones doesn't play it
-out of step. Like every sound, it waits for the first tap (the track is already downloaded by then), starts at its
-volume at once rather than fading in, and picks up again after the browser suspends audio (a locked phone, a call).
+effect. It has its own Music toggle next to the sound toggle, remembered per device: on by default on the host screen,
+for the host on their own device (a phone too) and on a laptop or desktop, off by default on other players' phones and
+tablets, so a table full of phones doesn't play it out of step. Like every sound, it waits for the first tap. The
+track is downloaded as soon as a screen has music and decoded at that first tap, whether the music is on or off, so
+switching it on starts it that very moment, at its volume, never fading in (also when it's switched back on while
+fading out). It picks up again after the browser suspends audio (a locked phone, a call).
 
 ## Feel
 

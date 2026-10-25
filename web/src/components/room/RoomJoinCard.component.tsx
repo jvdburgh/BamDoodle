@@ -35,7 +35,7 @@ export function RoomJoinCard({ roomCode, big = false, reveal = false, children }
       className={`relative flex items-center text-center shadow-[0_6px_0_var(--color-night-deep)] ${animate("animate-card-in")} ${
         big
           ? "flex-row gap-8 rounded-[20px_28px_24px_18px] bg-night px-8 py-6"
-          : "flex-col gap-2 rounded-[18px_24px_20px_16px] bg-night px-4 py-3 sm:gap-3 sm:px-6 sm:py-5"
+          : "flex-col gap-3 rounded-[18px_24px_20px_16px] bg-night px-5 py-5 sm:gap-4 sm:px-8 sm:py-6"
       }`}
     >
       <span
@@ -84,7 +84,7 @@ export function RoomJoinCard({ roomCode, big = false, reveal = false, children }
           </span>
         </p>
         {/* The host's Start round can't wait for the letters: it rises in with the first line. */}
-        <div className={animate("animate-rise-in")} style={delay(300)}>
+        <div className={`${big ? "" : "mt-3"} ${animate("animate-rise-in")}`} style={delay(300)}>
           {children}
         </div>
       </div>
