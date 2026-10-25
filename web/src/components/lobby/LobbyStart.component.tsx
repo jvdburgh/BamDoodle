@@ -109,7 +109,8 @@ export function LobbyStart({
 
   const nameField = (
     <div className={`grid content-start gap-1.5 ${step === "create" ? "md:col-span-2 sideways:col-span-1!" : ""}`}>
-      <label htmlFor={nameId} className="text-sm text-white/70">
+      {/* After the setup the heading asks for it already. */}
+      <label htmlFor={nameId} className={step === "create" ? "sr-only" : "text-sm text-white/70"}>
         Your name
       </label>
       <input
@@ -181,7 +182,10 @@ export function LobbyStart({
                 className={`${BrandStyles.quietButton} group relative w-full gap-3`}
               >
                 <BrandSketchyFrame rainbow className="opacity-60 group-disabled:hidden" />
-                <BrandScribble shape="pencilPlus" className="size-7 text-sun motion-safe:group-hover:animate-wiggle" />
+                <BrandScribble
+                  shape="pencilPlus"
+                  className="size-7 text-sun group-disabled:text-white/50 motion-safe:group-hover:animate-wiggle"
+                />
                 {busy ? "Just a sec…" : "Create a room"}
               </button>
               {shownProblem && (
@@ -278,9 +282,12 @@ export function LobbyStart({
                 type="button"
                 onClick={() => onEnter({ kind: "host", name: cleanName })}
                 disabled={!canSubmit}
-                className={`${BrandStyles.quietButton} group w-full gap-2 md:order-last sideways:order-none!`}
+                className={`${BrandStyles.quietButton} group w-full gap-2 md:order-last md:text-xl sideways:order-none!`}
               >
-                <BrandScribble shape="screen" className="size-6 text-sun motion-safe:group-hover:animate-wiggle" />
+                <BrandScribble
+                  shape="screen"
+                  className="size-6 text-sun group-disabled:text-white/50 motion-safe:group-hover:animate-wiggle"
+                />
                 Host on this screen
               </button>
               <p className="text-sm text-white/70">

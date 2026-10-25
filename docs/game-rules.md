@@ -76,7 +76,9 @@ can change the number of rounds between rounds; when that's already been reached
    numbers on the choices and a small sketch of what's picked. Under the rounds, a rough length: "About 17 minutes
    with 5 players" (5 players' turns, a line taking about 6 seconds, plus a minute per round for the vote, the guess
    and the results). Back and Next end the form, with the picks in one line beside Next ("Timed · 20 s · 2 turns
-   each · 4 rounds · English · 33 categories"). Who it's for (3 to 8 players, any device) is in How to play. Then the host's nickname (after the setup, so it's clearly
+   each · 4 rounds · English · 33 categories"). A phone keeps it lean: the headings, the choices and the length
+   under the rounds, without the lines under the headings (still read out by a screen reader), who it's for or the
+   picks line, and one full-width Next with Back under it. Who it's for (3 to 8 players, any device) is in How to play. Then the host's nickname (after the setup, so it's clearly
    theirs and not the room's), and only then is the room created, with those settings. The host (a player or the
    host screen) can open the settings again between rounds as "Room settings" ("Changes reach everyone right
    away."), back with "Back to the room"; every change there reaches the room at once. Then everyone draws their avatar
