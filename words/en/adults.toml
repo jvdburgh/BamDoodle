@@ -2,6 +2,7 @@
 # Crude and funny is the point; hateful never. No slurs, nothing about protected groups, nothing involving minors,
 # no sexual violence, no hard drugs. Checked against LDNOOBW (CC BY 4.0) as a blocklist.
 language = "en"
+group = "adults"
 adult = true
 
 [categories]

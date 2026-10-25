@@ -11,11 +11,13 @@ use anyhow::Context;
 use rand::{Rng, seq::IndexedRandom};
 use serde::Deserialize;
 
-use crate::protocol::{Language, WordCategory};
+use crate::protocol::{Language, WordCategory, WordGroup};
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct WordPack {
     pub language: Language,
+    /// Where the setup lists this pack's categories.
+    pub group: WordGroup,
     /// Every category in this pack is 18+.
     #[serde(default)]
     pub adult: bool,
@@ -33,6 +35,7 @@ pub struct SecretWord {
 struct Category {
     language: Language,
     name: String,
+    group: WordGroup,
     adult: bool,
     words: Vec<String>,
 }
@@ -62,12 +65,19 @@ impl WordLibrary {
                                 pack.language
                             ));
                         }
+                        if category.group != pack.group {
+                            problems.push(format!(
+                                "{:?} category {name:?} is in group {:?} in one file and {:?} in another",
+                                pack.language, category.group, pack.group
+                            ));
+                        }
                         category.adult |= pack.adult;
                         category.words.extend(words);
                     }
                     None => categories.push(Category {
                         language: pack.language,
                         name,
+                        group: pack.group,
                         adult: pack.adult,
                         words,
                     }),
@@ -121,7 +131,7 @@ impl WordLibrary {
         Ok(library)
     }
 
-    /// Everything a host can pick from, everyday categories first, then 18+, each by name.
+    /// Everything a host can pick from, by group (everyday first, 18+ last), each by name.
     pub fn catalogue(&self) -> Vec<WordCategory> {
         let mut catalogue: Vec<WordCategory> = self
             .categories
@@ -129,11 +139,14 @@ impl WordLibrary {
             .map(|category| WordCategory {
                 language: category.language,
                 name: category.name.clone(),
+                group: category.group,
                 adult: category.adult,
                 words: u32::try_from(category.words.len()).unwrap_or(u32::MAX),
             })
             .collect();
-        catalogue.sort_by(|a, b| (a.language as u8, a.adult, &a.name).cmp(&(b.language as u8, b.adult, &b.name)));
+        catalogue.sort_by(|a, b| {
+            (a.language as u8, a.adult, a.group, &a.name).cmp(&(b.language as u8, b.adult, b.group, &b.name))
+        });
         catalogue
     }
 
@@ -211,10 +224,11 @@ mod tests {
 
     use super::*;
 
-    fn library() -> WordLibrary {
-        WordLibrary::new(vec![
+    fn library_packs() -> Vec<WordPack> {
+        vec![
             WordPack {
                 language: Language::En,
+                group: WordGroup::Everyday,
                 adult: false,
                 categories: BTreeMap::from([
                     ("Animals".into(), vec!["cat".into(), "dog".into()]),
@@ -223,15 +237,21 @@ mod tests {
             },
             WordPack {
                 language: Language::En,
+                group: WordGroup::Everyday,
                 adult: false,
                 categories: BTreeMap::from([("Animals".into(), vec!["owl".into(), "Cat".into()])]),
             },
             WordPack {
                 language: Language::En,
+                group: WordGroup::Adults,
                 adult: true,
                 categories: BTreeMap::from([("After dark".into(), vec!["hangover".into()])]),
             },
-        ])
+        ]
+    }
+
+    fn library() -> WordLibrary {
+        WordLibrary::new(library_packs())
     }
 
     fn names(names: &[&str]) -> Vec<String> {
@@ -289,6 +309,7 @@ mod tests {
         let broken = WordLibrary::new(vec![
             WordPack {
                 language: Language::Nl,
+                group: WordGroup::Dutch,
                 adult: false,
                 categories: BTreeMap::from([
                     ("Sinterklaas".into(), vec!["sinterklaas".into(), "mijter".into()]),
@@ -297,6 +318,7 @@ mod tests {
             },
             WordPack {
                 language: Language::Nl,
+                group: WordGroup::Dutch,
                 adult: true,
                 categories: BTreeMap::from([("Na middernacht".into(), vec!["bierbuik".into()])]),
             },
@@ -304,6 +326,52 @@ mod tests {
         assert_eq!(broken.problems().len(), 1, "{:?}", broken.problems());
         assert!(broken.problems()[0].contains("18+"));
         assert!(library().problems().is_empty());
+    }
+
+    #[test]
+    fn categories_carry_the_group_of_their_pack() {
+        let mut packs = vec![WordPack {
+            language: Language::En,
+            group: WordGroup::Media,
+            adult: false,
+            categories: BTreeMap::from([("Films".into(), vec!["Jaws".into()])]),
+        }];
+        packs.extend(library_packs());
+        let groups: Vec<(String, WordGroup)> = WordLibrary::new(packs)
+            .catalogue()
+            .into_iter()
+            .map(|category| (category.name, category.group))
+            .collect();
+        assert_eq!(
+            groups,
+            vec![
+                ("Animals".into(), WordGroup::Everyday),
+                ("Food".into(), WordGroup::Everyday),
+                ("Films".into(), WordGroup::Media),
+                ("After dark".into(), WordGroup::Adults)
+            ],
+            "everyday first, then by group, 18+ last"
+        );
+    }
+
+    #[test]
+    fn a_category_in_two_groups_is_a_problem() {
+        let broken = WordLibrary::new(vec![
+            WordPack {
+                language: Language::En,
+                group: WordGroup::Everyday,
+                adult: false,
+                categories: BTreeMap::from([("Films".into(), vec!["popcorn".into()])]),
+            },
+            WordPack {
+                language: Language::En,
+                group: WordGroup::Media,
+                adult: false,
+                categories: BTreeMap::from([("Films".into(), vec!["Jaws".into()])]),
+            },
+        ]);
+        assert_eq!(broken.problems().len(), 1, "{:?}", broken.problems());
+        assert!(broken.problems()[0].contains("group"));
     }
 
     #[test]

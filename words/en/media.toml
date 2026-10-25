@@ -2,6 +2,7 @@
 # and curated by hand for BamDoodle; see scripts/words/wikidata-candidates.mjs. CC BY-SA 4.0, see words/NOTICE.
 # Titles are only words to draw or act out.
 language = "en"
+group = "media"
 
 [categories]
 Films = ["Amadeus", "Amélie", "Annie", "Armageddon", "Avatar", "Avengers", "Babe", "Bambi", "Barbie", "Beetlejuice", "Ben-Hur", "Bolt", "Brave", "Braveheart", "Cars", "Casablanca", "Cleopatra", "Clueless", "Coco", "Coraline", "Dumbo", "Dunkirk", "E.T.", "Encanto", "Fantasia", "Flashdance", "Frozen", "Gandhi", "Ghostbusters", "Gladiator", "Godzilla", "Goodfellas", "Gravity", "Grease", "Gremlins", "Hairspray", "Hercules", "Highlander", "Hook", "Inception", "Interstellar", "Jaws", "Joker", "Jumanji", "Labyrinth", "Luca", "Madagascar", "Matilda", "Matrix", "Minions", "Moana", "Mulan", "Oppenheimer", "Parasite", "Platoon", "Pocahontas", "Predator", "Psycho", "Rambo", "Ratatouille", "RoboCop", "Rocky", "Scarface", "Scream", "Shrek", "Sing", "Skyfall", "Soul", "Spartacus", "Speed", "Taken", "Tangled", "Tarzan", "Terminator", "Titanic", "Transformers", "Trolls", "Tron", "Twilight", "Twister", "Up", "WALL-E", "Wicked", "Wonka", "Zootopia"]

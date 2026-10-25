@@ -350,9 +350,27 @@ pub struct RoomDefaults {
 pub struct WordCategory {
     pub language: Language,
     pub name: String,
+    /// Where the setup lists it: the word pack (file) it comes from.
+    pub group: WordGroup,
     /// 18+: never picked unless the host picks it.
     pub adult: bool,
     pub words: u32,
+}
+
+/// A word pack, which groups its categories in the setup. In the order the setup lists them; the web app names them.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub enum WordGroup {
+    Everyday,
+    Culture,
+    Dutch,
+    World,
+    Media,
+    Trivia,
+    Tech,
+    Logos,
+    Adults,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
@@ -595,6 +613,21 @@ mod tests {
             serde_json::json!({
                 "mode": "timed", "turnsPerPlayer": 3, "turnSeconds": 20, "rounds": 4, "language": "en", "categories": []
             })
+        );
+    }
+
+    #[test]
+    fn word_categories_say_which_group_they_belong_to() {
+        let category = WordCategory {
+            language: Language::Nl,
+            name: "Efteling".into(),
+            group: WordGroup::Dutch,
+            adult: false,
+            words: 63,
+        };
+        assert_eq!(
+            serde_json::to_value(category).unwrap(),
+            serde_json::json!({ "language": "nl", "name": "Efteling", "group": "dutch", "adult": false, "words": 63 })
         );
     }
 

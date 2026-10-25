@@ -1,6 +1,7 @@
 # Triviapakket: memes, bordspellen en bekende mensen, met de hand gekozen voor BamDoodle. CC BY-SA 4.0, zie
 # words/NOTICE. Namen van mensen, spellen en memes zijn hier alleen woorden om te tekenen.
 language = "nl"
+group = "trivia"
 
 [categories]
 Memes = ["Amogus", "ASMR", "bonk", "Cheems", "chonk", "clickbait", "Clippy", "dabben", "Doge", "doggo", "doomscrollen", "duckface", "facepalm", "fidgetspinner", "flossen", "Gangnam", "ghosten", "Gigachad", "groepsapp", "Hadouken", "hamsteren", "Harambe", "Kermit", "Leeroy", "lolcat", "Nyan", "photobomb", "planken", "Pusheen", "Rickroll", "Skibidi", "Stonks", "Trollface", "unboxing", "yeet"]

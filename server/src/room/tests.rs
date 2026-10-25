@@ -1,7 +1,10 @@
 use std::collections::BTreeMap;
 
 use super::*;
-use crate::{protocol::Language, words::WordPack};
+use crate::{
+    protocol::{Language, WordGroup},
+    words::WordPack,
+};
 
 const WORDS: [&str; 3] = ["lighthouse", "giraffe", "pancake"];
 
@@ -9,11 +12,13 @@ fn library() -> Arc<WordLibrary> {
     Arc::new(WordLibrary::new(vec![
         WordPack {
             language: Language::En,
+            group: WordGroup::Everyday,
             adult: false,
             categories: BTreeMap::from([("Things".into(), WORDS.iter().map(|word| word.to_string()).collect())]),
         },
         WordPack {
             language: Language::Nl,
+            group: WordGroup::Everyday,
             adult: false,
             categories: BTreeMap::from([("Dingen".into(), vec!["vuurtoren".into()])]),
         },
@@ -1330,6 +1335,7 @@ mod categories {
         Arc::new(WordLibrary::new(vec![
             WordPack {
                 language: Language::En,
+                group: WordGroup::Everyday,
                 adult: false,
                 categories: BTreeMap::from([
                     ("Animals".into(), vec!["owl".into()]),
@@ -1338,6 +1344,7 @@ mod categories {
             },
             WordPack {
                 language: Language::En,
+                group: WordGroup::Adults,
                 adult: true,
                 categories: BTreeMap::from([("After dark".into(), vec!["hangover".into()])]),
             },
