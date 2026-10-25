@@ -336,11 +336,11 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
 
             {phase === "lobby" ? (
               // The way in, on the room's own navy: the code, Start round for the host, a link to send around.
-              <div className="order-1 grid content-center justify-items-center gap-2 @5xl/room:col-start-2 @5xl/room:row-start-1 sideways:@max-5xl/room:fixed sideways:@max-5xl/room:inset-y-3 sideways:@max-5xl/room:left-3 sideways:@max-5xl/room:w-(--canvas-w) sideways:@max-5xl/room:overflow-y-auto">
+              <div className="order-1 grid content-center justify-items-center gap-5 @5xl/room:col-start-2 @5xl/room:row-start-1 sideways:@max-5xl/room:fixed sideways:@max-5xl/room:inset-y-3 sideways:@max-5xl/room:left-3 sideways:@max-5xl/room:w-(--canvas-w) sideways:@max-5xl/room:overflow-y-auto">
                 <RoomJoinCard roomCode={room.code} reveal={revealCode}>
-                  <div className="grid justify-items-center gap-2">
+                  <div className="grid justify-items-center gap-5">
                     {isHost && (
-                      <>
+                      <div className="grid justify-items-center gap-2">
                         <button
                           type="button"
                           onClick={startRound}
@@ -361,19 +361,15 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
                             {stillDrawing}
                           </p>
                         )}
-                      </>
+                      </div>
                     )}
                     <RoomShareButton roomCode={room.code} />
                   </div>
                 </RoomJoinCard>
-                <div className="flex flex-wrap items-center justify-center gap-x-2 text-center text-sm text-white/70">
-                  <p>{RoomViewUtils.settingsLine(room.settings)}</p>
+                <div className="grid justify-items-center gap-3 text-center">
+                  <p className="text-sm text-white/70">{RoomViewUtils.settingsLine(room.settings)}</p>
                   {onSettings && (
-                    <button
-                      type="button"
-                      onClick={onSettings}
-                      className={`${BrandStyles.ghostButton} min-h-11 px-3 text-base`}
-                    >
+                    <button type="button" onClick={onSettings} className={BrandStyles.quietButton}>
                       Room settings
                     </button>
                   )}
