@@ -146,7 +146,7 @@ export function LobbyStart({
                 disabled={busy}
                 className={`${BrandStyles.quietButton} group relative w-full gap-3`}
               >
-                <BrandSketchyFrame rainbow className="opacity-60" />
+                <BrandSketchyFrame rainbow className="opacity-60 group-disabled:hidden" />
                 <BrandScribble shape="pencilPlus" className="size-7 text-sun motion-safe:group-hover:animate-wiggle" />
                 {busy ? "Just a sec…" : "Create a room"}
               </button>

@@ -36,7 +36,12 @@ export const CreateARoom: Story = {
 export const GettingTheRoomReady: Story = {
   args: { busy: true, problem: undefined },
   play: async ({ canvas }) => {
-    await expect(canvas.getByRole("button", { name: "Just a sec…" })).toBeDisabled();
+    const button = canvas.getByRole("button", { name: "Just a sec…" });
+    await expect(button).toBeDisabled();
+    // Disabled reads as a quiet navy button with a dashed sun outline, not a faded (muddy) sun one.
+    const style = getComputedStyle(button);
+    await expect(style.opacity).toBe("1");
+    await expect(style.outlineStyle).toBe("dashed");
   },
 };
 
