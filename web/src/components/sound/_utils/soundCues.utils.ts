@@ -12,7 +12,8 @@ export type SoundCue =
   | "pick"
   | "scribble"
   | "suspect"
-  | "vote";
+  | "vote"
+  | "tap";
 
 /** What the room looks like at one moment, as far as sound cares. */
 export type SoundMoment = {
@@ -50,4 +51,19 @@ function between(before: SoundMoment, after: SoundMoment): SoundCue[] {
   return tick ? ["tick"] : [];
 }
 
-export const SoundCuesUtils = { between };
+/** What a click asks about the element pressed. A control with its own sound says so with `data-sound="own"`. */
+const pressSelectors = {
+  own: '[data-sound="own"]',
+  choice: "input[type=radio], input[type=checkbox]",
+  button: 'button:not([aria-disabled="true"])',
+} as const;
+
+/** The sound for a click: a tap for a button, a pick for a choice (a radio or checkbox), nothing for the rest. */
+function forPress(target: Pick<Element, "closest"> | null): SoundCue | null {
+  if (!target || target.closest(pressSelectors.own)) return null;
+  if (target.closest(pressSelectors.choice)) return "pick";
+  if (target.closest(pressSelectors.button)) return "tap";
+  return null;
+}
+
+export const SoundCuesUtils = { between, forPress, pressSelectors };

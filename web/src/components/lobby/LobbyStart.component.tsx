@@ -117,9 +117,11 @@ export function LobbyStart({
         <SoundToggle channel="music" />
         <SoundToggle />
       </div>
-      {/* On a laptop how to play sits beside the buttons. */}
-      <div className="mx-auto grid w-full max-w-6xl flex-1 lg:grid-cols-[minmax(0,28rem)_minmax(0,1fr)] lg:gap-16 lg:px-8">
-        <main className="mx-auto flex min-h-[calc(100svh-4rem)] w-full max-w-md flex-col items-center justify-center gap-8 px-5 pb-10 lg:min-h-0 lg:self-start lg:pt-24">
+      <div className="flex flex-1 flex-col">
+        {/* Two thirds of the screen on the choice, so how to play always peeks out below; the forms get it all. */}
+        <main
+          className={`mx-auto flex w-full max-w-md flex-col items-center justify-center gap-8 px-5 pb-6 ${step === "choose" ? "min-h-[66svh]" : "min-h-[calc(100svh-4rem)]"}`}
+        >
           <div className="flex flex-col items-center gap-2 text-center">
             <BrandLogo swirlOnHover className="size-28" />
             <h2 className="font-display text-5xl">BamDoodle</h2>

@@ -325,7 +325,7 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
                   votedIds={phase === "voting" ? (round?.voted ?? []) : []}
                   youWearTheHat={youAreBamboozler && !result}
                   outcome={RoomViewUtils.outcome(reveal, result, room.players)}
-                  showFaceStatus={phase === "lobby"}
+                  lobby={phase === "lobby"}
                 />
               </div>
               <div className="hidden @5xl/room:block">{progress}</div>
@@ -353,22 +353,12 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
               className={`${BrandStyles.panel} flex flex-col gap-4 outline-none @2xl/room:flex-row @2xl/room:items-center @5xl/room:col-start-2 @5xl/room:row-start-2 ${placeOnPhone("tools")}`}
             >
               <div className="min-w-0 flex-1">
-                <CanvasPalette
-                  colours={CanvasTools.colours}
-                  value={chosenColour}
-                  onChange={(value) => {
-                    setChosenColour(value);
-                    SoundPlayer.play("pick");
-                  }}
-                />
+                <CanvasPalette colours={CanvasTools.colours} value={chosenColour} onChange={setChosenColour} />
               </div>
               <CanvasBrushPicker
                 brushes={CanvasTools.brushes}
                 value={brushSize}
-                onChange={(size) => {
-                  setBrushSize(size);
-                  SoundPlayer.play("pick");
-                }}
+                onChange={setBrushSize}
                 color={chosenColour}
               />
             </section>

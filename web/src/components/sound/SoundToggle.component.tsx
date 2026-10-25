@@ -22,10 +22,7 @@ export function SoundToggle({ channel = "effects", className = "" }: SoundToggle
       aria-label={label}
       onClick={() => {
         if (music) SoundPlayer.setMusicOn(!on);
-        else {
-          SoundPlayer.setMuted(on);
-          if (!on) SoundPlayer.play("pick");
-        }
+        else SoundPlayer.setMuted(on);
       }}
       title={`${label} is ${on ? "on" : "off"}`}
       className={`grid size-11 place-items-center rounded-full bg-night-soft/70 text-white hover:bg-night-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${on ? "" : "text-white/60"} ${className}`}

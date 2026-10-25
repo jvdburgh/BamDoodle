@@ -1,5 +1,5 @@
 import { MusicUtils } from "@/components/sound/_utils/music.utils";
-import type { SoundCue } from "@/components/sound/_utils/soundCues.utils";
+import { type SoundCue, SoundCuesUtils } from "@/components/sound/_utils/soundCues.utils";
 
 /**
  * Every sound effect is synthesised here with the Web Audio API: no effect files, so nothing to license or download.
@@ -60,6 +60,10 @@ const notes: Record<Exclude<SoundCue, "scribble">, Note[]> = {
     { frequency: 392, at: 0.45, length: 0.45 },
   ],
   pick: [{ frequency: 1480, at: 0, length: 0.035, type: "sine", gain: 0.25 }],
+  tap: [
+    { frequency: 520, at: 0, length: 0.035, type: "triangle", gain: 0.3 },
+    { frequency: 780, at: 0.03, length: 0.045, type: "triangle", gain: 0.2 },
+  ],
   vote: [
     { frequency: 1047, at: 0, length: 0.06 },
     { frequency: 1319, at: 0.05, length: 0.06 },
@@ -309,8 +313,19 @@ function subscribe(listener: () => void) {
   };
 }
 
+/** Every button taps and every choice picks, app-wide (`SoundCuesUtils.forPress`). Returns a function to stop. */
+function listenForPresses(target: Pick<Document, "addEventListener" | "removeEventListener"> = document): () => void {
+  const press = (event: Event) => {
+    const cue = SoundCuesUtils.forPress(event.target instanceof Element ? event.target : null);
+    if (cue) play(cue);
+  };
+  target.addEventListener("click", press);
+  return () => target.removeEventListener("click", press);
+}
+
 export const SoundPlayer = {
   play,
+  listenForPresses,
   isMuted: () => muted,
   setMuted,
   isMusicOn: musicOn,

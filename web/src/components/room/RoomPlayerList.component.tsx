@@ -41,8 +41,8 @@ type RoomPlayerListProps = {
   votedIds?: number[];
   /** After the vote: the bamboozler in the hat, who voted for whom, then the round's points and the totals. */
   outcome?: RoomOutcome;
-  /** In the lobby: mark who's still drawing their face. */
-  showFaceStatus?: boolean;
+  /** In the lobby: who's still drawing their face, and no mini-maps (nothing's drawn yet). */
+  lobby?: boolean;
   /**
    * "grid": two columns of cards on a phone (so names fit), three on a tablet, and one column of wide cards in a
    * laptop's `room` container;
@@ -81,7 +81,7 @@ export function RoomPlayerList({
   votedIds = [],
   youWearTheHat = false,
   outcome,
-  showFaceStatus = false,
+  lobby = false,
   layout = "grid",
 }: RoomPlayerListProps) {
   /** The host screen is read from across the room: the results on its cards are bigger. */
@@ -189,6 +189,7 @@ export function RoomPlayerList({
                 {action && !you && (
                   <button
                     type="button"
+                    data-sound="own"
                     aria-pressed={chosen}
                     onClick={() => action.onChoose(action.kind === "suspect" && chosen ? null : player.id)}
                     className={`mt-1.5 min-h-8 rounded-full px-3 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
@@ -200,7 +201,7 @@ export function RoomPlayerList({
                     {chosen && <span aria-hidden="true"> ✓</span>}
                   </button>
                 )}
-                {showFaceStatus && !player.ready && (
+                {lobby && !player.ready && (
                   <p className="mt-1.5 text-xs">
                     <span className="rounded-lg bg-night px-2 py-0.5 text-white/85">
                       <span aria-hidden="true">✏️ </span>drawing their face
@@ -288,27 +289,29 @@ export function RoomPlayerList({
                 )}
               </div>
 
-              <button
-                type="button"
-                aria-pressed={spotlit}
-                aria-label={`Spotlight ${player.name}`}
-                onClick={() => {
-                  onPeek(null);
-                  onSpotlight(spotlit ? null : player.id);
-                }}
-                className={`group relative block rounded-[6px_8px_7px_5px] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-white ${
-                  rail ? "@5xl/room:col-start-2 @5xl/room:row-span-2 @5xl/room:row-start-1" : ""
-                }`}
-              >
-                <CanvasMiniMap drawing={drawing} playerId={player.id} />
-                <span
-                  className={`absolute right-1 bottom-1 grid size-6 place-items-center rounded-full bg-night text-white transition-opacity ${
-                    spotlit ? "opacity-100" : "opacity-0 group-hover:opacity-90 group-focus-visible:opacity-90"
+              {!lobby && (
+                <button
+                  type="button"
+                  aria-pressed={spotlit}
+                  aria-label={`Spotlight ${player.name}`}
+                  onClick={() => {
+                    onPeek(null);
+                    onSpotlight(spotlit ? null : player.id);
+                  }}
+                  className={`group relative block rounded-[6px_8px_7px_5px] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-white ${
+                    rail ? "@5xl/room:col-start-2 @5xl/room:row-span-2 @5xl/room:row-start-1" : ""
                   }`}
                 >
-                  <BrandScribble shape="magnifier" seed={player.avatarSeed + 2} className="size-3.5" />
-                </span>
-              </button>
+                  <CanvasMiniMap drawing={drawing} playerId={player.id} />
+                  <span
+                    className={`absolute right-1 bottom-1 grid size-6 place-items-center rounded-full bg-night text-white transition-opacity ${
+                      spotlit ? "opacity-100" : "opacity-0 group-hover:opacity-90 group-focus-visible:opacity-90"
+                    }`}
+                  >
+                    <BrandScribble shape="magnifier" seed={player.avatarSeed + 2} className="size-3.5" />
+                  </span>
+                </button>
+              )}
             </li>
           );
         })}

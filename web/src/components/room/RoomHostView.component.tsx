@@ -84,7 +84,7 @@ export function RoomHostView({ state, revealCode = false, home = "/", controls }
         suspectedBy={phase === "drawing" ? RoomViewUtils.suspectedBy(round) : {}}
         votedIds={phase === "voting" ? (round?.voted ?? []) : []}
         outcome={RoomViewUtils.outcome(reveal, result, room.players)}
-        showFaceStatus={phase === "lobby"}
+        lobby={phase === "lobby"}
         layout={phase === "lobby" ? "row" : "grid"}
       />
     </div>
@@ -301,7 +301,7 @@ export function RoomHostView({ state, revealCode = false, home = "/", controls }
       </div>
 
       {phase !== "lobby" && !showPodium && (
-        <p className="absolute bottom-4 left-4 flex items-baseline gap-2 rounded-[12px_16px_14px_10px] bg-night-deep px-4 py-2 text-white/80 @4xl/room:bottom-6 @4xl/room:left-8">
+        <p className="fixed bottom-4 left-4 z-10 flex items-baseline gap-2 rounded-[12px_16px_14px_10px] bg-night-deep px-4 py-2 text-white/80 @4xl/room:bottom-6 @4xl/room:left-8">
           Join at <span className="font-semibold text-white">{JOIN_AT}</span>
           <span className="sr-only">with room code</span>
           <span className="font-display text-3xl tracking-[0.2em] text-white">{roomCode}</span>

@@ -56,7 +56,8 @@ it, and it reads as a lit sheet on the navy table. (A night-navy sheet was tried
 
 Every sound effect is synthesised in the browser with the Web Audio API (`web/src/components/sound/`): short triangle
 and square-wave notes and filtered noise. No effect files, so nothing to license, credit or download.
-Cues: a start jingle, a blip per turn (brighter when it's yours), ticks in the last 3 seconds of a turn and the last 5
+Every button taps and every choice (a radio or checkbox) picks, app-wide (`SoundPlayer.listenForPresses`); a
+control with its own sound (suspect, vote) says so with `data-sound="own"`. Cues: a start jingle, a blip per turn (brighter when it's yours), ticks in the last 3 seconds of a turn and the last 5
 of the vote, a falling chime when time's up, and small sounds for picking a colour, finishing a stroke and voting.
 Quiet by default, silent until the first tap (browsers require it), and a mute toggle remembered per device.
 
@@ -87,8 +88,9 @@ Modern, a bit mysterious, colourful. It should feel like a hand-made little game
   screen, and lands on the bamboozler at the reveal. A spotlight gets a bold, wobbly frame on the sheet and the card.
 - The start page's Join and Create buttons wear a sketchy outline in the hat's colours that slowly travels round,
   with doodled icons (a door, a pencil with a plus) that wiggle on hover. The music and sound toggles sit at the top
-  right of every screen, the start page included. Under the buttons on a phone and beside them on a laptop, "How to
-  play": the same doodled cards for the three steps, the points and "Free, on any device", which is also what search engines read (with FAQ structured data in `index.html`).
+  right of every screen, the start page included. The top takes two thirds of the screen, so "How to play" always peeks
+  out below: doodled cards of about the same length for the three steps (with the points they earn), who wins and
+  "Free, on any device", a column on a phone and a grid on a laptop, which is also what search engines read (with FAQ structured data in `index.html`).
 - The setup has no groups: every setting has its own heading with a line on what it does under it, and a sketch of
   what's picked beside it. A picked choice (a mode, a number, a category) keeps the same navy background and gets the
   hand-drawn frame in sun and a doodled ✓; the frame traces round in one quick line when you pick, never on load.

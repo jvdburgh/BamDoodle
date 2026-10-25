@@ -34,6 +34,7 @@ export function RoomSuspectButton({
     <span className={`relative shrink-0 ${className}`}>
       <button
         type="button"
+        data-sound="own"
         aria-pressed={suspected}
         // The card's Suspect / Vote button is the one stop for the keyboard; the face is for pointers and taps.
         tabIndex={-1}

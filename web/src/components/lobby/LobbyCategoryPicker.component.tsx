@@ -27,14 +27,17 @@ export function LobbyCategoryPicker({ categories, selected, onChange }: LobbyCat
 
   return (
     <fieldset aria-labelledby={legendId} aria-describedby={`${aboutId} ${hintId}`}>
-      <div className="flex items-baseline justify-between gap-3">
-        <legend id={legendId} className="font-display text-xl">
-          Categories{" "}
-          <span className="font-body text-base text-white/60">
-            ({selected.length} of {categories.length} selected)
-          </span>
-        </legend>
-        <span className="flex gap-3 text-sm">
+      <legend id={legendId} className="font-display text-xl">
+        Categories{" "}
+        <span className="font-body text-base text-white/60">
+          ({selected.length} of {categories.length} selected)
+        </span>
+      </legend>
+      <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <p id={aboutId} className="text-sm text-white/70">
+          Where the secret word comes from. 18+ ones only play when you pick them.
+        </p>
+        <span className="flex shrink-0 gap-3 text-sm">
           <button
             type="button"
             onClick={() => pick([...new Set([...selected, ...family])])}
@@ -51,9 +54,6 @@ export function LobbyCategoryPicker({ categories, selected, onChange }: LobbyCat
           </button>
         </span>
       </div>
-      <p id={aboutId} className="mb-3 text-sm text-white/70">
-        Where the secret word comes from. 18+ ones only play when you pick them.
-      </p>
       {/* On a laptop the list scrolls in place, so the setup fits one screen whatever the number of categories. */}
       <div className="relative -m-1 flex flex-wrap gap-1.5 p-1 md:max-h-[max(8rem,min(19rem,calc(100svh-26rem)))] md:overflow-y-auto">
         {categories.map((category) => (

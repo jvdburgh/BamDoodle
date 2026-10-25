@@ -183,6 +183,7 @@ describe("SoundPlayer music", () => {
       suspect: true,
       pick: true,
       vote: true,
+      tap: true,
       scribble: true,
     };
     for (const cue of Object.keys(cues) as SoundCue[]) player.play(cue);

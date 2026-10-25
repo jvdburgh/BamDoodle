@@ -49,3 +49,26 @@ describe("SoundCuesUtils.between", () => {
     expect(between(voting(6), voting(5))).toEqual(["voteTick"]);
   });
 });
+
+describe("SoundCuesUtils.forPress", () => {
+  /** A stand-in for the element clicked: which of the selectors `forPress` asks about it matches. */
+  const pressed = (matches: { own?: boolean; choice?: boolean; button?: boolean }) => ({
+    closest: (selector: string) =>
+      (selector === SoundCuesUtils.pressSelectors.own && matches.own) ||
+      (selector === SoundCuesUtils.pressSelectors.choice && matches.choice) ||
+      (selector === SoundCuesUtils.pressSelectors.button && matches.button)
+        ? {}
+        : null,
+  });
+
+  it("taps for a button and picks for a choice", () => {
+    expect(SoundCuesUtils.forPress(pressed({ button: true }))).toBe("tap");
+    expect(SoundCuesUtils.forPress(pressed({ choice: true }))).toBe("pick");
+  });
+
+  it("stays quiet for anything else, and for controls that make their own sound", () => {
+    expect(SoundCuesUtils.forPress(pressed({}))).toBeNull();
+    expect(SoundCuesUtils.forPress(pressed({ own: true, button: true }))).toBeNull();
+    expect(SoundCuesUtils.forPress(null)).toBeNull();
+  });
+});

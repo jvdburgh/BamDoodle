@@ -20,7 +20,7 @@ export const Default: Story = {
       "One of you is bluffing",
       "Vote who’s sketchy",
     ]);
-    await expect(canvas.getByRole("heading", { name: "Points" })).toBeVisible();
+    await expect(canvas.getByRole("heading", { name: "Rounds and the winner" })).toBeVisible();
     await expect(canvas.getByRole("heading", { name: "Free, on any device" })).toBeVisible();
   },
 };

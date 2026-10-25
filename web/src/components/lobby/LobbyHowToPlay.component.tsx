@@ -5,7 +5,7 @@ import { HowToPlayUtils } from "@/components/lobby/_utils/howToPlay.utils";
 
 type Card = (typeof HowToPlayUtils.steps)[number];
 
-/** One card: a doodle on the left, a title and a line (or a short list) beside it, slightly askew. */
+/** One card: a doodle on the left, a title and a line or two beside it, slightly askew. */
 function LobbyHowToPlayCard({ card, tilt }: { card: Card; tilt: "left" | "right" }) {
   return (
     <li
@@ -20,37 +20,31 @@ function LobbyHowToPlayCard({ card, tilt }: { card: Card; tilt: "left" | "right"
         )}
       </span>
       <h3 className="font-display text-xl">{card.title}</h3>
-      <div className="grid gap-1.5 text-white/80">
-        {card.items && (
-          <ul className="grid gap-1">
-            {card.items.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        )}
-        <p>{card.text}</p>
-      </div>
+      <p className="text-white/80">{card.text}</p>
     </li>
   );
 }
 
 /**
- * The rules in three steps, then the points and what you need, as cards: under the start page's buttons on a phone,
- * beside them on a laptop. For new players and for search engines.
+ * The rules in three steps, then who wins and what you need, as cards under the start page's buttons: a column on a
+ * phone, a grid on a laptop. For new players and for search engines.
  */
 export function LobbyHowToPlay() {
   const headingId = useId();
   return (
-    <section aria-labelledby={headingId} className="mx-auto grid w-full max-w-xl content-start gap-6 px-5 py-12">
+    <section
+      aria-labelledby={headingId}
+      className="mx-auto grid w-full max-w-xl content-start gap-6 px-5 py-10 lg:max-w-6xl lg:px-8"
+    >
       <h2 id={headingId} className="font-display text-4xl">
         How to play
       </h2>
-      <ol className="grid gap-4">
+      <ol className="grid gap-4 lg:grid-cols-3">
         {HowToPlayUtils.steps.map((card, index) => (
           <LobbyHowToPlayCard key={card.title} card={card} tilt={index % 2 ? "right" : "left"} />
         ))}
       </ol>
-      <ul className="grid gap-4">
+      <ul className="grid gap-4 lg:grid-cols-2">
         {HowToPlayUtils.more.map((card, index) => (
           <LobbyHowToPlayCard key={card.title} card={card} tilt={index % 2 ? "left" : "right"} />
         ))}

@@ -27,7 +27,7 @@ export function LobbyWaiting({ name, roomCode, avatar, onAvatarChange, onStart, 
   return (
     <main className="mx-auto flex min-h-svh max-w-md flex-col gap-5 px-4 py-4 pb-16 md:py-8">
       <header className="flex items-center justify-between gap-3">
-        <BrandLogo named href={home} className="size-10" />
+        <BrandLogo named href={home} className="size-10" nameClassName="sr-only text-sm sm:not-sr-only" />
         <div className="flex items-center gap-1.5">
           <p className="rounded-full bg-night-soft px-3 py-1 text-sm text-white/80">
             <span className="sr-only">Room code </span>
