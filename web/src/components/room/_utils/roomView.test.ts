@@ -244,3 +244,89 @@ describe("RoomViewUtils.rulesOf", () => {
     ]);
   });
 });
+
+describe("RoomViewUtils.settingsLine", () => {
+  it("sums up what's picked in one line", () => {
+    const settings = {
+      mode: "timed" as const,
+      turnsPerPlayer: 3,
+      turnSeconds: 20,
+      rounds: 4,
+      language: "en" as const,
+      categories: ["Animals", "Food"],
+    };
+    expect(RoomViewUtils.settingsLine(settings)).toBe(
+      "Timed · 20 s · 2 turns each · 4 rounds · English · 2 categories",
+    );
+    expect(
+      RoomViewUtils.settingsLine({
+        ...settings,
+        mode: "oneStroke",
+        turnsPerPlayer: 1,
+        rounds: 1,
+        language: "nl",
+        categories: ["Dieren"],
+      }),
+    ).toBe("One stroke · 1 turn each · 1 round · Dutch · 1 category");
+  });
+});
+
+describe("RoomViewUtils.roundLines", () => {
+  const seats = RoomViewUtils.players({
+    code: "BKZW",
+    players: ["Pip", "Juno", "Mo", "Kiki"].map((name, index) => ({
+      id: index + 1,
+      name,
+      score: index === 0 ? 3 : 1,
+      connected: true,
+      avatar: [],
+      ready: true,
+    })),
+  });
+  const result = {
+    number: 1,
+    rounds: 3,
+    gameOver: false,
+    category: "Animals",
+    word: "Giraffe",
+    bamboozlerId: 3,
+    guess: "Giraffe",
+    guessCorrect: true,
+    votes: [
+      { voterId: 1, suspectId: 3 },
+      { voterId: 2, suspectId: 4 },
+      { voterId: 4, suspectId: 3 },
+    ],
+    awards: [
+      { playerId: 1, reason: "caughtTheBamboozler" as const, points: 1 },
+      { playerId: 4, reason: "caughtTheBamboozler" as const, points: 1 },
+      { playerId: 3, reason: "guessedTheWord" as const, points: 1 },
+    ],
+    scores: [],
+  };
+
+  it("says who got what this round and why, best first", () => {
+    expect(RoomViewUtils.roundLines(result, seats, 2)).toEqual([
+      { playerId: 1, points: 1, reasons: ["voted Mo ✓"] },
+      { playerId: 3, points: 1, reasons: ["caught", "guessed the word"] },
+      { playerId: 4, points: 1, reasons: ["voted Mo ✓"] },
+      { playerId: 2, points: 0, reasons: ["voted Kiki ✗"] },
+    ]);
+  });
+
+  it("says when the bamboozler slipped through and when someone didn't vote", () => {
+    const hidden = {
+      ...result,
+      votes: [{ voterId: 1, suspectId: 2 }],
+      awards: [{ playerId: 3, reason: "stayedHidden" as const, points: 1 }],
+      guess: null,
+      guessCorrect: false,
+    };
+    expect(RoomViewUtils.roundLines(hidden, seats, null)).toEqual([
+      { playerId: 3, points: 1, reasons: ["slipped through"] },
+      { playerId: 1, points: 0, reasons: ["voted Juno ✗"] },
+      { playerId: 2, points: 0, reasons: ["didn’t vote"] },
+      { playerId: 4, points: 0, reasons: ["didn’t vote"] },
+    ]);
+  });
+});

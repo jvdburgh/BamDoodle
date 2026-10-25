@@ -2,6 +2,7 @@ import { AvatarUtils } from "@/components/avatar/_utils/avatar.utils";
 import { LobbySetupUtils } from "@/components/lobby/_utils/lobbySetup.utils";
 import type { RoomOutcome, RoomPlayer, RoomViewState, RoundScore } from "@/components/room/_types/room.types";
 import type { PlayerSummary } from "@/protocol/generated/PlayerSummary";
+import type { AwardReason } from "@/protocol/generated/AwardReason";
 import type { RejectReason } from "@/protocol/generated/RejectReason";
 import type { RoomSnapshot } from "@/protocol/generated/RoomSnapshot";
 import type { Reveal } from "@/protocol/generated/Reveal";
@@ -57,6 +58,44 @@ function rulesOf(settings: RoomSettings): string[] {
       : `${settings.rounds} rounds, each with a new secret word and a new bamboozler`;
   const language = settings.language === "nl" ? "Dutch" : "English";
   return [turns, rounds, `${language} words from ${count(settings.categories.length, "category", "categories")}`];
+}
+
+/** What's picked, in one line: the setup's bar, the lobby, the host screen. */
+function settingsLine(settings: RoomSettings): string {
+  const turns =
+    settings.mode === "timed"
+      ? [`Timed`, `${settings.turnSeconds} s`, `${count(LobbySetupUtils.timedTurnsPerPlayer, "turn", "turns")} each`]
+      : [`One stroke`, `${count(settings.turnsPerPlayer, "turn", "turns")} each`];
+  const language = settings.language === "nl" ? "Dutch" : "English";
+  return [
+    ...turns,
+    count(settings.rounds, "round", "rounds"),
+    language,
+    count(settings.categories.length, "category", "categories"),
+  ].join(" · ");
+}
+
+/** One player's round: the points and why, as the results list them. */
+export type RoundLine = { playerId: number; points: number; reasons: string[] };
+
+/** Who got what this round and why, most points first: "voted Mo ✓", "slipped through", "guessed the word". */
+function roundLines(result: RoundResult, players: RoomPlayer[], youId: number | null): RoundLine[] {
+  const lines = players.map((player): RoundLine => {
+    const awards = result.awards.filter((award) => award.playerId === player.id);
+    const points = awards.reduce((sum, award) => sum + award.points, 0);
+    const has = (reason: AwardReason) => awards.some((award) => award.reason === reason);
+    if (player.id === result.bamboozlerId) {
+      const reasons = [has("stayedHidden") ? "slipped through" : "caught"];
+      if (has("guessedTheWord")) reasons.push("guessed the word");
+      return { playerId: player.id, points, reasons };
+    }
+    const vote = result.votes.find((cast) => cast.voterId === player.id);
+    const reason = vote
+      ? `voted ${nameOf(vote.suspectId, players, youId)} ${vote.suspectId === result.bamboozlerId ? "✓" : "✗"}`
+      : "didn’t vote";
+    return { playerId: player.id, points, reasons: [reason] };
+  });
+  return lines.sort((a, b) => b.points - a.points);
 }
 
 /** A player as the viewer reads them: "you" for yourself. */
@@ -210,6 +249,8 @@ export const RoomViewUtils = {
   waitingForPlayers,
   playerCount,
   rulesOf,
+  settingsLine,
+  roundLines,
   seed,
   players,
   active,
