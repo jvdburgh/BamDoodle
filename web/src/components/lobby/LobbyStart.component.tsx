@@ -24,7 +24,7 @@ type LobbyStartProps = {
   defaultCode?: string;
   /** Open on this step instead of the choice, e.g. to try again. */
   step?: "join" | "create";
-  /** Why the last try didn't get you in. */
+  /** Why the last try didn't get you in: shown until you go back or start something else. */
   problem?: string;
   /** While the server is being asked: the button waits (Create a room, on the choice). */
   busy?: boolean;
@@ -62,13 +62,16 @@ export function LobbyStart({
   const [step, setStep] = useState<Step>(firstStep ?? (defaultCode ? "join" : "choose"));
   const [name, setName] = useState(defaultName);
   const [code, setCode] = useState(defaultCode);
-  /** Host on this screen, tapped without a name: say so instead of a button that does nothing. */
-  const [nameMissing, setNameMissing] = useState(false);
+  /** Moved on from the problem, by going back or starting something else; a new one shows again. */
+  const [problemGone, setProblemGone] = useState(false);
+  const [lastProblem, setLastProblem] = useState(problem);
+  if (problem !== lastProblem) {
+    setLastProblem(problem);
+    setProblemGone(false);
+  }
   const nameId = useId();
-  const nameHintId = useId();
   const codeId = useId();
   const firstField = useRef<HTMLElement | null>(null);
-  const nameInput = useRef<HTMLInputElement>(null);
   const opened = useRef(false);
   const joinButton = useRef<HTMLButtonElement>(null);
   const createButton = useRef<HTMLButtonElement>(null);
@@ -86,8 +89,10 @@ export function LobbyStart({
 
   const go = (next: Step) => {
     if (next !== "choose") opened.current = true;
+    setProblemGone(true);
     setStep(next);
   };
+  const shownProblem = problemGone ? undefined : problem;
   const first = (element: HTMLElement | null) => {
     if (element) firstField.current = element;
   };
@@ -102,54 +107,39 @@ export function LobbyStart({
     else onEnter({ kind: "create", name: cleanName });
   };
 
-  const host = () => {
-    if (busy) return;
-    if (cleanName.length === 0) {
-      setNameMissing(true);
-      nameInput.current?.focus();
-      return;
-    }
-    onEnter({ kind: "host", name: cleanName });
-  };
-
   const nameField = (
     <div className={`grid content-start gap-1.5 ${step === "create" ? "md:col-span-2 sideways:col-span-1!" : ""}`}>
       <label htmlFor={nameId} className="text-sm text-white/70">
         Your name
       </label>
       <input
-        ref={(element) => {
-          nameInput.current = element;
-          if (step === "create" || (step === "join" && defaultCode)) first(element);
-        }}
+        ref={step === "create" || (step === "join" && defaultCode) ? first : undefined}
         id={nameId}
         value={name}
-        onChange={(event) => {
-          setName(event.target.value.slice(0, NAME_MAX));
-          setNameMissing(false);
-        }}
+        onChange={(event) => setName(event.target.value.slice(0, NAME_MAX))}
         autoComplete="nickname"
-        aria-describedby={nameMissing ? nameHintId : undefined}
         className={field}
       />
-      {nameMissing && (
-        <p id={nameHintId} role="alert" className="text-sm text-berry">
-          Type your name first
-        </p>
-      )}
     </div>
   );
 
-  const problemLine = problem && (
+  const problemLine = shownProblem && (
     <p role="alert" className="col-span-full text-sm text-berry">
-      {problem}
+      {shownProblem}
     </p>
   );
 
   const backButton = (
     <button
       type="button"
-      onClick={onBack ?? (() => go("choose"))}
+      onClick={
+        onBack
+          ? () => {
+              setProblemGone(true);
+              onBack();
+            }
+          : () => go("choose")
+      }
       className={`${BrandStyles.ghostButton} col-span-full justify-self-center`}
     >
       Back
@@ -194,9 +184,9 @@ export function LobbyStart({
                 <BrandScribble shape="pencilPlus" className="size-7 text-sun motion-safe:group-hover:animate-wiggle" />
                 {busy ? "Just a sec…" : "Create a room"}
               </button>
-              {problem && (
+              {shownProblem && (
                 <p role="alert" className="text-center text-sm text-berry">
-                  {problem}
+                  {shownProblem}
                 </p>
               )}
             </div>
@@ -286,15 +276,16 @@ export function LobbyStart({
               </p>
               <button
                 type="button"
-                onClick={host}
-                aria-disabled={busy || undefined}
+                onClick={() => onEnter({ kind: "host", name: cleanName })}
+                disabled={!canSubmit}
                 className={`${BrandStyles.quietButton} group w-full gap-2 md:order-last sideways:order-none!`}
               >
                 <BrandScribble shape="screen" className="size-6 text-sun motion-safe:group-hover:animate-wiggle" />
                 Host on this screen
               </button>
               <p className="text-sm text-white/70">
-                Put the game on a TV or laptop everyone can see. This screen runs it but doesn’t draw or vote.
+                Show the game on a TV or laptop (or cast this screen to one). You run it and watch along, but don’t
+                play.
               </p>
             </div>
 

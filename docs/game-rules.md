@@ -16,8 +16,10 @@ same way and get a roomier layout.
 
 **Optional host screen.** Like a quiz night, whoever creates the room can host it on a TV, beamer or laptop instead
 of playing: after the setup, your name and then **Host on this screen** (or **Play on this phone**, "laptop" on a
-wide screen with a mouse); the name is needed either way, so the players read who hosts (tapping Host without one
-says "Type your name first"). The start page keeps its first screen to Join and Create; who it's for (3 to 8
+wide screen with a mouse); the name is needed either way, so the players read who hosts (both buttons wait for it,
+in the disabled look). Hosting says what it means in one plain line: "Show the game on a TV or laptop (or cast this
+screen to one). You run it and watch along, but don't play." A problem that sent you back to the start page ("There's
+no room with that code", couldn't reach the game) shows until you go Back or start something else. The start page keeps its first screen to Join and Create; who it's for (3 to 8
 players, any device, a big screen to host) is in How to play below. The host screen is read from the couch and always fits one screen (a laptop at
 1280×800 up to a 1080p TV), with big type throughout. In the lobby it shows the code first, big, beside a QR code of
 the room's address ("Scan or go to bamdoodle.io and type BKZW"), the room's settings in one line under Start round,
