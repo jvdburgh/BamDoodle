@@ -26,8 +26,12 @@ export function BrandSheet({ label, onClose, children }: BrandSheetProps) {
     if (!dialog) return;
     if (!dialog.open) dialog.showModal();
     // Closed by the browser (Esc, back): tell the owner, or, when it can't be dismissed, open it again. Browsers
-    // let a page refuse those only so often.
-    const closed = () => (closeRef.current ? closeRef.current() : dialog.showModal());
+    // let a page refuse those only so often. A `close` that finds it open again is from its own remount (StrictMode).
+    const closed = () => {
+      if (dialog.open) return;
+      if (closeRef.current) closeRef.current();
+      else dialog.showModal();
+    };
     dialog.addEventListener("close", closed);
     return () => {
       dialog.removeEventListener("close", closed);
