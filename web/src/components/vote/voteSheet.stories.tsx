@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, fn } from "storybook/test";
+import { expect, fn, waitFor } from "storybook/test";
 import { VoteSheet } from "./VoteSheet.component";
 
 const meta = {
@@ -29,5 +29,8 @@ export const OverEverything: Story = {
     await expect(canvas.getByRole("button", { name: "Vote for Mo" })).toHaveFocus();
     await userEvent.keyboard("{Escape}");
     await expect(sheet).toHaveAttribute("open");
+    // Browsers let a page refuse Esc (or Android's back) only so often, then close it anyway: it opens again.
+    (sheet as HTMLDialogElement).close();
+    await waitFor(() => expect(sheet).toHaveAttribute("open"));
   },
 };

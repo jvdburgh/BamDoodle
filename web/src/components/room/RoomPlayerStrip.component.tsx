@@ -3,6 +3,7 @@ import { AvatarDoodle } from "@/components/avatar/AvatarDoodle.component";
 import { BrandScribble } from "@/components/brand/BrandScribble.component";
 import { BrandStyles } from "@/components/brand/_utils/brandStyles.utils";
 import type { RoomOutcome, RoomPlayer } from "@/components/room/_types/room.types";
+import { RoomViewUtils } from "@/components/room/_utils/roomView.utils";
 
 type RoomPlayerStripProps = {
   players: RoomPlayer[];
@@ -23,6 +24,10 @@ type RoomPlayerStripProps = {
   youWearTheHat?: boolean;
   /** After the vote: the bamboozler in the hat, who voted for whom and the round's points. */
   outcome?: RoomOutcome;
+  /** While drawing: suspect → the players who marked them (public table talk). */
+  suspectedBy?: Record<number, number[]>;
+  /** In the vote: who has voted (never for whom). */
+  votedIds?: number[];
 };
 
 /**
@@ -40,11 +45,13 @@ export function RoomPlayerStrip({
   onSuspect,
   youWearTheHat = false,
   outcome,
+  suspectedBy = {},
+  votedIds = [],
 }: RoomPlayerStripProps) {
   const [openId, setOpenId] = useState<number | null>(null);
   const panelId = useId();
   const open = players.find((player) => player.id === openId);
-  const nameOf = (id: number) => (id === youId ? "you" : (players.find((player) => player.id === id)?.name ?? "?"));
+  const suspects = open ? (suspectedBy[open.id] ?? []) : [];
 
   return (
     <div className="grid gap-2">
@@ -66,7 +73,7 @@ export function RoomPlayerStrip({
                 aria-expanded={expanded}
                 aria-controls={expanded ? panelId : undefined}
                 onClick={() => setOpenId(expanded ? null : player.id)}
-                className={`grid w-[4.75rem] justify-items-center gap-0.5 rounded-[12px_16px_14px_10px] px-1 pt-1.5 pb-1.5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+                className={`relative grid w-[4.75rem] justify-items-center gap-0.5 rounded-[12px_16px_14px_10px] px-1 pt-1.5 pb-1.5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
                   expanded ? "bg-night-soft" : you ? "bg-iris/20" : "bg-night-deep/70"
                 } ${spotlightId === player.id ? "shadow-[inset_0_0_0_2px_var(--color-white)]" : ""} ${
                   player.connected ? "" : "opacity-50"
@@ -95,11 +102,20 @@ export function RoomPlayerStrip({
                   {you ? "You" : player.name}
                   <span className="sr-only">, </span>
                 </span>
+                {votedIds.includes(player.id) && (
+                  <span
+                    aria-hidden="true"
+                    className="absolute top-0.5 right-0.5 rotate-6 rounded-full bg-sun px-1.5 font-display text-xs text-night"
+                  >
+                    voted
+                  </span>
+                )}
                 <span className="rounded-full bg-night px-1.5 text-xs leading-tight font-semibold text-white/80">
                   {points}
                   <span className="sr-only">
                     {points === 1 ? " point" : " points"}
                     {active && ", drawing now"}
+                    {votedIds.includes(player.id) && ", voted"}
                   </span>
                 </span>
               </button>
@@ -119,7 +135,12 @@ export function RoomPlayerStrip({
             )}
           </p>
           {outcome?.votes[open.id] !== undefined && (
-            <span className="text-sm text-white/80">Voted {nameOf(outcome.votes[open.id]!)}</span>
+            <span className="text-sm text-white/80">
+              Voted {RoomViewUtils.nameOf(outcome.votes[open.id]!, players, youId)}
+            </span>
+          )}
+          {suspects.length > 0 && (
+            <span className="text-sm text-white/80">Suspected by {RoomViewUtils.names(suspects, players, youId)}</span>
           )}
           {outcome?.scores?.[open.id] && (
             <span className="text-sm text-sun">+{outcome.scores[open.id]!.points} this round</span>

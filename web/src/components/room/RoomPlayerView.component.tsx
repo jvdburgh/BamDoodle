@@ -66,6 +66,7 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
   const cardsRef = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const podiumRef = useRef<HTMLDivElement>(null);
+  const stripRef = useRef<HTMLDivElement>(null);
 
   const you = players.find((player) => player.id === state.you);
   const isHost = !!you && room.hostId === you.id;
@@ -97,13 +98,12 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
     const lost = !focused || focused === document.body || (!drawingPhase && !!toolsRef.current?.contains(focused));
     if (!lost) return;
     const target = showPodium ? podiumRef : phase === "drawing" ? toolsRef : phase === "voting" ? cardsRef : stageRef;
-    target.current?.focus({ preventScroll: true });
+    // On a phone the tools (not your turn) and the cards are hidden: the strip of faces is there instead.
+    const shown = target.current && target.current.getClientRects().length > 0 ? target : stripRef;
+    shown.current?.focus({ preventScroll: true });
   }, [phase, showPodium, drawingPhase, playing]);
 
-  const startRound = () => {
-    send({ type: "startRound" });
-    toolsRef.current?.focus();
-  };
+  const startRound = () => send({ type: "startRound" });
 
   const turnTitle = (player: RoomPlayer) => (player.id === you?.id ? "Your turn" : `${player.name}’s turn`);
   const canvasLabel = active
@@ -139,7 +139,7 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
 
   // On a laptop the canvas takes the height the header and whatever sits under it (tools, vote, results) leave over.
   // On a phone: what the header, the strip and (on your turn) the tools bar leave over, when that's the narrower side.
-  const phoneCanvasMax = `${yourTurn ? "max-w-[calc((100svh-24rem)*4/3)]" : "max-w-[calc((100svh-17rem)*4/3)]"} sideways:max-w-none`;
+  const phoneCanvasMax = `${yourTurn ? "@max-5xl/room:max-w-[calc((100svh-24rem)*4/3)]" : "@max-5xl/room:max-w-[calc((100svh-17rem)*4/3)]"} sideways:@max-5xl/room:max-w-none`;
   const canvasMax = drawingPhase
     ? "@5xl/room:max-w-[calc((100svh-16.5rem)*4/3)]"
     : phase === "voting"
@@ -147,6 +147,15 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
       : phase === "guessing"
         ? "@5xl/room:max-w-[calc((100svh-31rem)*4/3)]"
         : "@5xl/room:max-w-[calc((100svh-24rem)*4/3)]";
+
+  // A lost connection or a turned-down request; also inside the vote sheet, which covers the page.
+  const notice = (state.status === "reconnecting" || view.problem) && (
+    <p role="alert" className="rounded-full bg-night-soft px-4 py-2 text-center text-sm text-white">
+      {state.status === "reconnecting"
+        ? "Lost the connection. Getting you back in…"
+        : view.problem && RoomViewUtils.problem(view.problem)}
+    </p>
+  );
 
   const countdown = phase === "voting" ? state.timers.voting : state.timers.turn;
   const progress = (
@@ -168,7 +177,7 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
   return (
     <div className="@container/room">
       <div
-        className={`mx-auto flex max-w-[110rem] flex-col gap-3 p-3 @5xl/room:h-svh ${toolsPinned ? "pb-[calc(8rem+var(--browser-bar))] @5xl/room:pb-4" : "pb-16"} @5xl/room:gap-4 @5xl/room:px-5 @5xl/room:py-4`}
+        className={`mx-auto flex max-w-[110rem] flex-col gap-3 p-3 @5xl/room:h-svh ${toolsPinned ? "pb-[calc(8rem+var(--browser-bar))] @5xl/room:pb-4 sideways:pb-16" : "pb-16"} @5xl/room:gap-4 @5xl/room:px-5 @5xl/room:py-4`}
       >
         <header className="grid grid-cols-[auto_1fr_auto] items-center gap-x-2 @5xl/room:grid-cols-[1fr_auto_1fr]">
           <BrandLogo
@@ -202,13 +211,7 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
           </div>
         </header>
 
-        {(state.status === "reconnecting" || view.problem) && (
-          <p role="alert" className="rounded-full bg-night-soft px-4 py-2 text-center text-sm text-white">
-            {state.status === "reconnecting"
-              ? "Lost the connection. Getting you back in…"
-              : view.problem && RoomViewUtils.problem(view.problem)}
-          </p>
-        )}
+        {notice}
 
         {showPodium ? (
           <div ref={podiumRef} tabIndex={-1} className="outline-none">
@@ -227,7 +230,7 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
           <div className="flex min-h-0 flex-1 flex-col gap-3 @5xl/room:grid @5xl/room:grid-cols-[17rem_minmax(0,1fr)] @5xl/room:grid-rows-[minmax(0,1fr)_auto] @5xl/room:gap-x-5 @5xl/room:gap-y-3 sideways:@max-5xl/room:grid sideways:@max-5xl/room:grid-cols-[auto_minmax(14rem,1fr)] sideways:@max-5xl/room:content-start sideways:@max-5xl/room:items-start sideways:@max-5xl/room:*:col-start-2">
             <div className="order-first @5xl/room:hidden">{progress}</div>
             {phase !== "lobby" && (
-              <div className="order-first @5xl/room:hidden">
+              <div ref={stripRef} tabIndex={-1} className="order-first outline-none @5xl/room:hidden">
                 <RoomPlayerStrip
                   players={players}
                   youId={you?.id ?? null}
@@ -239,6 +242,8 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
                   onSuspect={action?.kind === "suspect" ? action.onChoose : undefined}
                   youWearTheHat={youAreBamboozler && !result}
                   outcome={RoomViewUtils.outcome(reveal, result, room.players)}
+                  suspectedBy={phase === "drawing" ? RoomViewUtils.suspectedBy(round) : {}}
+                  votedIds={phase === "voting" ? (round?.voted ?? []) : []}
                 />
               </div>
             )}
@@ -246,7 +251,7 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
             {/* The canvas: full width on a phone, as big as the leftover height allows on a laptop. */}
             <div className="order-1 flex min-h-0 justify-center @5xl/room:col-start-2 @5xl/room:row-start-1 @5xl/room:items-end sideways:@max-5xl/room:col-start-1! sideways:@max-5xl/room:row-span-6 sideways:@max-5xl/room:row-start-1 sideways:@max-5xl/room:w-[calc((100svh-5.5rem)*4/3)]">
               <div
-                className={`relative w-full rounded-[12px_16px_14px_11px] transition-shadow ${phoneCanvasMax} @5xl/room:max-w-none ${canvasMax} ${
+                className={`relative w-full rounded-[12px_16px_14px_11px] transition-shadow ${phoneCanvasMax} ${canvasMax} ${
                   yourTurn ? "shadow-[0_0_0_4px_var(--color-sun)]" : ""
                 }`}
               >
@@ -353,6 +358,7 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
             {/* The final call: a sheet over everything, with the drawing and a big Vote button per player. */}
             {phase === "voting" && playing && round && (
               <VoteSheet>
+                {notice}
                 <VotePrompt
                   players={players.filter((player) => round.turnOrder.includes(player.id))}
                   voted={players.find((player) => player.id === yourVoteId)}
@@ -372,7 +378,7 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
                   />
                 </div>
                 <RoomPlayerList
-                  players={players}
+                  players={players.filter((player) => round.turnOrder.includes(player.id))}
                   drawing={drawing}
                   youId={you?.id ?? null}
                   activeId={null}

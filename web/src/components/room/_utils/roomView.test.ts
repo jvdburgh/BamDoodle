@@ -187,3 +187,23 @@ describe("RoomViewUtils.waitingForPlayers", () => {
     expect(RoomViewUtils.waitingForPlayers(seats([true, true, true]))).toBeNull();
   });
 });
+
+describe("RoomViewUtils.names", () => {
+  const seats = RoomViewUtils.players({
+    code: "BKZW",
+    players: ["Pip", "Juno", "Mo", "Kiki"].map((name, index) => ({
+      id: index + 1,
+      name,
+      score: 0,
+      connected: true,
+      avatar: [],
+      ready: true,
+    })),
+  });
+
+  it("names you first, then two, then how many more", () => {
+    expect(RoomViewUtils.names([4, 2], seats, 2)).toBe("you and Kiki");
+    expect(RoomViewUtils.names([1, 3, 4, 2], seats, 2)).toBe("you, Pip and 2 more");
+    expect(RoomViewUtils.names([3], seats, null)).toBe("Mo");
+  });
+});

@@ -94,8 +94,9 @@ Everyone can use every colour: there is nothing to unlock, ever. To still see wh
 - **Live highlight:** the active drawer is clearly marked while they draw: a ring around their avatar in the turn
   order, their name in the turn bar, and a name tag that follows their pen tip on the canvas.
 - **Mini-maps:** next to each player's name on a laptop, a small canvas shows only *their* strokes. On a phone the
-  players are a strip of faces at the top (name, points, the ring on whoever draws, the hat on whoever you suspect);
-  a tap opens "See their lines" and "Mark as suspicious" right under it. The mini-maps are back in the final vote.
+  players are a strip of faces at the top (name, points, the ring on whoever draws, the hat on whoever you suspect, a
+  "voted" tag in the vote); a tap opens "See their lines" and "Mark as suspicious" right under it, with who suspects
+  them and, after the reveal, who they voted for and their points. The mini-maps are back in the final vote.
 - **Pen tag:** a small chip with the drawer's avatar and name rides on their pen tip on every screen.
 - **Magnifying glass (spotlight):** tap a player's mini-map to highlight their strokes on the main canvas while the
   rest fades back to grey; the sheet and their card get a bold, wobbly hand-drawn frame, and a "Noor's lines · Show

@@ -28,3 +28,9 @@ Check these first; each was a real finding (2026-10-18, lobby avatar editor).
 Seen 2026-10-25 (start page music, e191c31):
 - Docs claiming "on every screen" (toggles) while one screen lacks it: grep the component for every screen the route shows (LobbyWaiting).
 - Stack-style claims (SoundPlayer.claimMusic) pushed from useEffect: parent effects run after child effects, so a parent re-run puts the parent on top.
+
+Seen 2026-10-25 (phone room, b7b27e8; confirmed by building CSS / Playwright):
+- Two utilities for one property under the same variant (`@5xl/room:max-w-none` + `@5xl/room:max-w-[calc..]`): CSS order is by name, not class order, `none` beats `[`. Build to scratchpad and grep.
+- `<dialog>` cancel preventDefault doesn't hold: 2nd/3rd Esc (and Android back) closes it in Firefox and Chromium.
+- A modal sheet makes the page's `role="alert"` (reconnecting, rejections) inert and hidden behind the backdrop.
+- Focus-on-phase effects targeting elements hidden by a responsive `@max-*:hidden` class: focus() no-ops.

@@ -6,6 +6,7 @@ import { CanvasMiniMap } from "@/components/canvas/CanvasMiniMap.component";
 import type { Drawing } from "@/components/canvas/_utils/drawing.utils";
 import { RoomSuspectButton } from "@/components/room/RoomSuspectButton.component";
 import type { RoomOutcome, RoomPlayer } from "@/components/room/_types/room.types";
+import { RoomViewUtils } from "@/components/room/_utils/roomView.utils";
 
 /**
  * What a tap on a face does: while drawing the hat marks someone as suspicious (changeable, public), in the final
@@ -90,13 +91,6 @@ export function RoomPlayerList({
   const big = layout === "row";
   // Cards that go away under the mouse (the vote sheet closing) never hear it leave: end the peek with them.
   useEffect(() => () => onPeek(null), [onPeek]);
-  const nameOf = (id: number) => (id === youId ? "you" : (players.find((player) => player.id === id)?.name ?? "?"));
-  /** "you", "you and Noor", "Noor, Jip and 2 more": you first, then in the order they marked them. */
-  const names = (ids: number[]) => {
-    const all = [...ids].sort((a, b) => Number(b === youId) - Number(a === youId)).map(nameOf);
-    if (all.length <= 2) return all.join(" and ");
-    return `${all.slice(0, 2).join(", ")} and ${all.length - 2} more`;
-  };
   return (
     <div className="@container/players">
       <ol
@@ -248,7 +242,7 @@ export function RoomPlayerList({
                           youId !== null && suspects.includes(youId) ? "bg-berry text-night" : "bg-night text-white/85"
                         }`}
                       >
-                        suspected by {names(suspects)}
+                        suspected by {RoomViewUtils.names(suspects, players, youId)}
                       </span>
                     )}
                   </p>
@@ -271,7 +265,7 @@ export function RoomPlayerList({
                         "didn’t vote"
                       ) : (
                         <>
-                          voted {nameOf(votedFor)}{" "}
+                          voted {RoomViewUtils.nameOf(votedFor, players, youId)}{" "}
                           {!isBamboozler && (
                             <>
                               <span aria-hidden="true" className={votedFor === outcome.bamboozlerId ? "text-sun" : ""}>

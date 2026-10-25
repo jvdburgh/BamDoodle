@@ -10,8 +10,15 @@ export function VoteSheet({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const dialog = sheet.current;
-    if (dialog && !dialog.open) dialog.showModal();
-    return () => dialog?.close();
+    if (!dialog) return;
+    if (!dialog.open) dialog.showModal();
+    // Browsers let a page refuse Esc (or Android's back) only so often, then close it anyway: open it again.
+    const reopen = () => dialog.showModal();
+    dialog.addEventListener("close", reopen);
+    return () => {
+      dialog.removeEventListener("close", reopen);
+      dialog.close();
+    };
   }, []);
 
   return (

@@ -1,6 +1,6 @@
 - [Client lifecycle patterns](feedback_client_lifecycle_patterns.md) — recurring WebSocket client bugs (heartbeat, perf.now, votes, tokens, send-and-forget vs phase/cooldown, stroke echo sync, stale room on failed, derived rules) to check first
 - [Server room patterns](feedback_server_room_patterns.md) — LEAD: client input fanned out without own bound; new conn role missing from deliver-drop/replace paths; stale Finished
 - [Word list patterns](feedback_word_list_patterns.md) — LEAD: guess containment vs rivals that contain the word / typo-rivals; maintainer allowances
-- [Web UI patterns](feedback_web_ui_patterns.md) — pointer input copies, identity colours, wire caps, host-only actions, alt="" beside responsively hidden text
+- [Web UI patterns](feedback_web_ui_patterns.md) — LEAD: same-variant Tailwind utility order, dialog cancel, modal hides alerts; pointer copies, identity colours, alt=""
 - [Link previews](link-previews.md) — robots.txt vs preview bots on /join/ links; stale public-file examples in lib.rs tests
 - [Log privacy patterns](feedback_log_privacy_patterns.md) — decision 0005 logs: full UA, extension stack frames, LogQL timestamp-label cardinality

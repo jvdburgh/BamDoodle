@@ -214,6 +214,18 @@ export const FinalVote: Story = {
   },
 };
 
+/** What the server turned down shows inside the sheet, which covers the page. */
+export const VoteTurnedDown: Story = {
+  args: {
+    phase: { phase: "voting", round: roundFixture({ activePlayerId: null }), votingRemainingMs: 30_000 },
+    rejection: "invalidVote",
+  },
+  play: async ({ canvas }) => {
+    const sheet = within(canvas.getByRole("dialog", { name: "Who’s sketchy?" }));
+    await expect(sheet.getByRole("alert")).toBeVisible();
+  },
+};
+
 /** Kiki was confirmed, then you tapped Mo: Mo shows as your vote, and a tap back on Kiki isn't swallowed. */
 export const ChangeYourVote: Story = {
   args: {
@@ -283,5 +295,10 @@ export const Laptop: Story = {
   play: async ({ canvas }) => {
     await waitFor(() => expect(canvas.getByText("you")).toBeVisible());
     await expect(canvas.getByRole("status", { name: "Round progress" })).toHaveTextContent("Pip’s turn");
+    // The canvas is sized to the screen's height, so the tools under it are in view.
+    const tools = canvas.getByRole("region", { name: "Drawing tools" });
+    await expect(tools.getBoundingClientRect().bottom).toBeLessThanOrEqual(window.innerHeight);
+    const board = canvas.getByRole("img", { name: /Shared drawing/ }).closest("[class*='max-w']")!;
+    await expect(getComputedStyle(board).maxWidth).not.toBe("none");
   },
 };

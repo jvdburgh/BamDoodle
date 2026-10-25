@@ -76,6 +76,16 @@ export const WhileDrawing: Story = {
   },
 };
 
+/** What the table knows: who suspects whom while drawing, who has voted (never for whom) in the vote. */
+export const WhoSuspectsAndWhoVoted: Story = {
+  args: { suspectedBy: { 3: [2, 4] }, votedIds: [1, 4] },
+  play: async ({ canvas, userEvent }) => {
+    await expect(canvas.getByRole("button", { name: /^Pip\b.*voted/ })).toBeVisible();
+    await userEvent.click(canvas.getByRole("button", { name: /^Mo\b/ }));
+    await expect(canvas.getByText("Suspected by you and Kiki")).toBeVisible();
+  },
+};
+
 /** You can't suspect yourself, and nobody can suspect before or after the drawing. */
 export const YouAndAfterTheDrawing: Story = {
   args: { onSuspect: undefined, activeId: null },

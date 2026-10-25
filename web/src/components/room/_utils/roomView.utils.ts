@@ -41,6 +41,19 @@ function players(room: Pick<RoomSnapshot, "code" | "players">): RoomPlayer[] {
   });
 }
 
+/** A player as the viewer reads them: "you" for yourself. */
+const nameOf = (id: number, players: RoomPlayer[], youId: number | null) =>
+  id === youId ? "you" : (players.find((player) => player.id === id)?.name ?? "?");
+
+/** "you", "you and Noor", "Noor, Jip and 2 more": you first, then in the order given. */
+function names(ids: number[], players: RoomPlayer[], youId: number | null): string {
+  const all = [...ids]
+    .sort((a, b) => Number(b === youId) - Number(a === youId))
+    .map((id) => nameOf(id, players, youId));
+  if (all.length <= 2) return all.join(" and ");
+  return `${all.slice(0, 2).join(", ")} and ${all.length - 2} more`;
+}
+
 /** Same as the server: `MIN_PLAYERS_TO_START` in limits.rs. */
 const MIN_PLAYERS_TO_START = 3;
 
@@ -172,6 +185,8 @@ export const RoomViewUtils = {
   inRoom,
   problem,
   stillOnTheirFace,
+  nameOf,
+  names,
   waitingForPlayers,
   seed,
   players,
