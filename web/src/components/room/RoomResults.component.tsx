@@ -11,6 +11,7 @@ type RoomResultsProps = {
   youId?: number | null;
   /** Only the host moves the game on; leave out for everyone else. */
   onNext?: () => void;
+  /** The host screen: bigger, the word beside the way on, so it fits over the drawing's lower part. */
   big?: boolean;
 };
 
@@ -31,13 +32,15 @@ export function RoomResults({
   const last = roundNumber >= rounds;
 
   return (
-    <div className="flex flex-col items-center gap-3 text-center">
-      <div>
-        <p className="text-white/70">
+    <div
+      className={big ? "flex flex-wrap items-center gap-x-8 gap-y-3" : "flex flex-col items-center gap-3 text-center"}
+    >
+      <div className={big ? "min-w-60 flex-1" : ""}>
+        <p className={big ? "text-2xl text-white/80" : "text-white/70"}>
           Round {roundNumber} of {rounds}. The word was
         </p>
         <p className={`font-display text-sun ${big ? "text-6xl" : "text-4xl"}`}>{word}</p>
-        <p className={`mt-1 ${big ? "text-xl" : ""}`}>
+        <p className={`mt-1 ${big ? "text-2xl" : ""}`}>
           {guess === null
             ? `${who} didn’t guess.`
             : guess.right
@@ -46,7 +49,11 @@ export function RoomResults({
         </p>
       </div>
       {onNext && (
-        <button type="button" onClick={onNext} className={`${BrandStyles.primaryButton} w-full max-w-xs`}>
+        <button
+          type="button"
+          onClick={onNext}
+          className={`${BrandStyles.primaryButton} ${big ? "" : "w-full max-w-xs"}`}
+        >
           {last ? "See the final scores" : "Next round"}
         </button>
       )}

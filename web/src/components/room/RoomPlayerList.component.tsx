@@ -48,20 +48,11 @@ type RoomPlayerListProps = {
   /**
    * "grid": two columns of cards on a phone (so names fit), three on a tablet, and one column of wide cards in a
    * laptop's `room` container;
-   * "row": everyone in one row (host screen);
+   * "row": big centred tiles, face over name (the host screen's lobby);
+   * "column": one column of big cards beside the canvas, read from across the room (the host screen during a round);
    * "sheet": two columns, three when there's room, whatever the screen (the vote sheet).
    */
-  layout?: "grid" | "row" | "sheet";
-};
-
-/** Full class names, so Tailwind sees them. */
-const rowColumns: Record<number, string> = {
-  1: "@3xl/players:grid-cols-1",
-  2: "@3xl/players:grid-cols-2",
-  3: "@3xl/players:grid-cols-3",
-  4: "@3xl/players:grid-cols-4",
-  5: "@3xl/players:grid-cols-5",
-  6: "@3xl/players:grid-cols-6",
+  layout?: "grid" | "row" | "column" | "sheet";
 };
 
 /**
@@ -88,20 +79,30 @@ export function RoomPlayerList({
   layout = "grid",
 }: RoomPlayerListProps) {
   /** The host screen is read from across the room: the results on its cards are bigger. */
-  const big = layout === "row";
+  const tile = layout === "row";
+  const column = layout === "column";
+  const big = tile || column;
+  /** Seven or eight in a column on a laptop: a size smaller, so every card still fits. */
+  const crowded = column && players.length > 6;
+  const pill = crowded ? "text-lg @2xl/players:text-xl" : big ? "text-xl" : "text-xs";
+  const face = tile ? "size-24" : column ? "row-span-2 size-14 @2xl/players:size-20" : "size-12";
   // Cards that go away under the mouse (the vote sheet closing) never hear it leave: end the peek with them.
   useEffect(() => () => onPeek(null), [onPeek]);
   return (
-    <div className="@container/players">
+    <div className={`@container/players ${column ? "lg:h-full" : ""}`}>
       <ol
         aria-label="Players"
-        className={`grid gap-2 ${
-          layout === "row"
-            ? `grid-cols-3 ${rowColumns[players.length] ?? rowColumns[6]}`
-            : layout === "sheet"
-              ? "grid-cols-2 @lg/players:grid-cols-3"
-              : "grid-cols-2 @lg/players:grid-cols-3 @5xl/room:grid-cols-1"
-        }`}
+        // A column shares the height out: every card fits on one screen, up to a size that still looks like a card.
+        style={column ? { maxHeight: `${players.length * 10}rem` } : undefined}
+        className={
+          tile
+            ? "flex flex-wrap justify-center gap-3 lg:flex-nowrap"
+            : column
+              ? "grid gap-2 lg:h-full lg:auto-rows-[minmax(0,1fr)]"
+              : layout === "sheet"
+                ? "grid grid-cols-2 gap-2 @lg/players:grid-cols-3"
+                : "grid grid-cols-2 gap-2 @lg/players:grid-cols-3 @5xl/room:grid-cols-1"
+        }
       >
         {players.map((player, index) => {
           const you = player.id === youId;
@@ -141,15 +142,27 @@ export function RoomPlayerList({
               onPointerEnter={(event) => event.pointerType === "mouse" && onPeek(player.id)}
               onPointerLeave={() => onPeek(null)}
               style={{ animationDelay: `${index * 60}ms` }}
-              className={`relative flex min-w-0 animate-card-in flex-col gap-1.5 rounded-[12px_16px_14px_10px] p-1.5 transition-colors motion-reduce:animate-none ${
+              className={`relative min-w-0 animate-card-in rounded-[12px_16px_14px_10px] transition-colors motion-reduce:animate-none ${
+                tile
+                  ? "flex w-44 flex-col items-center p-4 text-center lg:w-auto lg:max-w-44 lg:flex-1"
+                  : column
+                    ? "grid min-h-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 overflow-hidden p-2 lg:grid-rows-[minmax(0,1fr)]"
+                    : "flex flex-col gap-1.5 p-1.5"
+              } ${
                 rail
                   ? "@5xl/room:grid @5xl/room:grid-cols-[minmax(0,1fr)_5.5rem] @5xl/room:items-center @5xl/room:gap-x-2.5 @5xl/room:gap-y-1 @5xl/room:p-2"
                   : ""
               } ${active ? "bg-night-soft" : you ? "bg-iris/20" : "bg-night-deep/70"} ${ring}`}
             >
               {spotlit && <BrandSketchyFrame bold className="text-white" />}
-              <div className={`min-w-0 ${rail ? "@5xl/room:col-start-1 @5xl/room:row-start-1" : ""}`}>
-                <div className="peer flex min-w-0 items-center gap-2">
+              <div
+                className={`min-w-0 ${rail ? "@5xl/room:col-start-1 @5xl/room:row-start-1" : ""} ${
+                  column ? "grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3" : ""
+                }`}
+              >
+                <div
+                  className={`peer min-w-0 items-center ${tile ? "flex flex-col gap-3" : column ? "contents" : "flex gap-2"}`}
+                >
                   {action && !you ? (
                     <RoomSuspectButton
                       name={player.name}
@@ -158,10 +171,10 @@ export function RoomPlayerList({
                       suspected={chosen}
                       onToggle={() => action.onChoose(action.kind === "suspect" && chosen ? null : player.id)}
                       ring={drawerRing}
-                      className="size-12"
+                      className={face}
                     />
                   ) : (
-                    <span className="peer relative size-12 shrink-0">
+                    <span className={`peer relative shrink-0 ${face}`}>
                       <AvatarDoodle
                         strokes={player.avatar}
                         backdrop={false}
@@ -172,7 +185,17 @@ export function RoomPlayerList({
                       {drawerRing}
                     </span>
                   )}
-                  <span className={`min-w-0 truncate font-display leading-tight ${active ? "text-sun" : "text-white"}`}>
+                  <span
+                    className={`max-w-full min-w-0 truncate font-display leading-tight ${
+                      tile
+                        ? "text-4xl"
+                        : crowded
+                          ? "text-3xl @2xl/players:text-5xl"
+                          : column
+                            ? "text-4xl @2xl/players:text-5xl"
+                            : ""
+                    } ${active ? "text-sun" : "text-white"}`}
+                  >
                     {player.name}
                     {you && (
                       <span className="ml-1.5 rounded-full bg-iris px-1.5 align-middle font-body text-xs font-semibold text-white">
@@ -214,7 +237,7 @@ export function RoomPlayerList({
                   </button>
                 )}
                 {lobby && !player.ready && (
-                  <p className="mt-1.5 text-xs">
+                  <p className={`mt-1.5 ${pill}`}>
                     <span className="rounded-lg bg-night px-2 py-0.5 text-white/85">
                       <span aria-hidden="true">✏️ </span>drawing their face
                     </span>
@@ -226,7 +249,7 @@ export function RoomPlayerList({
                   </p>
                 )}
                 {(votedIds.includes(player.id) || suspects.length > 0 || (yourVoteId === player.id && !action)) && (
-                  <p className="mt-1.5 flex flex-wrap gap-1 text-xs leading-snug">
+                  <p className={`mt-1.5 flex flex-wrap gap-1 leading-snug ${pill}`}>
                     {yourVoteId === player.id && !action && (
                       <span className="rounded-lg bg-berry px-2 py-0.5 font-semibold text-night">your vote</span>
                     )}
@@ -248,7 +271,7 @@ export function RoomPlayerList({
                   </p>
                 )}
                 {outcome && (
-                  <p className={`mt-1.5 flex flex-wrap gap-1 leading-snug ${big ? "text-lg" : "text-xs"}`}>
+                  <p className={`mt-1.5 flex flex-wrap gap-1 leading-snug ${pill}`}>
                     {isBamboozler && (
                       <span
                         style={{ animationDelay: "600ms" }}
@@ -311,7 +334,11 @@ export function RoomPlayerList({
                     onSpotlight(spotlit ? null : player.id);
                   }}
                   className={`group relative block rounded-[6px_8px_7px_5px] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-white ${
-                    rail ? "@5xl/room:col-start-2 @5xl/room:row-span-2 @5xl/room:row-start-1" : ""
+                    rail
+                      ? "@5xl/room:col-start-2 @5xl/room:row-span-2 @5xl/room:row-start-1"
+                      : column
+                        ? "w-28 lg:aspect-[4/3] lg:h-full lg:max-h-36 lg:w-auto"
+                        : ""
                   }`}
                 >
                   <CanvasMiniMap drawing={drawing} playerId={player.id} />
