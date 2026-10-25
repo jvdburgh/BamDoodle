@@ -43,8 +43,18 @@ function players(room: Pick<RoomSnapshot, "code" | "players">): RoomPlayer[] {
       avatarSeed,
       avatar: player.avatar.length > 0 ? AvatarUtils.fromWire(player.avatar) : AvatarUtils.face(avatarSeed),
       connected: player.connected,
+      ready: player.ready,
     };
   });
+}
+
+/** For the host in the lobby: who's still drawing their face, or null when everyone's in. */
+function stillOnTheirFace(players: RoomPlayer[]): string | null {
+  const names = players.filter((player) => !player.ready).map((player) => player.name);
+  if (names.length === 0) return null;
+  if (names.length === 1) return `${names[0]} is still drawing their face`;
+  if (names.length === 2) return `${names[0]} and ${names[1]} are still drawing their faces`;
+  return `${names.length} players are still drawing their faces`;
 }
 
 const byId = (players: RoomPlayer[], id: number | null | undefined) =>
@@ -172,6 +182,7 @@ function problem(reason: RejectReason): string {
 export const RoomViewUtils = {
   inRoom,
   problem,
+  stillOnTheirFace,
   seed,
   players,
   active,

@@ -5,4 +5,8 @@ export type PlayerSummary = { id: number, name: string, score: number, connected
 /**
  * Empty until the player sends one.
  */
-avatar: Array<AvatarStroke>, };
+avatar: Array<AvatarStroke>, 
+/**
+ * Done with their face (`ready`); false while they're still drawing it.
+ */
+ready: boolean, };

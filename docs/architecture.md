@@ -72,8 +72,11 @@ The catch: a deploy or crash ends all running games. At hobby scale that's accep
   like any `updateSettings`), `joinRoom { code, name,
   sessionToken? }` or `watchRoom { code }` for a host screen. The answer is `joined` with your player id, your
   session token and a snapshot of the room as you may see it, or `rejected` with a reason.
-- **Avatars:** any player sends `setAvatar { strokes }` between rounds, which replaces their whole avatar; everyone
-  and the host screens get `avatarChanged { playerId, strokes }`. A stroke on the wire is `{ colour, pressure,
+- **Avatars:** any player sends `setAvatar { strokes }` at any time (also during a round: a face finished just as the
+  host starts must still arrive), at most once a second, which replaces their whole avatar. A player done with their
+  face (or joining mid-round) sends `ready`, again after every reconnect so a new seat hears it too; everyone gets `playerReady { playerId }` and `PlayerSummary.ready`
+  says it in snapshots, so the host sees who's still drawing. Everyone and the host screens get
+  `avatarChanged { playerId, strokes }`. A stroke on the wire is `{ colour, pressure,
   points }`: avatars use one pen, so there is no size (`AvatarUtils.toWire` / `fromWire` map it to the canvas's
   stroke).
 - **A game and its rounds:** the host can `updateSettings` between rounds (mode, turns per player, seconds per turn, rounds,
@@ -105,7 +108,8 @@ The catch: a deploy or crash ends all running games. At hobby scale that's accep
   per round, never for yourself, only from players in the round; a suspicion counts as your vote if you don't submit
   one.
 - Only the host changes settings and starts rounds, only between rounds.
-- An avatar changes only between rounds, at most once a second: up to 48 strokes and 700 points in total, at least
+- `ready` is announced once per seat; a repeat is ignored.
+- An avatar changes at any time, at most once a second: up to 48 strokes and 700 points in total, at least
   one point per stroke, points on the square (rounded to 3 decimals) and colours from the avatar palette only. Any
   other `setAvatar` is dropped.
 - What we don't try to stop: friends telling each other things on a voice call. That's part of a party game.
@@ -165,7 +169,8 @@ weight without helping freehand strokes. tldraw is out: its licence isn't open s
 
 ### Screens and routes
 
-- `/` is the start page; `/join/BKZW` opens it on joining that room. A device holds one `RoomConnection`
+- `/` is the start page; `/BKZW` opens it on joining that room (`RouteUtils.route`; an old `/join/BKZW` link shows
+  `/BKZW` instead). A device holds one `RoomConnection`
   (`useRoomConnection`) and, once the room is there, renders `RoomPlayerView` from its `RoomState` and sends intents
   through `send` (`src/app/GameRoute.tsx`). Creating a room starts with `LobbySetup` before the room exists, from
   `GET /api/room-defaults` (the default settings and every category, `RoomDefaultsUtils`), then your name, then

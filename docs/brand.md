@@ -64,9 +64,10 @@ Quiet by default, silent until the first tap (browsers require it), and a mute t
 Pixabay Content License, not the AGPL; `web/public/sounds/NOTICE` says so, for forks. It loops the track's audible span
 seamlessly (the silence before and the quiet tail after are left out) and keeps playing for as long as the room is
 open: softer while someone draws or votes, so the ticks and cues stay clear, and never stopped or restarted by a sound
-effect. It has its own Music toggle next to the sound toggle, remembered per device: on by default on the host screen
-and in the lab, off by default on players' phones, so a table full of phones doesn't play it out of step. Like every
-sound, it waits for the first tap, and it picks up again after the browser suspends audio (a locked phone, a call).
+effect. It has its own Music toggle next to the sound toggle, remembered per device: on by default on the host screen,
+in the lab and on a laptop or desktop, off by default on phones and tablets, so a table full of phones doesn't play it
+out of step. Like every sound, it waits for the first tap (the track is already downloaded by then), starts at its
+volume at once rather than fading in, and picks up again after the browser suspends audio (a locked phone, a call).
 
 ## Feel
 
@@ -89,7 +90,7 @@ Modern, a bit mysterious, colourful. It should feel like a hand-made little game
   `/logo.svg` for that too). Reduced motion turns it off.
 - No unlockables, no dark patterns. The only promotion is in the maintainer's voice: one line under the start page and
   the setup ("Made by Joris van der Burgh in the Netherlands / Hosted in the European Union", and "Enjoying
-  BamDoodle? Help out on GitHub, and please donate to our friends in Ukraine"), and on "The End" screen after the
+  BamDoodle? Help out on GitHub, and consider donating to Ukrainian citizens"), and on "The End" screen after the
   last round one small card: "Did you enjoy the game?", that it's free with no ads or accounts, a "Donate through
   United24" link (Ukraine's official fundraising platform) and "help out on GitHub", with the footer under it
   (without its own ask, so it isn't said twice). No banner, nothing during a game.

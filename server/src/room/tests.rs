@@ -33,6 +33,8 @@ impl Game {
 
     fn with_library(count: usize, words: Arc<WordLibrary>) -> Self {
         let mut room = Room::new("BKTZ".into(), words, 7);
+        // The turn tests count strokes, so they play one stroke each, three times; timed turns set it themselves.
+        room.settings.mode = TurnMode::OneStroke;
         let names = ["Sam", "Noor", "Jip", "Max", "Ada", "Bo", "Cas", "Dex"];
         let seats = names[..count]
             .iter()
@@ -504,7 +506,7 @@ mod starting {
             assert_eq!(view.category, "Things");
             assert_eq!(
                 (view.number, view.rounds, view.turn, view.turns_per_player),
-                (1, 5, 1, 3)
+                (1, 4, 1, 3)
             );
             assert_eq!(view.active_player_id, Some(view.turn_order[0]));
         }
@@ -1438,6 +1440,27 @@ mod avatars {
     }
 
     #[test]
+    fn the_host_sees_who_is_still_drawing_their_face() {
+        let mut game = Game::with_players(3);
+        let noor = game.seats[1].player_id;
+        let snapshot = game.room.snapshot(Viewer::Screen, game.now);
+        assert!(
+            snapshot.players.iter().all(|player| !player.ready),
+            "everyone starts on their face"
+        );
+
+        assert_eq!(
+            game.send(noor, ClientMessage::Ready),
+            vec![(Audience::Everyone, ServerMessage::PlayerReady { player_id: noor })]
+        );
+        assert!(game.send(noor, ClientMessage::Ready).is_empty(), "once per seat");
+
+        let snapshot = game.room.snapshot(Viewer::Screen, game.now);
+        let ready: Vec<_> = snapshot.players.iter().map(|player| player.ready).collect();
+        assert_eq!(ready, vec![false, true, false]);
+    }
+
+    #[test]
     fn it_replaces_the_whole_avatar_and_may_be_empty() {
         let mut game = Game::with_players(3);
         let sam = game.host();
@@ -1448,14 +1471,12 @@ mod avatars {
     }
 
     #[test]
-    fn only_between_rounds() {
+    fn also_during_a_round_so_a_late_face_isnt_lost() {
+        // Playtest: a player still drawing their face when the host started saw it, but nobody else did all round.
         let mut game = Game::started(3);
         let sam = game.host();
-        assert!(game.send(sam, set(face())).is_empty());
-        assert!(game.room.players[0].avatar.is_empty());
-
-        game.finish_round();
         assert!(changed(&game.send(sam, set(face()))));
+        assert_eq!(game.room.players[0].avatar, face());
     }
 
     #[test]

@@ -34,7 +34,7 @@ const startLink = (startPage: string, start: "create" | "join") =>
 
 /**
  * The end of the game: a podium rising, confetti for the winner and everyone's final score (the fanfare is a room
- * cue), then what's next (play again here, or another room) and our one ask: support our friends in Ukraine.
+ * cue), then what's next (play again here, or another room) and our one ask: support Ukrainian citizens.
  */
 export function RoomPodium({
   players,

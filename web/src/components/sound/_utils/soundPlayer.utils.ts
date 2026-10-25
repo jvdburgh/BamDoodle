@@ -159,17 +159,24 @@ function scratch(audio: AudioContext, output: AudioNode) {
 let musicByDefault = false;
 let musicScreen = false;
 let musicDucked = false;
+let musicBytes: Promise<ArrayBuffer> | null = null;
 let musicTrack: Promise<{ buffer: AudioBuffer; start: number; end: number } | null> | null = null;
 let music: { output: GainNode; source: AudioBufferSourceNode; stopTimer: number } | null = null;
 
 const musicOn = () => musicChoice ?? musicByDefault;
 
+/** The track's bytes, fetched as soon as a screen has music: the first tap then only decodes, no wait to hear it. */
+function fetchMusic() {
+  musicBytes ??= fetch(MUSIC_SRC).then((response) => response.arrayBuffer());
+  return musicBytes;
+}
+
 function loadMusic(audio: AudioContext) {
-  musicTrack ??= fetch(MUSIC_SRC)
-    .then((response) => response.arrayBuffer())
+  musicTrack ??= fetchMusic()
     .then((data) => audio.decodeAudioData(data))
     .then((buffer) => ({ buffer, ...MusicUtils.loopBounds(buffer.getChannelData(0), buffer.sampleRate) }))
     .catch(() => {
+      musicBytes = null;
       musicTrack = null;
       return null;
     });
@@ -198,7 +205,8 @@ function updateMusic() {
   void loadMusic(audio).then((track) => {
     if (!track || music || !musicOn() || !musicScreen) return;
     const output = audio.createGain();
-    output.gain.value = 0;
+    // At its volume straight away: a fade-in from silence sounds like the switch didn't work.
+    output.gain.value = musicDucked ? MUSIC_GAIN * MUSIC_DUCKED : MUSIC_GAIN;
     output.connect(audio.destination);
     const source = audio.createBufferSource();
     source.buffer = track.buffer;
@@ -219,6 +227,7 @@ function setMusic({ playing, ducked, byDefault }: { playing: boolean; ducked: bo
   musicDucked = ducked;
   musicByDefault = byDefault;
   if (changedDefault) for (const listener of listeners) listener();
+  if (playing && musicOn()) void fetchMusic().catch(() => (musicBytes = null));
   updateMusic();
 }
 

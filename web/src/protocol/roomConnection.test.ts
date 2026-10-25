@@ -50,7 +50,7 @@ class FakeSocket implements SocketLike {
 const room: RoomSnapshot = {
   code: "BKTZ",
   hostId: 1,
-  players: [{ id: 1, name: "Sam", score: 0, connected: true, avatar: [] }],
+  players: [{ id: 1, name: "Sam", score: 0, connected: true, avatar: [], ready: true }],
   settings: {
     mode: "oneStroke",
     turnsPerPlayer: 3,
@@ -442,36 +442,12 @@ describe("RoomConnection: your avatar", () => {
     expect(avatarsSent(socket())).toEqual([{ type: "setAvatar", strokes: other }]);
   });
 
-  it("is held during a round and goes out when it's over", () => {
+  it("goes out during a round too, so a face finished as the host starts still arrives", () => {
     const { connection, socket } = joinedConnection();
     connection.setAvatar(face);
     advance(RoomConnectionTiming.avatarDebounceMs - 1);
     socket().receive({ type: "roundStarted", round });
     advance(RoomConnectionTiming.avatarDebounceMs);
-    expect(avatarsSent(socket())).toEqual([]);
-
-    socket().receive({ type: "votingStarted", durationMs: 30_000 });
-    socket().receive({
-      type: "revealed",
-      reveal: { bamboozlerId: 2, votes: [], guessRemainingMs: 20_000 },
-    });
-    socket().receive({
-      type: "roundFinished",
-      result: {
-        number: 1,
-        rounds: 5,
-        gameOver: false,
-        category: "Animals",
-        word: "giraffe",
-        bamboozlerId: 2,
-        guess: null,
-        guessCorrect: false,
-        votes: [],
-        awards: [],
-        scores: [],
-      },
-    });
-    advance(0);
     expect(avatarsSent(socket())).toEqual([{ type: "setAvatar", strokes: face }]);
   });
 
@@ -487,6 +463,37 @@ describe("RoomConnection: your avatar", () => {
     socket().receive(joined());
     advance(0);
     expect(avatarsSent(socket())).toEqual([{ type: "setAvatar", strokes: face }]);
+  });
+});
+
+describe("RoomConnection: ready", () => {
+  const readySent = (socket: FakeSocket) => socket.sent.filter((message) => message.type === "ready");
+
+  it("goes out right away when joined", () => {
+    const { connection, socket } = joinedConnection();
+    connection.markReady();
+    expect(readySent(socket())).toEqual([{ type: "ready" }]);
+  });
+
+  it("goes out on joining when said while reconnecting, and again on every join after, so a new seat hears it", () => {
+    const { connection, socket } = joinedConnection();
+    socket().drop();
+    connection.markReady();
+    advance(RoomConnection.backoff(0, 1));
+    socket().open();
+    socket().receive(joined());
+    expect(readySent(socket())).toEqual([{ type: "ready" }]);
+
+    socket().drop();
+    advance(RoomConnection.backoff(0, 1));
+    socket().open();
+    socket().receive(joined("new-seat"));
+    expect(readySent(socket())).toEqual([{ type: "ready" }]);
+  });
+
+  it("stays quiet on joining before you said it", () => {
+    const { socket } = joinedConnection();
+    expect(readySent(socket())).toEqual([]);
   });
 });
 

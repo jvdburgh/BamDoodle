@@ -8,10 +8,10 @@ const VOTE_MS = 30_000;
 const GUESS_MS = 20_000;
 
 const DEFAULT_SETUP: RoomSetup = {
-  mode: "oneStroke",
+  mode: "timed",
   turnsPerPlayer: 3,
   turnSeconds: 20,
-  rounds: 5,
+  rounds: 4,
   attribution: "free",
   language: "en",
   categories: [],

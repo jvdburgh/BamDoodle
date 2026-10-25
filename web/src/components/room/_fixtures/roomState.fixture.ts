@@ -67,6 +67,7 @@ export function resultFixture(patch: Partial<RoundResult> = {}): RoundResult {
       score: player.id === 1 || player.id === 4 ? 1 : 0,
       connected: true,
       avatar: AvatarUtils.toWire(player.avatar),
+      ready: true,
     })),
     ...patch,
   };
@@ -109,6 +110,7 @@ export function roomStateFixture({ you = 2, hostId = 2, phase = { phase: "lobby"
             score: 0,
             connected: true,
             avatar: AvatarUtils.toWire(player.avatar),
+            ready: true,
           },
       ),
       settings: {

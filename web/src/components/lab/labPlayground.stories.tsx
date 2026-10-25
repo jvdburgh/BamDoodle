@@ -23,6 +23,8 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Phone: Story = {
+  // One stroke each, so a simulated player's turn passes after one stroke.
+  args: { setup: { ...setupFixture, mode: "oneStroke" } },
   play: async ({ canvas, userEvent }) => {
     await expect(canvas.getByText("bamdoodle.io")).toBeVisible();
     await expect(canvas.queryByText("Giraffe")).toBeNull();

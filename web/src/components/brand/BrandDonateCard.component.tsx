@@ -2,7 +2,7 @@ import { useId } from "react";
 import { BrandFlag, BrandLink, DONATE_URL, REPO_URL } from "@/components/brand/BrandSupportLine.component";
 import { BrandStyles } from "@/components/brand/_utils/brandStyles.utils";
 
-/** At the end of a game, the one thing we ask for: support our friends in Ukraine (and help out on GitHub). */
+/** At the end of a game, the one thing we ask for: support Ukrainian citizens (and help out on GitHub). */
 export function BrandDonateCard() {
   const headingId = useId();
   return (
@@ -14,8 +14,8 @@ export function BrandDonateCard() {
         Did you enjoy the game?
       </h3>
       <p className="text-white/80">
-        BamDoodle is free, with no ads and no accounts. If you had fun, please consider supporting our friends in{" "}
-        <BrandFlag country="ua" /> Ukraine.
+        BamDoodle is free, with no ads and no accounts. If you had fun, please consider supporting{" "}
+        <BrandFlag country="ua" /> Ukrainian citizens.
       </p>
       <a href={DONATE_URL} target="_blank" rel="noopener noreferrer" className={`${BrandStyles.quietButton} mt-1`}>
         Donate through United24

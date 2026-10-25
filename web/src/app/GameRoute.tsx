@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { RouteUtils } from "@/app/route.utils";
 import type { AvatarStroke } from "@/components/avatar/_types/avatar.types";
 import { AvatarUtils } from "@/components/avatar/_utils/avatar.utils";
 import { LobbySetup } from "@/components/lobby/LobbySetup.component";
@@ -204,9 +205,14 @@ function GameRoom({ state, connection, createdHere }: GameRoomProps) {
   const playing = room.phase.phase === "drawing" || room.phase.phase === "voting" || room.phase.phase === "guessing";
   useRoomSounds(state);
 
+  // Past the face screen (or skipped it, joining mid-round): the host no longer waits for your face.
+  useEffect(() => {
+    if (!drawingFace) connection.markReady();
+  }, [drawingFace, connection]);
+
   // The address becomes the room's link: share it, or reload and join again with one tap.
   useEffect(() => {
-    const path = `/join/${room.code}`;
+    const path = RouteUtils.roomPath(room.code);
     if (window.location.pathname !== path) window.history.replaceState(null, "", path);
   }, [room.code]);
 

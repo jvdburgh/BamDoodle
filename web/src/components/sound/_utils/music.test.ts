@@ -31,3 +31,12 @@ describe("MusicUtils.loopBounds", () => {
     expect(MusicUtils.loopBounds(new Float32Array(rate), rate)).toEqual({ start: 0, end: 1 });
   });
 });
+
+describe("MusicUtils.onByDefault", () => {
+  const pointer = (fine: boolean) => (query: string) => ({ matches: query === "(pointer: fine)" && fine });
+
+  it("plays on a laptop or desktop and stays off on a phone", () => {
+    expect(MusicUtils.onByDefault(pointer(true))).toBe(true);
+    expect(MusicUtils.onByDefault(pointer(false))).toBe(false);
+  });
+});

@@ -12,7 +12,10 @@ import type { RoomOutcome, RoomPlayer } from "@/components/room/_types/room.type
  */
 export type RoomPlayerAction = {
   kind: "suspect" | "vote";
+  /** Your suspicion while drawing; in the vote, only a vote you actually cast. */
   chosenId: number | null;
+  /** In the vote: who you suspected while drawing, shown as a hint (it counts if you don't vote), never as a vote. */
+  suspectedId?: number | null;
   onChoose: (id: number | null) => void;
 };
 
@@ -40,6 +43,8 @@ type RoomPlayerListProps = {
   votedIds?: number[];
   /** After the vote: the bamboozler in the hat, who voted for whom, then the round's points and the totals. */
   outcome?: RoomOutcome;
+  /** In the lobby: mark who's still drawing their face. */
+  showFaceStatus?: boolean;
   /**
    * "grid": two columns of cards on a phone (so names fit), three on a tablet, and one column of wide cards in a
    * laptop's `room` container;
@@ -79,6 +84,7 @@ export function RoomPlayerList({
   votedIds = [],
   youWearTheHat = false,
   outcome,
+  showFaceStatus = false,
   layout = "grid",
 }: RoomPlayerListProps) {
   /** The host screen is read from across the room: the results on its cards are bigger. */
@@ -199,6 +205,18 @@ export function RoomPlayerList({
                     <span className="sr-only"> {player.name}</span>
                     {chosen && <span aria-hidden="true"> ✓</span>}
                   </button>
+                )}
+                {showFaceStatus && !player.ready && (
+                  <p className="mt-1.5 text-xs">
+                    <span className="rounded-lg bg-night px-2 py-0.5 text-white/85">
+                      <span aria-hidden="true">✏️ </span>drawing their face
+                    </span>
+                  </p>
+                )}
+                {action?.kind === "vote" && action.suspectedId === player.id && !chosen && (
+                  <p className="mt-1.5 text-xs">
+                    <span className="rounded-lg px-2 py-0.5 text-berry ring-1 ring-berry">you suspected</span>
+                  </p>
                 )}
                 {(votedIds.includes(player.id) || suspects.length > 0 || (yourVoteId === player.id && !action)) && (
                   <p className="mt-1.5 flex flex-wrap gap-1 text-xs leading-snug">

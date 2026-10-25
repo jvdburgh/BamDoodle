@@ -57,6 +57,7 @@ struct Player {
     disconnected_at: Option<Instant>,
     avatar: Vec<AvatarStroke>,
     avatar_set_at: Option<Instant>,
+    ready: bool,
 }
 
 #[derive(Debug)]
@@ -197,6 +198,7 @@ impl Room {
             disconnected_at: None,
             avatar: Vec::new(),
             avatar_set_at: None,
+            ready: false,
         };
         self.next_player_id += 1;
         let seat = Seat {
@@ -239,6 +241,7 @@ impl Room {
         let result = match message {
             ClientMessage::UpdateSettings { settings } => self.update_settings(player_id, settings),
             ClientMessage::SetAvatar { strokes } => Ok(self.set_avatar(player_id, strokes, now)),
+            ClientMessage::Ready => Ok(self.ready(player_id)),
             ClientMessage::StartRound => self.start_round(player_id, now),
             ClientMessage::BeginStroke { colour, size, points } => {
                 Ok(self.begin_stroke(player_id, colour, size, points))
@@ -352,11 +355,8 @@ impl Room {
         Ok(vec![(Audience::Everyone, ServerMessage::SettingsChanged { settings })])
     }
 
+    /// Any time, rounds included: a face is cosmetic, and one finished just as the host starts must still arrive.
     fn set_avatar(&mut self, player_id: PlayerId, strokes: Vec<AvatarStroke>, now: Instant) -> Outbox {
-        if self.require_between_rounds().is_err() {
-            tracing::debug!(player_id, "dropping avatar: a round is on");
-            return Vec::new();
-        }
         let Some(strokes) = clean_avatar(strokes) else {
             tracing::debug!(player_id, "dropping avatar: too big, off the square or an odd colour");
             return Vec::new();
@@ -374,6 +374,17 @@ impl Room {
         player.avatar_set_at = Some(now);
         player.avatar = strokes.clone();
         vec![(Audience::Everyone, ServerMessage::AvatarChanged { player_id, strokes })]
+    }
+
+    /// Once per seat: a repeat (after a reconnect, say) says nothing new.
+    fn ready(&mut self, player_id: PlayerId) -> Outbox {
+        match self.player_mut(player_id) {
+            Some(player) if !player.ready => {
+                player.ready = true;
+                vec![(Audience::Everyone, ServerMessage::PlayerReady { player_id })]
+            }
+            _ => Vec::new(),
+        }
     }
 
     fn start_round(&mut self, player_id: PlayerId, now: Instant) -> Result<Outbox, RejectReason> {
@@ -957,6 +968,7 @@ fn summary(player: &Player) -> PlayerSummary {
         score: player.score,
         connected: player.connected,
         avatar: player.avatar.clone(),
+        ready: player.ready,
     }
 }
 

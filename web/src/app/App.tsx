@@ -1,23 +1,23 @@
 import { GameRoute } from "@/app/GameRoute";
 import { WatchRoute } from "@/app/WatchRoute";
+import { RouteUtils } from "@/app/route.utils";
 import { BrandSketchFilter } from "@/components/brand/BrandSketchFilter.component";
 import { LabApp } from "@/components/lab/LabApp.component";
 
-/** Routes by path: `/` and `/join/CODE` play, `/watch/CODE` is a host screen, `/lab` the game without a server. */
+/** Routes by path (`RouteUtils.route`): `/` and `/BKZW` play, `/watch/BKZW` is a host screen, `/lab` the lab. */
 export function App() {
-  const [, first = "", second = ""] = window.location.pathname.split("/");
-  const code = second.toUpperCase();
+  const route = RouteUtils.route(window.location.pathname);
 
   return (
     <>
       <BrandSketchFilter />
       <h1 className="sr-only">BamDoodle</h1>
-      {first === "lab" ? (
+      {route.kind === "lab" ? (
         <LabApp />
-      ) : first === "watch" && code ? (
-        <WatchRoute code={code} />
+      ) : route.kind === "watch" ? (
+        <WatchRoute code={route.code} />
       ) : (
-        <GameRoute joinCode={first === "join" ? code : undefined} />
+        <GameRoute joinCode={route.code} />
       )}
     </>
   );

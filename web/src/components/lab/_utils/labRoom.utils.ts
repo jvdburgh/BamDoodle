@@ -102,6 +102,7 @@ function phaseView(sim: LabSnapshot, viewer: LabViewer): PhaseView {
             score: totals[player.id] ?? 0,
             connected: true,
             avatar: AvatarUtils.toWire(player.avatar),
+            ready: true,
           })),
         },
       };
@@ -139,6 +140,7 @@ function toState(sim: LabSnapshot, viewer: LabViewer): RoomViewState {
           score: sim.totals[player.id] ?? 0,
           connected: true,
           avatar: AvatarUtils.toWire(player.avatar),
+          ready: true,
         })),
       settings: {
         mode: setup.mode,

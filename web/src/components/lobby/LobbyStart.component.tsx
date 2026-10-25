@@ -4,6 +4,7 @@ import { BrandLogo } from "@/components/brand/BrandLogo.component";
 import { BrandSketchyFrame } from "@/components/brand/BrandSketchyFrame.component";
 import { BrandTagline } from "@/components/brand/BrandTagline.component";
 import { BrandStyles } from "@/components/brand/_utils/brandStyles.utils";
+import { RoomCodeUtils } from "@/protocol/roomCode.utils";
 
 export type LobbyEntry = { name: string } & ({ kind: "create" } | { kind: "join"; code: string });
 
@@ -28,10 +29,8 @@ type LobbyStartProps = {
 
 type Step = "choose" | "join" | "create";
 
-/** Same as the server: `NAME_MAX_CHARS` in limits.rs, the code alphabet and length in registry.rs. */
+/** Same as the server: `NAME_MAX_CHARS` in limits.rs. */
 const NAME_MAX = 20;
-const CODE_LENGTH = 4;
-const NOT_IN_CODE = /[^BCDFGHJKLMNPQRSTVWXZ]/g;
 
 const field =
   "w-full rounded-[10px_14px_12px_9px] bg-night-deep px-4 py-3 text-lg text-white placeholder:text-white/40 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-sun";
@@ -78,7 +77,7 @@ export function LobbyStart({
   };
 
   const cleanName = name.trim();
-  const canSubmit = !busy && cleanName.length > 0 && (step !== "join" || code.length === CODE_LENGTH);
+  const canSubmit = !busy && cleanName.length > 0 && (step !== "join" || code.length === RoomCodeUtils.LENGTH);
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
@@ -155,9 +154,7 @@ export function LobbyStart({
                     ref={defaultCode ? undefined : first}
                     id={codeId}
                     value={code}
-                    onChange={(event) =>
-                      setCode(event.target.value.toUpperCase().replace(NOT_IN_CODE, "").slice(0, CODE_LENGTH))
-                    }
+                    onChange={(event) => setCode(RoomCodeUtils.clean(event.target.value))}
                     autoComplete="off"
                     autoCapitalize="characters"
                     spellCheck={false}

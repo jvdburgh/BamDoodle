@@ -63,7 +63,7 @@ export function AvatarEditor({ value, onChange }: AvatarEditorProps) {
 
   return (
     <div className="grid w-full justify-items-center gap-4">
-      <div className="relative my-3 aspect-square w-full max-w-56">
+      <div className="relative my-3 aspect-square w-full max-w-[min(14rem,34svh)]">
         <AvatarDoodle strokes={value} className="absolute inset-0 size-full" />
         <svg
           viewBox="0 0 100 100"

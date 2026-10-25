@@ -144,6 +144,27 @@ describe("SoundPlayer music", () => {
     expect(music?.start).toHaveBeenCalledWith(expect.any(Number), music?.loopStart);
   });
 
+  it("fetches the track before the first tap, so the tap only has to decode it", async () => {
+    const player = await load();
+    player.setMusic(screen);
+    await vi.advanceTimersByTimeAsync(10);
+    expect(fetchMusic).toHaveBeenCalledTimes(1);
+    expect(audio.musicSources()).toHaveLength(0);
+    tap();
+    await vi.advanceTimersByTimeAsync(10);
+    expect(fetchMusic).toHaveBeenCalledTimes(1);
+    expect(audio.musicSources()).toHaveLength(1);
+  });
+
+  it("starts at its volume straight away: no fade-in that sounds like nothing happened", async () => {
+    const player = await load();
+    player.setMusic(screen);
+    tap();
+    await vi.advanceTimersByTimeAsync(10);
+    const output = audio.musicSources()[0]?.output as { gain: FakeParam } | undefined;
+    expect(output?.gain.value).toBeGreaterThan(0);
+  });
+
   it("keeps playing and looping while sound effects play", async () => {
     const player = await load();
     tap();

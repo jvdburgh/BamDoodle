@@ -7,7 +7,7 @@ const meta = {
   title: "Room/RoomSpotlightChip",
   component: RoomSpotlightChip,
   args: {
-    player: playersFixture[0] ?? { id: 1, name: "Pip", avatarSeed: 12, avatar: [], connected: true },
+    player: playersFixture[0] ?? { id: 1, name: "Pip", avatarSeed: 12, avatar: [], connected: true, ready: true },
   },
 } satisfies Meta<typeof RoomSpotlightChip>;
 

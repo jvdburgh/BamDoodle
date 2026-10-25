@@ -41,6 +41,10 @@ type Story = StoryObj<typeof meta>;
 export const SetUpTheRoom: Story = {
   play: async ({ args, canvas, userEvent }) => {
     await expect(canvas.getByRole("heading", { name: "Set up your room" })).toBeVisible();
+    // Timed turns first: the default, and what playtesters liked best.
+    const modes = canvas.getAllByRole("radio").filter((radio) => radio.getAttribute("name") === "lobby-mode");
+    await expect(modes.map((radio) => radio.getAttribute("aria-label"))).toEqual(["Timed turns", "One stroke each"]);
+    await expect(canvas.getByRole("radio", { name: "4" })).toBeInTheDocument();
     const oneStroke = canvas.getByRole("radio", { name: "One stroke each" });
     await expect(oneStroke).toHaveFocus();
     await expect(oneStroke).toHaveAccessibleDescription("Draw one line, pass it on");

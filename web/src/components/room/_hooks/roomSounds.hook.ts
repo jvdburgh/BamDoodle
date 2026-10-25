@@ -10,10 +10,10 @@ import { RoomStateUtils } from "@/protocol/roomState.utils";
 
 /**
  * The room's sounds on this device: turns, ticks, time's up, the reveal, the final fanfare, and the music, softer while
- * someone draws or votes (`musicByDefault`: on unless switched off, for the host screen and the lab). Mount once per
- * room.
+ * someone draws or votes (`musicByDefault`: on a laptop unless switched off, always for the host screen and the lab).
+ * Mount once per room.
  */
-export function useRoomSounds(state: RoomViewState, { musicByDefault = false } = {}) {
+export function useRoomSounds(state: RoomViewState, { musicByDefault = MusicUtils.onByDefault() } = {}) {
   const { phase } = state.room.phase;
   useMusic(MusicUtils.ducked(phase), musicByDefault);
   const round = RoomStateUtils.round(state);

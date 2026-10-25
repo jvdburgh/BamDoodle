@@ -30,4 +30,12 @@ function loopBounds(samples: Float32Array, sampleRate: number): { start: number;
   return { start: first / sampleRate, end: end / sampleRate };
 }
 
-export const MusicUtils = { ducked, loopBounds };
+/**
+ * Music plays unless switched off on a laptop or desktop (a mouse or trackpad), and stays off on a phone or tablet
+ * (touch), so a table full of phones doesn't play it out of step.
+ */
+function onByDefault(matchMedia: (query: string) => { matches: boolean } = globalThis.matchMedia): boolean {
+  return typeof matchMedia === "function" && matchMedia("(pointer: fine)").matches;
+}
+
+export const MusicUtils = { ducked, loopBounds, onByDefault };

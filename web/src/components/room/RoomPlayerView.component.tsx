@@ -94,6 +94,8 @@ export function RoomPlayerView({
   const suspicion = you ? RoomStateUtils.suspicionOf(state, you.id) : null;
   /** The face you tapped last wins over the vote the server confirmed before it. */
   const yourVoteId = state.pendingVote ?? round?.yourVote ?? null;
+  const othersHere = players.filter((player) => player.id !== you?.id && player.connected);
+  const stillDrawing = phase === "lobby" ? RoomViewUtils.stillOnTheirFace(othersHere) : null;
   const resultKey = result ? `${result.number}/${result.word}` : null;
   const showPodium = view.gameOver && podiumFor === resultKey;
 
@@ -135,7 +137,8 @@ export function RoomPlayerView({
         : phase === "voting" && round
           ? {
               kind: "vote",
-              chosenId: yourVoteId ?? suspicion,
+              chosenId: yourVoteId,
+              suspectedId: suspicion,
               onChoose: (id) => {
                 if (id === null || id === yourVoteId) return;
                 send({ type: "castVote", suspectId: id });
@@ -300,6 +303,12 @@ export function RoomPlayerView({
                             >
                               Show on a TV
                             </a>
+                            {stillDrawing && (
+                              <p className="w-full text-center text-sm text-white/80">
+                                <span aria-hidden="true">✏️ </span>
+                                {stillDrawing}
+                              </p>
+                            )}
                           </div>
                         ) : (
                           <p className="text-center text-white/80">
@@ -337,6 +346,7 @@ export function RoomPlayerView({
                   votedIds={phase === "voting" ? (round?.voted ?? []) : []}
                   youWearTheHat={youAreBamboozler && !result}
                   outcome={RoomViewUtils.outcome(reveal, result, room.players)}
+                  showFaceStatus={phase === "lobby"}
                 />
               </div>
               <div className="hidden @5xl/room:block">{progress}</div>

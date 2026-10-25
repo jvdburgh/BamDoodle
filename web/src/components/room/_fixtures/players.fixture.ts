@@ -7,6 +7,7 @@ const seat = (id: number, name: string, avatarSeed: number): RoomPlayer => ({
   avatarSeed,
   avatar: AvatarUtils.face(avatarSeed),
   connected: true,
+  ready: true,
 });
 
 /** Six seats, the most a room is meant for; take the first three to six. Everyone kept their starting face. */

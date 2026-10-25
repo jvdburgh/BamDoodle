@@ -11,6 +11,19 @@ describe("ErrorReportUtils", () => {
   it("names the screen, never the room code", () => {
     expect(ErrorReportUtils.page("/")).toBe("start");
     expect(ErrorReportUtils.page("/join/BKZW")).toBe("join");
+    expect(ErrorReportUtils.page("/BKZW")).toBe("join");
+    const shortLink = withStack("opening bamdoodle.io/BKZW failed", `TypeError\n    at f (${ORIGIN}/assets/a.js:1:2)`);
+    expect(ErrorReportUtils.toReport(shortLink, "/BKZW", ORIGIN)?.message).toBe(
+      "TypeError: opening bamdoodle.io/CODE failed",
+    );
+    for (const address of [
+      "https://bamdoodle.io/bkzw",
+      "http://localhost:8080/BKZW",
+      "https://doodle.example.org/BKZW",
+    ]) {
+      const anyHost = withStack(`open ${address} failed`, `TypeError\n    at f (${ORIGIN}/assets/a.js:1:2)`);
+      expect(ErrorReportUtils.toReport(anyHost, "/", ORIGIN)?.message).not.toMatch(/bkzw/i);
+    }
     expect(ErrorReportUtils.page("/watch/BKZW")).toBe("watch");
     expect(ErrorReportUtils.page("/lab")).toBe("lab");
     expect(ErrorReportUtils.page("/something")).toBe("other");

@@ -82,10 +82,11 @@ impl Default for RoomSettings {
     /// No categories: a new room fills in its language's everyday ones (`Room::new`).
     fn default() -> Self {
         Self {
-            mode: TurnMode::OneStroke,
+            // Timed turns, 20 s, twice each: what playtesters liked best (one stroke stays a choice).
+            mode: TurnMode::Timed,
             turns_per_player: 3,
             turn_seconds: 20,
-            rounds: 5,
+            rounds: 4,
             language: Language::En,
             categories: Vec::new(),
         }
@@ -120,11 +121,13 @@ pub enum ClientMessage {
     UpdateSettings {
         settings: RoomSettings,
     },
-    /// Any seated player, between rounds: replaces your whole avatar.
+    /// Any seated player, any time: replaces your whole avatar.
     #[serde(rename_all = "camelCase")]
     SetAvatar {
         strokes: Vec<AvatarStroke>,
     },
+    /// Any seated player: done with their face and in the room (the host can see who's still drawing theirs).
+    Ready,
     /// Host only, between rounds. After the final scoreboard, this starts a new game.
     StartRound,
     /// The active player starts a stroke. `colour` is `#rrggbb`.
@@ -191,6 +194,11 @@ pub enum ServerMessage {
     AvatarChanged {
         player_id: PlayerId,
         strokes: Vec<AvatarStroke>,
+    },
+    /// A player finished their face and is in the room.
+    #[serde(rename_all = "camelCase")]
+    PlayerReady {
+        player_id: PlayerId,
     },
     #[serde(rename_all = "camelCase")]
     HostChanged {
@@ -295,6 +303,8 @@ pub struct PlayerSummary {
     pub connected: bool,
     /// Empty until the player sends one.
     pub avatar: Vec<AvatarStroke>,
+    /// Done with their face (`ready`); false while they're still drawing it.
+    pub ready: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
@@ -540,12 +550,24 @@ mod tests {
     }
 
     #[test]
+    fn ready_is_tagged_like_every_message() {
+        assert_eq!(
+            serde_json::to_value(ClientMessage::Ready).unwrap(),
+            serde_json::json!({ "type": "ready" })
+        );
+        assert_eq!(
+            serde_json::to_value(ServerMessage::PlayerReady { player_id: 2 }).unwrap(),
+            serde_json::json!({ "type": "playerReady", "playerId": 2 })
+        );
+    }
+
+    #[test]
     fn settings_use_the_names_the_ui_shows() {
         let json = serde_json::to_value(RoomSettings::default()).unwrap();
         assert_eq!(
             json,
             serde_json::json!({
-                "mode": "oneStroke", "turnsPerPlayer": 3, "turnSeconds": 20, "rounds": 5, "language": "en", "categories": []
+                "mode": "timed", "turnsPerPlayer": 3, "turnSeconds": 20, "rounds": 4, "language": "en", "categories": []
             })
         );
     }

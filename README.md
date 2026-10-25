@@ -29,7 +29,7 @@ You need 3 to 8 players, each with a phone (or a laptop or tablet).
 
 1. **One of you creates a room** at [bamdoodle.io](https://bamdoodle.io): pick how you draw (one stroke each, or
    timed turns), the number of rounds and the word categories, then your name.
-2. **Everyone else joins** with the four-letter room code, or the link the host shares (`bamdoodle.io/join/CODE`).
+2. **Everyone else joins** with the four-letter room code, or the link the host shares (`bamdoodle.io/CODE`).
    Draw yourself a face while you wait.
 3. **Each round**, everyone gets the secret word on their phone. Except the bamboozler, who only sees the category.
    Take turns adding to the drawing; the bamboozler has to blend in.
@@ -91,8 +91,8 @@ says which names to change for a fork. Please give a public fork its own name an
 
 ## Support
 
-Enjoying BamDoodle? Star the repository, tell your friends, and please
-[donate to our friends in Ukraine](https://u24.gov.ua/) through United24.
+Enjoying BamDoodle? Star the repository, tell your friends, and consider
+[donating to Ukrainian citizens](https://u24.gov.ua/) through United24.
 
 ## Licence
 

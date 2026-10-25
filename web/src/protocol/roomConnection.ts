@@ -86,6 +86,7 @@ export class RoomConnection {
   #avatar: AvatarStroke[] | null = null;
   #avatarTimer: ReturnType<typeof setTimeout> | null = null;
   #avatarSentAt = Number.NEGATIVE_INFINITY;
+  #ready = false;
 
   constructor(intent: RoomIntent, options: RoomConnectionOptions = {}) {
     this.#intent = intent;
@@ -179,10 +180,15 @@ export class RoomConnection {
     this.#scheduleAvatar(RoomConnectionTiming.avatarDebounceMs);
   }
 
-  /** Sends an avatar still waiting for its debounce as soon as the server takes it: when you leave the lobby. Held
-   * during a round, it goes out when the round is over. */
+  /** Sends an avatar still waiting for its debounce as soon as the server takes it: when you leave the lobby. */
   flushAvatar(): void {
     if (this.#avatar !== null) this.#scheduleAvatar(0);
+  }
+
+  /** Done with your face: the host stops waiting for you. Said again on every join, so a new seat hears it too. */
+  markReady(): void {
+    this.#ready = true;
+    this.send({ type: "ready" });
   }
 
   /** Leaves for good: no reconnects (until `start()` again). */
@@ -270,7 +276,7 @@ export class RoomConnection {
       state = RoomStateUtils.withStatus(state, "joined");
     }
     this.#update(state);
-    if (message.type === "roundFinished") this.flushAvatar();
+    if (message.type === "joined" && this.#ready) this.send({ type: "ready" });
   }
 
   #joined(code: string, sessionToken: string | null): void {
@@ -289,8 +295,7 @@ export class RoomConnection {
     this.#avatarTimer = setTimeout(
       () => {
         this.#avatarTimer = null;
-        // The server only takes it between rounds; `roundFinished` flushes it.
-        if (this.#avatar === null || RoomStateUtils.round(this.#state) !== null) return;
+        if (this.#avatar === null) return;
         if (this.send({ type: "setAvatar", strokes: this.#avatar })) {
           this.#avatar = null;
           this.#avatarSentAt = this.#now();

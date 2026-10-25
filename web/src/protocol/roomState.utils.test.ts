@@ -9,8 +9,8 @@ const lobby: RoomSnapshot = {
   code: "BKTZ",
   hostId: 1,
   players: [
-    { id: 1, name: "Sam", score: 0, connected: true, avatar: [] },
-    { id: 2, name: "Noor", score: 0, connected: true, avatar: [] },
+    { id: 1, name: "Sam", score: 0, connected: true, avatar: [], ready: true },
+    { id: 2, name: "Noor", score: 0, connected: true, avatar: [], ready: true },
   ],
   settings: {
     mode: "oneStroke",
@@ -60,15 +60,15 @@ describe("RoomStateUtils.apply", () => {
   it("keeps the player list up to date", () => {
     const state = play([
       joined,
-      { type: "playerJoined", player: { id: 3, name: "Jip", score: 0, connected: true, avatar: [] } },
-      { type: "playerJoined", player: { id: 3, name: "Jip", score: 0, connected: true, avatar: [] } },
+      { type: "playerJoined", player: { id: 3, name: "Jip", score: 0, connected: true, avatar: [], ready: true } },
+      { type: "playerJoined", player: { id: 3, name: "Jip", score: 0, connected: true, avatar: [], ready: true } },
       { type: "playerConnection", playerId: 2, connected: false },
       { type: "playerRemoved", playerId: 1 },
       { type: "hostChanged", hostId: 2 },
     ]);
     expect(state.room?.players).toEqual([
-      { id: 2, name: "Noor", score: 0, connected: false, avatar: [] },
-      { id: 3, name: "Jip", score: 0, connected: true, avatar: [] },
+      { id: 2, name: "Noor", score: 0, connected: false, avatar: [], ready: true },
+      { id: 3, name: "Jip", score: 0, connected: true, avatar: [], ready: true },
     ]);
     expect(state.room?.hostId).toBe(2);
   });
@@ -77,6 +77,15 @@ describe("RoomStateUtils.apply", () => {
     const strokes = [{ colour: "#ffffff", pressure: false, points: [[0.5, 0.5, 0.5]] }] satisfies AvatarStroke[];
     const state = play([joined, { type: "avatarChanged", playerId: 2, strokes }]);
     expect(state.room?.players.map((player) => player.avatar)).toEqual([[], strokes]);
+  });
+
+  it("marks a player ready once they're done with their face", () => {
+    const drawingFaces = { ...lobby, players: lobby.players.map((player) => ({ ...player, ready: false })) };
+    const state = play([
+      { ...joined, room: drawingFaces },
+      { type: "playerReady", playerId: 2 },
+    ]);
+    expect(state.room?.players.map((player) => player.ready)).toEqual([false, true]);
   });
 
   it("turns remaining times into deadlines on this device's clock", () => {
@@ -220,8 +229,8 @@ describe("RoomStateUtils.apply", () => {
           votes: [{ voterId: 1, suspectId: 2 }],
           awards: [{ playerId: 1, reason: "caughtTheBamboozler", points: 1 }],
           scores: [
-            { id: 1, name: "Sam", score: 1, connected: true, avatar: [] },
-            { id: 2, name: "Noor", score: 0, connected: true, avatar: [] },
+            { id: 1, name: "Sam", score: 1, connected: true, avatar: [], ready: true },
+            { id: 2, name: "Noor", score: 0, connected: true, avatar: [], ready: true },
           ],
         },
       },

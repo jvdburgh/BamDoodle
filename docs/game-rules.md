@@ -34,7 +34,7 @@ goal for now.
 
 ## A game
 
-A game is a few rounds (the host picks how many, default 5). Every round has a new word and a new bamboozler. After
+A game is a few rounds (the host picks how many, default 4). Every round has a new word and a new bamboozler. After
 the last round comes the final scoreboard, with confetti for the winner; the host can start a new game from there. The host
 can change the number of rounds between rounds; when that's already been reached, the next start begins a new game.
 
@@ -42,7 +42,7 @@ can change the number of rounds between rounds; when that's already been reached
 
 1. **Lobby.** The start page offers **Join a room** (most people) or **Create a room**. Joining asks for the four-letter
    room code (shown as "Join at bamdoodle.io with code …" on the host's screen) and a nickname, or skips the code when
-   you open a shared link (`/join/BKZW`; the address bar shows it once you're in). Creating starts with setting up the
+   you open a shared link (`bamdoodle.io/BKZW`; the address bar shows it once you're in). Creating starts with setting up the
    room: mode, turns per player or turn length, rounds per game, the language and the word categories to play with
    (Efteling, Places, Very British, …, and 18+ ones if they want), in two columns on a wide screen ("Each round"
    and "The game" on the left, the words on the right) and one on a phone, with a small sketch beside each
@@ -50,9 +50,10 @@ can change the number of rounds between rounds; when that's already been reached
    theirs and not the room's), and only then is the room created, with those settings. The host can open the
    settings again between rounds; every change there reaches the room at once. Then everyone draws or tweaks their avatar
    (a random doodle face to start from, shuffle for another; a small round pad with one pen and the colours that read
-   on navy; undo and clear) and goes to the room. Everyone in the room sees each other's faces; a face can change
-   between rounds, not during one. The others wait on the join card until the host starts; the host's card also links
-   to the host screen ("Show on a TV", `/watch/BKZW`).
+   on navy; undo and clear) and goes to the room. Everyone in the room sees each other's faces, also a face finished
+   just after a round started. Until a player goes to the room their card says "drawing their face", and the host
+   sees "Mo is still drawing their face" next to Start round (they can still start). The others wait on the join card
+   until the host starts; the host's card also links to the host screen ("Show on a TV", `/watch/BKZW`).
 2. **Secret.** The server picks a word from the chosen categories and tells each player their role.
 3. **Drawing.** Players take turns on the shared canvas in a shuffled order shown on screen; each player
    gets the same number of turns. The player whose turn it is is highlighted, and their strokes appear live for everyone.
@@ -70,8 +71,8 @@ can change the number of rounds between rounds; when that's already been reached
 
 | Mode | A turn is | The host sets |
 | --- | --- | --- |
+| **Timed turns** (default) | free drawing, any number of strokes | seconds per turn: 10, 20 (default), 30 or 60; 2 turns each |
 | **One stroke each** | one stroke (press, draw, release), with a 15 second limit | turns per player: 1 to 5 (default 3) |
-| **Timed turns** | free drawing, any number of strokes | seconds per turn: 10, 20 (default), 30 or 60; 2 turns each |
 
 In the app these are named "One stroke each" and "Timed turns" ("Each player draws: once / 2 / 3 … times"); in code
 and on the wire they're `oneStroke` and `timed`. The categories are picked as small chips, every
@@ -114,7 +115,7 @@ pops its points and total. Under the canvas only the headline: who the bamboozle
 seconds start at the reveal), then the word and the host's "Next round". After the last round
 "The End": the podium with everyone's final score (on a phone when you tap "See the final scores", on the host
 screen ten seconds after the results), then what's next (the host plays again in the same room, everyone can create
-or join another room), our one ask (if you enjoyed it, support our friends in Ukraine) and the footer with who made
+or join another room), our one ask (if you enjoyed it, support Ukrainian citizens) and the footer with who made
 it.
 
 ## Points (starting point, tune in playtests)

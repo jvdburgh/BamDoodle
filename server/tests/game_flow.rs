@@ -4,7 +4,7 @@ use std::{path::Path, sync::Arc, time::Duration};
 
 use bamdoodle_server::{
     app,
-    protocol::{ClientMessage, PhaseView, PlayerId, Point, RejectReason, Role, RoomSettings, ServerMessage},
+    protocol::{ClientMessage, PhaseView, PlayerId, Point, RejectReason, Role, RoomSettings, ServerMessage, TurnMode},
     registry::Registry,
     room::Room,
     words::WordLibrary,
@@ -82,12 +82,17 @@ async fn start_server_with_registry() -> (String, Arc<Registry>) {
 
 #[tokio::test]
 async fn a_whole_round_with_three_players_and_a_host_screen() {
-    let address = start_server().await;
+    let (address, registry) = start_server_with_registry().await;
 
+    // One stroke each: the turns below are one stroke apiece.
+    let one_stroke = RoomSettings {
+        mode: TurnMode::OneStroke,
+        ..Room::default_settings(registry.words())
+    };
     let mut sam = Client::connect(&address).await;
     sam.send(&ClientMessage::CreateRoom {
         name: "Sam".into(),
-        settings: None,
+        settings: Some(one_stroke),
     })
     .await;
     let (Some(sam_id), _, code, phase) = sam.joined().await else {

@@ -59,7 +59,7 @@ describe.skipIf(!url)("RoomConnection against the real server", () => {
 
     sam.send({
       type: "updateSettings",
-      settings: { ...sam.getState().room!.settings, turnsPerPlayer: 1, rounds: 1 },
+      settings: { ...sam.getState().room!.settings, mode: "oneStroke", turnsPerPlayer: 1, rounds: 1 },
     });
     await until(screen, (state) => state.room?.settings.turnsPerPlayer === 1);
 

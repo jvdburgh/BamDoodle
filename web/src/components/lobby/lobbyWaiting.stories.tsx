@@ -31,3 +31,22 @@ export const Waiting: Story = {
     await expect(args.onStart).toHaveBeenCalledOnce();
   },
 };
+
+/** On a short phone the button stays on screen: pinned to the bottom, not under the fold. */
+export const ShortPhone: Story = {
+  decorators: [
+    (Story) => (
+      <div style={{ height: "560px", overflow: "auto" }} data-testid="phone">
+        <Story />
+      </div>
+    ),
+  ],
+  play: async ({ canvas }) => {
+    const phone = canvas.getByTestId("phone");
+    const button = canvas.getByRole("button", { name: "Go to the room" });
+    const inView = () => button.getBoundingClientRect().bottom <= phone.getBoundingClientRect().bottom;
+    await expect(inView()).toBe(true);
+    phone.scrollTop = 0;
+    await expect(inView()).toBe(true);
+  },
+};

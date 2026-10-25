@@ -1,4 +1,5 @@
-# Room links are for players, not search results; link previews may still read them.
+# Room links are for players, not search results; link previews may still read them. Short room links (/BKZW)
+# can't be listed here: they rely on the canonical tag pointing to /.
 User-agent: Twitterbot
 User-agent: LinkedInBot
 Allow: /

@@ -17,14 +17,32 @@ type Props = {
   rejection?: RejectReason;
   /** A vote you sent that the server hasn't confirmed yet. */
   pendingVote?: number;
+  /** Players still drawing their face (not `ready`). */
+  drawingFaces?: number[];
   send: (message: ClientMessage) => void;
   onSettings?: () => void;
 };
 
 /** Renders the view from a server-state fixture made at render time, so the countdowns start when the story does. */
-function PlayerFromState({ phase, you, hostId, colours, width, rejection, pendingVote, send, onSettings }: Props) {
+function PlayerFromState({
+  phase,
+  you,
+  hostId,
+  colours,
+  width,
+  rejection,
+  pendingVote,
+  drawingFaces = [],
+  send,
+  onSettings,
+}: Props) {
   const [state] = useState(() => {
-    const fixture = { ...roomStateFixture({ phase, you, hostId }), pendingVote: pendingVote ?? null };
+    const base = roomStateFixture({ phase, you, hostId });
+    const room = base.room && {
+      ...base.room,
+      players: base.room.players.map((player) => ({ ...player, ready: !drawingFaces.includes(player.id) })),
+    };
+    const fixture = { ...base, room, pendingVote: pendingVote ?? null };
     return rejection ? { ...fixture, rejection: { reason: rejection, at: Date.now() } } : fixture;
   });
   return (
@@ -126,6 +144,16 @@ export const HostInTheLobby: Story = {
   },
 };
 
+/** The host can see who's still on their face screen, and can still start. */
+export const HostWaitsForFaces: Story = {
+  args: { phase: { phase: "lobby" }, drawingFaces: [3, 4] },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText("Mo and Kiki are still drawing their faces")).toBeVisible();
+    await expect(canvas.getAllByText("drawing their face")).toHaveLength(2);
+    await expect(canvas.getByRole("button", { name: "Start round" })).toBeEnabled();
+  },
+};
+
 export const GuestInTheLobby: Story = {
   args: { phase: { phase: "lobby" }, you: 3 },
   play: async ({ canvas }) => {
@@ -151,7 +179,11 @@ export const FinalVote: Story = {
   },
   play: async ({ args, canvas, userEvent }) => {
     await expect(canvas.getByText(/your suspicion of/)).toHaveTextContent("your suspicion of Kiki counts");
-    await expect(canvas.getByRole("button", { name: "Vote for Kiki" })).toHaveAttribute("aria-pressed", "true");
+    // A suspicion from the drawing isn't a vote: nothing says "Your vote" until you tap.
+    await expect(canvas.getByRole("button", { name: "Vote for Kiki" })).toHaveAttribute("aria-pressed", "false");
+    await expect(canvas.queryByRole("button", { name: /^Your vote/ })).toBeNull();
+    const kiki = canvas.getByRole("button", { name: "Vote Kiki" }).closest("li")!;
+    await expect(kiki).toHaveTextContent("you suspected");
     await expect(canvas.queryByRole("button", { name: /Lock in/ })).toBeNull();
     await userEvent.click(canvas.getByRole("button", { name: "Vote for Mo" }));
     await expect(args.send).toHaveBeenCalledWith({ type: "castVote", suspectId: 3 });

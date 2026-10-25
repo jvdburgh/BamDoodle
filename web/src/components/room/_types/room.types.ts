@@ -12,6 +12,8 @@ export type RoomPlayer = {
   avatar: AvatarStroke[];
   /** False while their device is away. */
   connected: boolean;
+  /** Done with their face and in the room; false while they're still drawing it. */
+  ready: boolean;
 };
 
 /**

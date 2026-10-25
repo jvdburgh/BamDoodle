@@ -13,7 +13,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   play: async ({ canvas }) => {
     await expect(canvas.getByText(/Enjoying BamDoodle\?/)).toBeVisible();
-    const donate = canvas.getByRole("link", { name: "donate to our friends in Ukraine" });
+    const donate = canvas.getByRole("link", { name: "donating to Ukrainian citizens" });
     await expect(donate).toHaveAttribute("href", "https://u24.gov.ua/");
     await expect(donate).toHaveAttribute("rel", "noopener noreferrer");
     await expect(canvas.getByRole("link", { name: "Help out on GitHub" })).toHaveAttribute(

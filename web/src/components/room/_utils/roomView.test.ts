@@ -7,9 +7,9 @@ import type { RoundView } from "@/protocol/generated/RoundView";
 const room = {
   code: "BKZW",
   players: [
-    { id: 1, name: "Pip", score: 0, connected: true, avatar: [] },
-    { id: 2, name: "Juno", score: 3, connected: true, avatar: [] },
-    { id: 3, name: "Mo", score: 1, connected: false, avatar: [] },
+    { id: 1, name: "Pip", score: 0, connected: true, avatar: [], ready: true },
+    { id: 2, name: "Juno", score: 3, connected: true, avatar: [], ready: true },
+    { id: 3, name: "Mo", score: 1, connected: false, avatar: [], ready: true },
   ],
 };
 const players = RoomViewUtils.players(room);
@@ -151,5 +151,27 @@ describe("RoomViewUtils.families", () => {
     const families = RoomViewUtils.families(players, "shades");
     expect(families?.[2]?.[2]?.name).toBe("Lagoon 3");
     expect(RoomViewUtils.identities(families ?? null)?.[2]).toBe(families?.[2]?.[2]?.value);
+  });
+});
+
+describe("RoomViewUtils.stillOnTheirFace", () => {
+  const seat = (id: number, name: string, ready: boolean) => ({
+    ...RoomViewUtils.players({
+      code: "BKZW",
+      players: [{ id, name, score: 0, connected: true, avatar: [], ready }],
+    })[0]!,
+  });
+
+  it("names who the host is waiting for", () => {
+    expect(RoomViewUtils.stillOnTheirFace([seat(1, "Pip", true)])).toBeNull();
+    expect(RoomViewUtils.stillOnTheirFace([seat(1, "Pip", true), seat(2, "Mo", false)])).toBe(
+      "Mo is still drawing their face",
+    );
+    expect(RoomViewUtils.stillOnTheirFace([seat(2, "Mo", false), seat(3, "Kiki", false)])).toBe(
+      "Mo and Kiki are still drawing their faces",
+    );
+    expect(RoomViewUtils.stillOnTheirFace([seat(1, "A", false), seat(2, "B", false), seat(3, "C", false)])).toBe(
+      "3 players are still drawing their faces",
+    );
   });
 });

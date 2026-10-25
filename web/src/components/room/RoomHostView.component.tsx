@@ -129,6 +129,7 @@ export function RoomHostView({ state, revealCode = false, colours = "free", home
                 suspectedBy={phase === "drawing" ? RoomViewUtils.suspectedBy(round) : {}}
                 votedIds={phase === "voting" ? (round?.voted ?? []) : []}
                 outcome={RoomViewUtils.outcome(reveal, result, room.players)}
+                showFaceStatus={phase === "lobby"}
                 layout="row"
               />
             </div>

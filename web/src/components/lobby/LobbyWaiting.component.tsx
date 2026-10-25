@@ -48,7 +48,12 @@ export function LobbyWaiting({ name, roomCode, avatar, onAvatarChange, onStart, 
         <AvatarEditor value={avatar} onChange={onAvatarChange} />
       </section>
 
-      <button type="button" onClick={onStart} className={`${BrandStyles.primaryButton} w-full`}>
+      {/* Pinned above a phone browser's bottom bar: never under the fold, however tall the face pad is. */}
+      <button
+        type="button"
+        onClick={onStart}
+        className={`${BrandStyles.primaryButton} sticky bottom-[calc(0.75rem_+_var(--browser-bar))] z-10 w-full shadow-[0_6px_18px_var(--color-night-deep)] md:bottom-3`}
+      >
         Go to the room
       </button>
     </main>

@@ -1,4 +1,6 @@
+import { RouteUtils } from "@/app/route.utils";
 import type { ClientErrorReport } from "@/protocol/generated/ClientErrorReport";
+import { RoomCodeUtils } from "@/protocol/roomCode.utils";
 import { APP_VERSION } from "@/protocol/version";
 
 /** Different errors reported per visit; the server also caps the total per minute. */
@@ -11,13 +13,16 @@ type Target = Pick<EventTarget, "addEventListener" | "removeEventListener">;
 
 /** Which screen, from the address: never the room code in it. */
 function page(pathname: string): ClientErrorReport["page"] {
-  const first = pathname.split("/")[1] ?? "";
-  if (first === "") return "start";
-  return ["join", "watch", "lab"].includes(first) ? first : "other";
+  const route = RouteUtils.route(pathname);
+  if (route.kind === "play") return route.code ? "join" : pathname === "/" ? "start" : "other";
+  return route.kind === "redirect" ? "join" : route.kind;
 }
 
-/** A room code in an address becomes CODE: `/join/BKZW` is `/join/CODE`. */
-const scrub = (text: string) => text.replace(/\/(join|watch)\/[A-Za-z]{4}\b/g, "/$1/CODE");
+/** Any host's `/BKZW` path, in any case. */
+const CODE_PATH = new RegExp(`/[${RoomCodeUtils.LETTERS}]{${RoomCodeUtils.LENGTH}}\\b`, "gi");
+
+/** A room code in an address becomes CODE: `/BKZW` is `/CODE`, `/join/BKZW` is `/join/CODE`. */
+const scrub = (text: string) => text.replace(/\/(join|watch)\/[A-Za-z]{4}\b/g, "/$1/CODE").replace(CODE_PATH, "/CODE");
 
 /**
  * The report for an error, or null when it isn't ours to fix: a stack with no frame from this site (an extension's

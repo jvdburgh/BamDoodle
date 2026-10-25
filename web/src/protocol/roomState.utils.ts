@@ -109,6 +109,11 @@ export const RoomStateUtils = {
             player.id === message.playerId ? { ...player, avatar: message.strokes } : player,
           ),
         });
+      case "playerReady":
+        return withRoom(state, {
+          ...room,
+          players: room.players.map((player) => (player.id === message.playerId ? { ...player, ready: true } : player)),
+        });
       case "hostChanged":
         return withRoom(state, { ...room, hostId: message.hostId });
       case "settingsChanged":

@@ -199,7 +199,7 @@ mod tests {
     #[tokio::test]
     async fn app_routes_get_the_app_and_missing_files_get_a_404() {
         let (router, dir) = site();
-        for path in ["/", "/join/BKTZ", "/watch/BKTZ", "/lab"] {
+        for path in ["/", "/BKTZ", "/join/BKTZ", "/watch/BKTZ", "/lab"] {
             let (status, _, body) = get(&router, path).await;
             assert_eq!(
                 (status, body.as_str()),

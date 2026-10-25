@@ -20,7 +20,7 @@ export const Default: Story = {
       "href",
       "https://github.com/jvdburgh/BamDoodle",
     );
-    const donate = canvas.getByRole("link", { name: "donate to our friends in Ukraine" });
+    const donate = canvas.getByRole("link", { name: "donating to Ukrainian citizens" });
     await expect(donate).toHaveAttribute("href", "https://u24.gov.ua/");
     await expect(donate).toHaveAttribute("target", "_blank");
     await expect(donate).toHaveAttribute("rel", "noopener noreferrer");
@@ -36,6 +36,6 @@ export const WithoutTheAsk: Story = {
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("link", { name: "Joris van der Burgh" })).toBeVisible();
     await expect(canvas.queryByRole("link", { name: "Help out on GitHub" })).toBeNull();
-    await expect(canvas.queryByRole("link", { name: "donate to our friends in Ukraine" })).toBeNull();
+    await expect(canvas.queryByRole("link", { name: "donating to Ukrainian citizens" })).toBeNull();
   },
 };

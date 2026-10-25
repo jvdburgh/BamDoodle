@@ -33,8 +33,8 @@ type LobbySetupProps = {
 type Option<T> = { value: T; title: string; detail: string; sketch: LobbySetupSketchKind };
 
 const turnOptions: Option<TurnMode>[] = [
-  { value: "oneStroke", title: "One stroke each", detail: "Draw one line, pass it on", sketch: { kind: "oneStroke" } },
   { value: "timed", title: "Timed turns", detail: "A few seconds to draw freely", sketch: { kind: "timed" } },
+  { value: "oneStroke", title: "One stroke each", detail: "Draw one line, pass it on", sketch: { kind: "oneStroke" } },
 ];
 const colourOptions: Option<Attribution>[] = [
   { value: "free", title: "Any colour", detail: "Everyone uses every colour", sketch: { kind: "anyColour" } },

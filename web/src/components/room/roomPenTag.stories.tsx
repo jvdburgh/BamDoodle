@@ -6,7 +6,9 @@ import { playersFixture } from "./_fixtures/players.fixture";
 const meta = {
   title: "Room/RoomPenTag",
   component: RoomPenTag,
-  args: { player: playersFixture[2] ?? { id: 3, name: "Mo", avatarSeed: 23, avatar: [], connected: true } },
+  args: {
+    player: playersFixture[2] ?? { id: 3, name: "Mo", avatarSeed: 23, avatar: [], connected: true, ready: true },
+  },
 } satisfies Meta<typeof RoomPenTag>;
 
 export default meta;

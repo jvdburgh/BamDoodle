@@ -17,7 +17,7 @@ function defaults(all: Category[], language: Language): string[] {
 const choices = {
   turnsPerPlayer: [1, 2, 3, 4, 5],
   turnSeconds: [10, 20, 30, 60],
-  rounds: [3, 5, 10],
+  rounds: [3, 4, 5, 10],
 };
 
 export const LobbySetupUtils = { choices, inLanguage, defaults };
