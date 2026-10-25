@@ -19,9 +19,10 @@ describe("ErrorReportUtils", () => {
       "https://bamdoodle.io/bkzw",
       "http://localhost:8080/BKZW",
       "https://doodle.example.org/BKZW",
+      "https://bamdoodle.io/bcnw",
     ]) {
       const anyHost = withStack(`open ${address} failed`, `TypeError\n    at f (${ORIGIN}/assets/a.js:1:2)`);
-      expect(ErrorReportUtils.toReport(anyHost, "/", ORIGIN)?.message).not.toMatch(/bkzw/i);
+      expect(ErrorReportUtils.toReport(anyHost, "/", ORIGIN)?.message).not.toMatch(/bkzw|bcnw/i);
     }
     expect(ErrorReportUtils.page("/watch/BKZW")).toBe("watch");
     expect(ErrorReportUtils.page("/something")).toBe("other");

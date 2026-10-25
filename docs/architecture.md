@@ -40,8 +40,9 @@ Rust, Axum, tokio. Chosen because it is fast, small to run, and already familiar
 All live state lives in the process ([decision 0002](decisions/0002-in-memory-state.md)):
 
 - **Room registry** (`server/src/registry.rs`): room code to a handle for that room's task. Codes are four
-  consonants without look-alikes (`BCDFGHJKLMNPQRSTVWXZ`, so `BKTZ`), random and checked for collisions; at most
-  500 rooms.
+  consonants that don't read like another letter on a screen or aloud (`BDFGHJKMPRSTVWXZ`, so `BKTZ`): 65,536
+  codes, random and checked for collisions; at most 500 rooms. A code is looked up in any case, with a typed C read
+  as G and N as M (`RoomCodeUtils` does the same in the web app).
 - **One task per room** (`server/src/room/task.rs`) owns the room, its connections and its timers, and handles one
   command at a time from a channel: join, watch, a client message, a disconnect, or a deadline passing. No locks
   around game state, and rooms can't interfere with each other. A connection whose queue fills up is dropped.

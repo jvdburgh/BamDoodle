@@ -10,7 +10,8 @@ and its own copies of the round flow and scoring, for working on the screens wit
 
 ## Decision
 
-- A room lives at `/BKZW` (four letters from the room-code alphabet, any case). `/watch/BKZW` is a screen; the host
+- A room lives at `/BKZW` (four letters from the room-code alphabet `BDFGHJKMPRSTVWXZ`, any case; a C reads as G
+  and an N as M). `/watch/BKZW` is a screen; the host
   screen lives there too, so a reload hosts again. `/join/BKZW` and `/lab` are plain unknown paths now: the start page.
   The room-code alphabet, length and path are in one place, `RoomCodeUtils` (`web/src/protocol/roomCode.utils.ts`).
 - The lab is removed, with its bots and its lab-only "Own colours" option. Screens are worked on through Storybook

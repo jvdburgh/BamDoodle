@@ -15,9 +15,27 @@ use crate::{
     words::WordLibrary,
 };
 
-/// Consonants only (no words by accident) and nothing that reads like another character (no I, O, U, Y).
-const CODE_ALPHABET: &[u8] = b"BCDFGHJKLMNPQRSTVWXZ";
+/// Consonants only (no words by accident) and none that reads like another, on a screen or aloud: no C (G), N (M),
+/// L (I), Q (O). 16⁴ = 65,536 codes for at most `MAX_ROOMS`, so a new code rarely needs a second draw.
+/// Same as `RoomCodeUtils` in `web/src/protocol/roomCode.utils.ts`.
+const CODE_ALPHABET: &[u8] = b"BDFGHJKMPRSTVWXZ";
 const CODE_LENGTH: usize = 4;
+/// A typed look-alike and the code letter it stands for; same as `LOOKALIKES` in `RoomCodeUtils`.
+const LOOKALIKES: [(char, char); 2] = [('C', 'G'), ('N', 'M')];
+
+/// A code as someone typed or linked it, in any case: `" bcnk "` is `BGMK`.
+fn normalise(code: &str) -> String {
+    code.trim()
+        .chars()
+        .map(|letter| {
+            let letter = letter.to_ascii_uppercase();
+            LOOKALIKES
+                .iter()
+                .find(|(lookalike, _)| *lookalike == letter)
+                .map_or(letter, |&(_, kept)| kept)
+        })
+        .collect()
+}
 
 #[derive(Clone)]
 pub struct RoomHandle {
@@ -66,7 +84,7 @@ impl Registry {
     }
 
     pub fn find(&self, code: &str) -> Option<RoomHandle> {
-        let code = code.trim().to_ascii_uppercase();
+        let code = normalise(code);
         self.rooms
             .lock()
             .expect("registry lock is never poisoned")
@@ -98,5 +116,29 @@ mod tests {
 
         registry.remove(&code);
         assert_eq!(registry.room_count(), 0);
+    }
+
+    #[test]
+    fn codes_have_no_letters_that_read_like_another() {
+        assert!(b"CLNQIOUY".iter().all(|letter| !CODE_ALPHABET.contains(letter)));
+    }
+
+    #[test]
+    fn a_look_alike_reads_as_the_letter_it_looks_like() {
+        assert_eq!(normalise(" bcnk "), "BGMK");
+        assert_eq!(normalise("BLZW"), "BLZW");
+    }
+
+    #[test]
+    fn a_room_is_found_by_a_look_alike_of_its_code() {
+        let registry = Registry::new(Arc::new(WordLibrary::default()));
+        let (commands, _) = mpsc::channel(1);
+        registry
+            .rooms
+            .lock()
+            .unwrap()
+            .insert("BGMK".into(), RoomHandle { commands });
+        assert!(registry.find("bcnk").is_some());
+        assert!(registry.find("BLMK").is_none());
     }
 }

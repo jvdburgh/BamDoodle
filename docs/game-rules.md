@@ -65,7 +65,8 @@ can change the number of rounds between rounds; when that's already been reached
    (the steps, the points and a few questions). Joining asks for the four-letter
    room code (on the host's phone: "Join at bamdoodle.io with code …"; on a host screen: "Scan or go to bamdoodle.io
    and type …" beside a QR code) and a nickname, or skips the code when
-   you open a shared link (`bamdoodle.io/BKZW`; the address bar shows it once you're in). Creating starts with setting up the
+   you open a shared link (`bamdoodle.io/BKZW`; the address bar shows it once you're in). Codes have no letters that look
+   or sound alike (no vowels, C, L, N, Q or Y), and a typed C counts as G and an N as M. Creating starts with setting up the
    room ("You can change all of this between rounds."): mode ("How a turn works."), turns each or time per turn,
    rounds per game, the language and the word categories to play with
    (Efteling, Places, Very British, …, and 18+ ones if they want), in two columns on a wide screen (the round and

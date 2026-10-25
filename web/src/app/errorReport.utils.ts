@@ -18,8 +18,9 @@ function page(pathname: string): ClientErrorReport["page"] {
   return route.kind;
 }
 
-/** Any host's `/BKZW` path, in any case. */
-const CODE_PATH = new RegExp(`/[${RoomCodeUtils.LETTERS}]{${RoomCodeUtils.LENGTH}}\\b`, "gi");
+/** Any host's `/BKZW` path, in any case and with look-alikes (`/bcnw` opens BGMW). */
+const CODE_LETTERS = RoomCodeUtils.LETTERS + Object.keys(RoomCodeUtils.LOOKALIKES).join("");
+const CODE_PATH = new RegExp(`/[${CODE_LETTERS}]{${RoomCodeUtils.LENGTH}}\\b`, "gi");
 
 /** A room code in an address becomes CODE: `/BKZW` is `/CODE`, `/watch/BKZW` is `/watch/CODE`. */
 const scrub = (text: string) => text.replace(CODE_PATH, "/CODE");

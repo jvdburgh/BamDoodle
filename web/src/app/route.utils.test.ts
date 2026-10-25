@@ -5,6 +5,7 @@ describe("RouteUtils.route", () => {
   it("joins a room from its code alone", () => {
     expect(RouteUtils.route("/BKZW")).toEqual({ kind: "play", code: "BKZW" });
     expect(RouteUtils.route("/bkzw")).toEqual({ kind: "play", code: "BKZW" });
+    expect(RouteUtils.route("/bcnk")).toEqual({ kind: "play", code: "BGMK" });
   });
 
   it("keeps the host screen, and the start page for anything else", () => {
