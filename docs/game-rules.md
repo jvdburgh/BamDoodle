@@ -151,26 +151,39 @@ Everyone can use every colour: there is nothing to unlock, ever. To still see wh
 **Suspecting and voting on screen:** on every player card (avatar, name, mini-map of their strokes) a "Suspect"
 button under the name, or a tap on the face itself (hovering it shows the logo's fedora faintly), drops the hat onto
 their head; the button then says "Suspected ✓" and another tap takes it off. Marking or changing it is public table
-talk ("Noor thinks Jip is sketchy") and cards say who suspects that player. After the last turn the same button says
+talk ("Noor thinks Jip is sketchy", a note over the canvas with Noor's face and Jip's in the hat; "Mo has voted" with
+Mo's) and cards say who suspects that player. After the last turn the same button says
 "Vote" and the face is the vote too: a tap votes for them (the hat drops on, "Your vote ✓"), a tap on another changes
-it. The final vote is a sheet over everything on every screen: "Time's up! Who's sketchy?" with a 30 s countdown that
-says whose suspicion counts if you don't vote, the finished drawing, and a card per player with their mini-map and a
-big Vote button; it shows who has voted, never for whom, and closes when the vote ends. The room's header is just the
-logo, the "?" (with the room code in it during play) and the sound. The round banner says where the round is: the
-category and the word (or the bamboozler's "???") on top, then "Noor's turn (1 of 2 each) · 15s", "Word 1 of 4" at the
-right and the countdown as a bar across. Rounds are words there, so "Round" never sits next to "Turn". On a laptop
-everything fits one screen (the banner in the middle of the header, cards in one column on the left, the canvas
-sized to fit with pens and colours right under it). On a phone: the banner full width under the header, the strip of
-faces, the canvas, and while someone else draws "Watch closely: who's drawing vaguely? Tap their face to suspect."
-under it; on your turn pens and colours are pinned to the bottom, the pen sizes as a small group on the left and the
-colours in one row beside them that scrolls and fades out at the right edge. On its side the room fits the screen
-without scrolling: the drawing (or, in the lobby, the join card) on the left at the full height, the header, banner,
-strip and tools beside it. Then the reveal on the cards themselves: the hat drops
+it. The final vote is a sheet over everything on every screen. Its top stays put while the rest scrolls: "Time's up!
+Who's sketchy?", the 30 s countdown, "3 of 6 voted", the secret again since the sheet covers the header (the category
+and the word, or "??? You're the bamboozler", the same size), "Who didn't know the word? Tap Vote on them. You can
+change it until time's up." and whose suspicion counts if you don't vote. Then the finished drawing, sized to leave
+room for the cards, and a small card for every other player: face, name, "voted ✓" beside it once they have (never
+for whom), their mini-map as a thumbnail and a quiet Vote button that turns sun with "Your vote ✓". Two columns on a
+phone, three when there's room, four on its side or on a laptop; the sheet closes when the vote ends. The room's
+header is just the logo, the "?" (with the room code in it during play) and the sound. The round banner says where
+the round is: the category and the word (or the bamboozler's "???") on top, then "Noor's turn (1 of 2 each) · 15s",
+"Word 1 of 4" at the right and the countdown as a bar across. Rounds are words there, so "Round" never sits next to
+"Turn". On a laptop everything fits one screen (the banner in the middle of the header, cards in one column on the
+left, the canvas sized to fit with pens and colours right under it). On a phone: the banner full width under the
+header, the strip of faces, the canvas, and while someone else draws "Watch closely: who's drawing vaguely? Tap their
+face to suspect." under it; on your turn pens and colours are pinned to the bottom, the pen sizes as a small group on
+the left and the colours in one row beside them that scrolls and fades out at the right edge. On its side the room
+fits the screen without scrolling: the drawing (or, in the lobby, the join card) on the left at the full height, the
+header, banner, strip and tools beside it. Then the reveal on the cards themselves: the hat drops
 onto the bamboozler, each card says who that player voted for (right or wrong), and once the round is scored each card
-pops its points and total. Under the canvas only the headline: who the bamboozler was and their guess (the guess's 20
-seconds start at the reveal), then the word and the host's "Next round". After the last round
-"The End": the podium with everyone's final score (on a phone when you tap "See the final scores", on the host
-screen ten seconds after the results), then what's next (the host plays again in the same room, everyone can create
+pops its points and total. The table talk ("Mo has voted") leaves the drawing as the vote ends. Under the canvas the
+headline: who the bamboozler was and what that means for the points ("1 of 3 spotted Sam (+1), so Sam slips through (+1)",
+"Everyone spotted Noor! +1 each", "Nobody spotted Sam! Sam +1"), and their guess (the guess's 20 seconds start at the
+reveal): "Your one guess at the word (Animals)." and "No worries, we're not too picky about spelling." (true to the
+matching under Current defaults). On a phone on its side the bamboozler's field comes first, beside the drawing. Then "End of
+round 1 of 3. The word was GIRAFFE", the guess ("Sam guessed it: "giraffe"! +1" or "Sam guessed "horse": not it, no
+point."), "This round" (everyone's points with why, popping in, and their totals) and under it the host's "Next round",
+or for everyone else who they're waiting for ("Waiting for Juno to start round 2…", or "Joris starts round 2 from the
+big screen…"). After the last round
+"The End": the podium with everyone's final score and a fun line each from the whole game ("spotted the bamboozler
+3×", "slipped through twice", "caught on every bluff"; on a device that saw every round, not after a rejoin) (on a phone when you tap "See the final scores", which every player
+has, on the host screen ten seconds after the results), then what's next (the host plays again in the same room, everyone can create
 or join another room), our one ask (if you enjoyed it, support Ukrainian citizens) and the footer with who made
 it.
 

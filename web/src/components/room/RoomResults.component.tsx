@@ -15,7 +15,7 @@ type RoomResultsProps = {
   big?: boolean;
 };
 
-/** After the guess: the word and whether the bamboozler got it, and the way on. The points are on the cards. */
+/** After the guess: the word, whether the bamboozler got it and what that's worth, and the way on. */
 export function RoomResults({
   players,
   bamboozlerId,
@@ -37,15 +37,15 @@ export function RoomResults({
     >
       <div className={big ? "min-w-60 flex-1" : ""}>
         <p className={big ? "text-2xl text-white/80" : "text-white/70"}>
-          Round {roundNumber} of {rounds}. The word was
+          End of round {roundNumber} of {rounds}. The word was
         </p>
         <p className={`font-display text-sun ${big ? "text-6xl" : "text-4xl"}`}>{word}</p>
         <p className={`mt-1 ${big ? "text-2xl" : ""}`}>
           {guess === null
             ? `${who} didn’t guess.`
             : guess.right
-              ? `${who} guessed it: “${guess.text}”!`
-              : `${who} guessed “${guess.text}”. Nope.`}
+              ? `${who} guessed it: “${guess.text}”! +1`
+              : `${who} guessed “${guess.text}”: not it, no point.`}
         </p>
       </div>
       {onNext && (

@@ -98,6 +98,53 @@ function roundLines(result: RoundResult, players: RoomPlayer[], youId: number | 
   return lines.sort((a, b) => b.points - a.points);
 }
 
+/**
+ * What the reveal means for the points: "1 of 3 spotted Sam (+1), so Sam slips through (+1)". Fewer than half of the
+ * artists is the server's rule (`score` in room/mod.rs), repeated here only to say it before the results come in.
+ */
+function spotted(caught: number, artists: number, bamboozler: { name: string; you: boolean }): string {
+  const { you } = bamboozler;
+  const name = you ? "you" : bamboozler.name;
+  if (caught === 0) return `Nobody spotted ${name}! ${you ? "You" : name} +1`;
+  if (caught >= artists) return `Everyone spotted ${name}! +1 each${you ? " for them" : ""}`;
+  if (caught * 2 < artists)
+    return `${caught} of ${artists} spotted ${name} (${caught === 1 ? "+1" : "+1 each"}), so ${name} ${you ? "slip" : "slips"} through (+1)`;
+  return `${caught} of ${artists} spotted ${name}: caught! +1 each${you ? " for them" : ""}`;
+}
+
+const times = (n: number) => (n === 1 ? "once" : n === 2 ? "twice" : `${n}×`);
+
+/**
+ * One fun line per player for the final scores, from every round of the game ("spotted the bamboozler 3×", "slipped
+ * through twice"); none when this device didn't see the whole game.
+ */
+function highlights(history: RoundResult[], playerIds: number[]): Record<number, string> {
+  const last = history.at(-1);
+  const whole = !!last?.gameOver && history.every((round, index) => round.number === index + 1);
+  if (!whole) return {};
+  const count = (playerId: number, reason: AwardReason) =>
+    history.flatMap((round) => round.awards).filter((award) => award.playerId === playerId && award.reason === reason)
+      .length;
+  return Object.fromEntries(
+    playerIds.map((playerId) => {
+      const [caught, slipped, guessed] = [
+        count(playerId, "caughtTheBamboozler"),
+        count(playerId, "stayedHidden"),
+        count(playerId, "guessedTheWord"),
+      ];
+      const bluffed = history.filter((round) => round.bamboozlerId === playerId).length;
+      const facts = [
+        caught > 0 && `spotted the bamboozler ${times(caught)}`,
+        slipped > 0 && `slipped through ${times(slipped)}`,
+        guessed > 0 && `guessed the word ${times(guessed)}`,
+      ].filter((fact) => fact !== false);
+      if (facts.length === 0)
+        facts.push(bluffed > 0 && slipped === 0 ? "caught on every bluff" : "never spotted the bamboozler");
+      return [playerId, facts.slice(0, 2).join(", ")];
+    }),
+  );
+}
+
 /** A player as the viewer reads them: "you" for yourself. */
 const nameOf = (id: number, players: RoomPlayer[], youId: number | null) =>
   id === youId ? "you" : (players.find((player) => player.id === id)?.name ?? "?");
@@ -251,6 +298,8 @@ export const RoomViewUtils = {
   rulesOf,
   settingsLine,
   roundLines,
+  spotted,
+  highlights,
   seed,
   players,
   active,

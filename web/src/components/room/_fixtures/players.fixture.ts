@@ -20,5 +20,8 @@ export const playersFixture: RoomPlayer[] = [
   seat(6, "Tess", 18),
 ];
 
+/** Two more seats, for a full room of eight (the server's `MAX_PLAYERS`). */
+export const morePlayersFixture: RoomPlayer[] = [seat(7, "Noor", 9), seat(8, "Sam", 27)];
+
 /** Four letters from the server's code alphabet (no vowels, so no accidental words). */
 export const roomCodeFixture = "BKZW";

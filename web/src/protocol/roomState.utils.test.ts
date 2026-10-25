@@ -298,6 +298,27 @@ describe("RoomStateUtils.apply", () => {
     expect(late.room?.phase.phase === "finished" && late.room.phase.strokes).toEqual([stroke]);
   });
 
+  it("keeps this game's round results for the final scores, and starts over with a new game", () => {
+    const result = (number: number) => ({
+      number,
+      rounds: 2,
+      gameOver: number === 2,
+      category: "Animals",
+      word: "giraffe",
+      bamboozlerId: 2,
+      guess: null,
+      guessCorrect: false,
+      votes: [],
+      awards: [],
+      scores: [],
+    });
+    const finish = (number: number): ServerMessage => ({ type: "roundFinished", result: result(number) });
+    const game = play([joined, finish(1), finish(2)]);
+    expect(game.history.map((round) => round.number)).toEqual([1, 2]);
+    expect(play([finish(2), finish(1)], game).history.map((round) => round.number)).toEqual([1]);
+    expect(play([joined], game).history).toEqual([]);
+  });
+
   it("remembers the last rejection", () => {
     const state = RoomStateUtils.apply(play([joined]), { type: "rejected", reason: "notHost" }, 7_000);
     expect(state.rejection).toEqual({ reason: "notHost", at: 7_000 });

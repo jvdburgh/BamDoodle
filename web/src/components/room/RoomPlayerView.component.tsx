@@ -11,15 +11,13 @@ import { CanvasBrushPicker } from "@/components/canvas/CanvasBrushPicker.compone
 import { CanvasPalette } from "@/components/canvas/CanvasPalette.component";
 import { CanvasTools } from "@/components/canvas/_utils/canvasTools.utils";
 import { RoomFeed } from "@/components/room/RoomFeed.component";
-import { RoomGuess } from "@/components/room/RoomGuess.component";
 import { RoomJoinCard } from "@/components/room/RoomJoinCard.component";
 import { RoomPenTag } from "@/components/room/RoomPenTag.component";
 import { RoomPlayerList, type RoomPlayerAction } from "@/components/room/RoomPlayerList.component";
 import { RoomPlayerStrip } from "@/components/room/RoomPlayerStrip.component";
 import { RoomPodium } from "@/components/room/RoomPodium.component";
 import { RoomProgress } from "@/components/room/RoomProgress.component";
-import { RoomResults } from "@/components/room/RoomResults.component";
-import { RoomReveal } from "@/components/room/RoomReveal.component";
+import { RoomRoundEnd } from "@/components/room/RoomRoundEnd.component";
 import { RoomSecretReveal } from "@/components/room/RoomSecretReveal.component";
 import { RoomShareButton } from "@/components/room/RoomShareButton.component";
 import { RoomSpotlightChip } from "@/components/room/RoomSpotlightChip.component";
@@ -34,7 +32,7 @@ import { RoomViewUtils } from "@/components/room/_utils/roomView.utils";
 import { StrokeWireUtils } from "@/components/room/_utils/strokeWire.utils";
 import { SoundToggle } from "@/components/sound/SoundToggle.component";
 import { SoundPlayer } from "@/components/sound/_utils/soundPlayer.utils";
-import { VotePrompt } from "@/components/vote/VotePrompt.component";
+import { VoteSheet } from "@/components/vote/VoteSheet.component";
 import type { ClientMessage } from "@/protocol/generated/ClientMessage";
 import { RoomStateUtils, type Countdown } from "@/protocol/roomState.utils";
 
@@ -96,7 +94,6 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
   const oneStroke = room.settings.mode === "oneStroke";
   const lineDone = yourTurn && oneStroke && turnKey !== null && lineDoneTurn === turnKey;
   const youAreBamboozler = round?.role === "bamboozler";
-  const bamboozler = players.find((player) => player.id === view.bamboozlerId);
   const spotlit = players.find((player) => player.id === spotlight.shown);
   const drawingPhase = phase === "lobby" || phase === "drawing";
   const suspicion = you ? RoomStateUtils.suspicionOf(state, you.id) : null;
@@ -308,6 +305,7 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
             <RoomPodium
               players={players}
               totals={RoomViewUtils.totals(room.players)}
+              history={state.history}
               youId={you?.id}
               onNewGame={isHost ? startRound : undefined}
               hostName={view.host?.name}
@@ -481,43 +479,21 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
             </aside>
 
             {/* The final call: a sheet over everything, with the drawing and a big Vote button per player. */}
-            {phase === "voting" && playing && round && (
-              <BrandSheet label="Who’s sketchy?">
-                {notice}
-                <VotePrompt
-                  players={players.filter((player) => round.turnOrder.includes(player.id))}
-                  voted={players.find((player) => player.id === yourVoteId)}
-                  suspected={players.find((player) => player.id === suspicion)}
-                  votedIds={round.voted}
-                  msLeft={ClockUtils.left(state.timers.voting, now)}
-                />
-                <div className="mx-auto w-full max-w-xl">
-                  <CanvasBoard
-                    drawing={drawing}
-                    order={order}
-                    activePlayerId={null}
-                    color="transparent"
-                    brushSize={0}
-                    spotlightId={spotlight.shown}
-                    label="The finished drawing."
-                  />
-                </div>
-                <RoomPlayerList
-                  players={players.filter((player) => round.turnOrder.includes(player.id))}
-                  drawing={drawing}
-                  youId={you?.id ?? null}
-                  activeId={null}
-                  nextId={null}
-                  spotlightId={spotlight.pinned}
-                  onSpotlight={spotlight.pin}
-                  onPeek={spotlight.setPeek}
-                  action={action}
-                  yourVoteId={yourVoteId}
-                  votedIds={round.voted}
-                  youWearTheHat={youAreBamboozler}
-                  layout="sheet"
-                />
-              </BrandSheet>
+            {phase === "voting" && you && round && action && (
+              <VoteSheet
+                players={players.filter((player) => round.turnOrder.includes(player.id))}
+                youId={you.id}
+                drawing={drawing}
+                order={order}
+                spotlight={spotlight}
+                action={action}
+                suspectedId={suspicion}
+                votedIds={round.voted}
+                msLeft={ClockUtils.left(state.timers.voting, now)}
+                category={round.category}
+                word={round.word}
+                notice={notice}
+              />
             )}
 
             {/*
@@ -548,62 +524,43 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
               </div>
             </section>
 
-            {/* After the drawing: the reveal with the guess, then the results, under a smaller canvas. */}
+            {/*
+              After the drawing: the reveal with the guess, then the results, under a smaller canvas. On a phone on its
+              side it heads the column beside the drawing, at the height there is, so both stay in view.
+            */}
             {(phase === "guessing" || phase === "finished") && (
               <div
                 ref={stageRef}
                 tabIndex={-1}
-                className={`${BrandStyles.panel} order-2 flex flex-col gap-4 outline-none @5xl/room:col-start-2 @5xl/room:row-start-2 @5xl/room:max-h-[24rem] @5xl/room:overflow-y-auto`}
+                className={`${BrandStyles.panel} order-2 flex flex-col gap-4 outline-none @5xl/room:col-start-2 @5xl/room:row-start-2 @5xl/room:max-h-[24rem] @5xl/room:overflow-y-auto sideways:@max-5xl/room:row-start-1 sideways:@max-5xl/room:max-h-[calc(100svh-6.5rem)] sideways:@max-5xl/room:gap-2 sideways:@max-5xl/room:overflow-y-auto sideways:@max-5xl/room:p-3`}
               >
-                {reveal && (
-                  <>
-                    <RoomReveal
-                      players={players}
-                      bamboozlerId={reveal.bamboozlerId}
-                      votes={RoomViewUtils.votes(reveal.votes)}
-                      youId={you?.id}
-                    />
-                    <RoomGuess
-                      bamboozlerName={bamboozler?.name ?? "The bamboozler"}
-                      yours={youAreBamboozler}
-                      msLeft={ClockUtils.left(state.timers.guess, now)}
-                      onGuess={(guess) => send({ type: "guessWord", guess })}
-                    />
-                  </>
-                )}
-                {result && (
-                  <RoomResults
-                    players={players}
-                    bamboozlerId={result.bamboozlerId}
-                    word={result.word}
-                    guess={result.guess === null ? null : { text: result.guess, right: result.guessCorrect }}
-                    roundNumber={result.number}
-                    rounds={result.rounds}
-                    youId={you?.id}
-                    onNext={
-                      result.gameOver
-                        ? () => setPodiumFor(resultKey)
-                        : isHost
-                          ? () => {
-                              spotlight.pin(null);
-                              startRound();
-                            }
-                          : undefined
-                    }
-                  />
-                )}
-                {result && !result.gameOver && !isHost && (
-                  <p className="text-center text-white/70">
-                    {room.hostScreen
-                      ? `${room.hostScreen} starts the next round from the big screen…`
-                      : `Waiting for ${view.host?.name ?? "the host"} to start the next round…`}
-                  </p>
-                )}
-                {result && isHost && onSettings && (
-                  <button type="button" onClick={onSettings} className={`${BrandStyles.ghostButton} self-center`}>
-                    Room settings
-                  </button>
-                )}
+                <RoomRoundEnd
+                  players={players}
+                  youId={you?.id ?? null}
+                  reveal={
+                    reveal && round
+                      ? {
+                          reveal,
+                          playerIds: round.turnOrder,
+                          category: round.category,
+                          guessMsLeft: ClockUtils.left(state.timers.guess, now),
+                        }
+                      : null
+                  }
+                  result={result}
+                  youAreBamboozler={youAreBamboozler}
+                  totals={RoomViewUtils.totals(room.players)}
+                  isHost={isHost}
+                  hostScreen={room.hostScreen}
+                  hostName={view.host?.name}
+                  onGuess={(guess) => send({ type: "guessWord", guess })}
+                  onNextRound={() => {
+                    spotlight.pin(null);
+                    startRound();
+                  }}
+                  onFinalScores={() => setPodiumFor(resultKey)}
+                  onSettings={onSettings}
+                />
               </div>
             )}
           </div>
@@ -613,7 +570,7 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
           {active
             ? turnTitle(active)
             : phase === "voting" && playing
-              ? "Time’s up! Tap the face of who you think didn’t know the word. You can change it until the vote ends."
+              ? "Time’s up! Who didn’t know the word? Tap Vote on them. You can change it until time’s up."
               : ""}
         </p>
       </div>
