@@ -62,6 +62,24 @@ export const PickAndClear: Story = {
   },
 };
 
+/** Only the chip you just picked traces its frame; the ones already picked stay put, also when you unpick one. */
+export const OnlyTheTouchedChipTraces: Story = {
+  play: async ({ canvas, userEvent }) => {
+    const animation = (name: string) =>
+      getComputedStyle(canvas.getByRole("checkbox", { name }).closest("label")!.querySelector(".sketchy")!)
+        .animationName;
+    await expect(animation("Eten")).toBe("none");
+
+    await userEvent.click(canvas.getByText("Dieren"));
+    await expect(canvas.getByRole("checkbox", { name: "Dieren" })).not.toBeChecked();
+    await expect(animation("Eten")).toBe("none");
+
+    await userEvent.click(canvas.getByText("Efteling"));
+    await expect(animation("Efteling")).toBe("trace");
+    await expect(animation("Eten")).toBe("none");
+  },
+};
+
 /** Under their word pack's name, each group with its own select-all or clear; no scroll box, the page scrolls. */
 export const Groups: Story = {
   play: async ({ args, canvas, userEvent }) => {

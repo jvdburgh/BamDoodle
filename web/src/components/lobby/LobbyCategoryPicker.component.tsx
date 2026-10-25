@@ -22,11 +22,12 @@ const link =
 export function LobbyCategoryPicker({ categories, selected, onChange }: LobbyCategoryPickerProps) {
   const hintId = useId();
   const legendId = useId();
-  const [touched, setTouched] = useState(false);
+  /** The chips the last tap picked: only they trace their frame, not the ones picked before. */
+  const [justPicked, setJustPicked] = useState<string[]>([]);
   const chosen = new Set(selected);
   const family = categories.filter((category) => !category.adult).map((category) => category.name);
   const pick = (names: string[]) => {
-    setTouched(true);
+    setJustPicked(names.filter((name) => !chosen.has(name)));
     onChange(names);
   };
   const toggle = (name: string) =>
@@ -88,7 +89,11 @@ export function LobbyCategoryPicker({ categories, selected, onChange }: LobbyCat
                     key={category.name}
                     className="group relative flex min-h-10 cursor-pointer items-center gap-1.5 rounded-full bg-night-deep py-1 pr-3.5 pl-2.5 text-base text-white/70 hover:text-white has-checked:text-white has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-white"
                   >
-                    <BrandSketchyFrame whenChecked traceIn={touched} className="text-sun/60" />
+                    <BrandSketchyFrame
+                      whenChecked
+                      traceIn={justPicked.includes(category.name)}
+                      className="text-sun/60"
+                    />
                     <input
                       type="checkbox"
                       checked={chosen.has(category.name)}
