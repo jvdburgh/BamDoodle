@@ -29,7 +29,8 @@ goal for now.
 
 - **Artists** see the category and the secret word.
 - **The bamboozler** sees only the category. They draw along, trying to look like they know the word.
-- **Right in your face** as each round starts, a card says it for a few seconds (or until a tap): "The secret word is
+- **Right in your face** as each round starts, a card says it for a few seconds (shorter for whoever draws first,
+  and it lets taps through since their clock is running): "The secret word is
   GIRAFFE. Everyone knows it, except the bamboozler", or "You're the bamboozler!" with the category. Clarity wins over
   a glance across the table. After that the header keeps it: the word, or a small "You're the bamboozler"; the
   bamboozler's own face wears the fedora (on their screen only), and the logo in the corner raises its collar and
@@ -52,8 +53,10 @@ can change the number of rounds between rounds; when that's already been reached
    you open a shared link (`bamdoodle.io/BKZW`; the address bar shows it once you're in). Creating starts with setting up the
    room: mode, turns per player or turn length, rounds per game, the language and the word categories to play with
    (Efteling, Places, Very British, …, and 18+ ones if they want), in two columns on a wide screen (the round and
-   the game on the left, the words on the right) and one on a phone: each setting a heading with one line on what
-   it does and a small sketch of what's picked. Then the host's nickname (after the setup, so it's clearly
+   the game on the left, the words on the right) and one on a phone: each setting a heading (Mode, Time per turn
+   or Lines per player, Rounds, Language, Categories with how many are picked) with one line on what it does where
+   that helps, and a small sketch of what's picked; Back and Next float in a bar at the bottom. The start page and
+   the setup both say who it's for: 3 to 8 players. Then the host's nickname (after the setup, so it's clearly
    theirs and not the room's), and only then is the room created, with those settings. The host can open the
    settings again between rounds; every change there reaches the room at once. Then everyone draws their avatar
    (an empty round pad with one pen and the colours that read on navy; Randomize for a doodle face to start from,

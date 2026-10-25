@@ -230,8 +230,14 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
         </header>
 
         {/* The word, or that you're the bamboozler, right in your face as the round starts. */}
-        {phase === "drawing" && playing && round && (
-          <RoomSecretReveal key={round.number} category={round.category} word={round.word} />
+        {phase === "drawing" && playing && round && round.turn === 1 && round.activePlayerId === round.turnOrder[0] && (
+          // Only during the round's first turn: a reload later in the round doesn't bring it back.
+          <RoomSecretReveal
+            key={round.number}
+            category={round.category}
+            word={round.word}
+            showMs={yourTurn ? 2_000 : 3_200}
+          />
         )}
 
         {infoOpen && (
@@ -255,6 +261,7 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
 
         {showPodium ? (
           <div ref={podiumRef} tabIndex={-1} className="outline-none">
+            <div className="flex justify-end @5xl/room:hidden">{infoButton}</div>
             <RoomPodium
               players={players}
               totals={RoomViewUtils.totals(room.players)}

@@ -34,3 +34,8 @@ Seen 2026-10-25 (phone room, b7b27e8; confirmed by building CSS / Playwright):
 - `<dialog>` cancel preventDefault doesn't hold: 2nd/3rd Esc (and Android back) closes it in Firefox and Chromium.
 - A modal sheet makes the page's `role="alert"` (reconnecting, rejections) inert and hidden behind the backdrop.
 - Focus-on-phase effects targeting elements hidden by a responsive `@max-*:hidden` class: focus() no-ops.
+
+Seen 2026-10-25 (BrandSheet/RoomSecretReveal, 208b217; confirmed by scratch story in Firefox+Chromium):
+- A `<dialog>` closed by unmounting (Close -> setState) instead of `dialog.close()`: focus lands on body, not the opener.
+  Scratch story note: userEvent `{Escape}` does not fire native dialog cancel; call `.close()` to test that path.
+- Round-start overlays with pointer-events-auto over the canvas while the server's first turn clock already runs.

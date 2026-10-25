@@ -28,7 +28,7 @@ const steps: HowToPlayCard[] = [
 const points: HowToPlayCard = {
   icon: "check",
   title: "Score points",
-  text: "+1 for catching the bamboozler. The bamboozler scores by slipping through or guessing the word.",
+  text: "+1 for catching the bamboozler. The bamboozler gets +1 if fewer than half catch them, and +1 for the word.",
 };
 
 const rounds: HowToPlayCard = {

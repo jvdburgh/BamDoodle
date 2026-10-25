@@ -12,7 +12,8 @@ type RoomSecretRevealProps = {
 /**
  * Right in your face as a round starts: "The secret word is GIRAFFE, everyone knows it except the bamboozler", or
  * "You're the bamboozler!" with the category. Worded so the word is clearly everyone's, not yours alone. It goes
- * away by itself (or with a tap); the word card in the header keeps it. Key it by the round.
+ * away by itself and lets taps through, since the first turn's clock is already running; the word card in the header
+ * keeps it (and is what screen readers get). Key it by the round.
  */
 export function RoomSecretReveal({ category, word, showMs = 3_200 }: RoomSecretRevealProps) {
   const [shown, setShown] = useState(true);
@@ -24,11 +25,10 @@ export function RoomSecretReveal({ category, word, showMs = 3_200 }: RoomSecretR
 
   if (!shown) return null;
   return (
-    <div className="pointer-events-none fixed inset-0 z-30 grid place-items-center p-4">
+    <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-30 grid place-items-center p-4">
       <div
-        role="status"
-        onClick={() => setShown(false)}
-        className="pointer-events-auto relative grid max-w-md animate-pop-in justify-items-center gap-2 rounded-[20px_28px_24px_18px] bg-night px-8 py-7 text-center shadow-[0_10px_40px_var(--color-night-deep)] motion-reduce:animate-none"
+        data-testid="secret-reveal"
+        className="relative grid max-w-md animate-pop-in justify-items-center gap-2 rounded-[20px_28px_24px_18px] bg-night px-8 py-7 text-center shadow-[0_10px_40px_var(--color-night-deep)] motion-reduce:animate-none"
       >
         <BrandSketchyFrame bold className="text-sun" />
         <span className="rounded-full bg-night-soft px-3 py-0.5 text-sm text-white/80">{category}</span>

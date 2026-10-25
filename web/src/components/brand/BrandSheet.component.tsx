@@ -46,7 +46,8 @@ export function BrandSheet({ label, onClose, children }: BrandSheetProps) {
         {dismissible && (
           <button
             type="button"
-            onClick={onClose}
+            // Through the dialog, so the browser hands the focus back to what opened it; `close` then tells the owner.
+            onClick={() => sheet.current?.close()}
             className={`${BrandStyles.ghostButton} sticky top-0 z-10 justify-self-end bg-night/90 px-4`}
           >
             Close

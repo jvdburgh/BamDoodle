@@ -15,7 +15,7 @@ type Story = StoryObj<typeof meta>;
 /** An artist: the word, big, and that everyone has it but one. */
 export const TheSecretWord: Story = {
   play: async ({ canvas }) => {
-    const card = canvas.getByRole("status");
+    const card = canvas.getByTestId("secret-reveal");
     await expect(card).toHaveTextContent("The secret word is");
     await waitFor(() => expect(canvas.getByText("giraffe")).toBeVisible());
     await expect(card).toHaveTextContent("Everyone knows it, except the bamboozler");
@@ -26,7 +26,7 @@ export const TheSecretWord: Story = {
 export const YoureTheBamboozler: Story = {
   args: { word: null },
   play: async ({ canvas }) => {
-    const card = canvas.getByRole("status");
+    const card = canvas.getByTestId("secret-reveal");
     await expect(card).toHaveTextContent("You’re the bamboozler!");
     await expect(card).toHaveTextContent("Animals");
     await expect(card).not.toHaveTextContent("giraffe");
@@ -37,6 +37,6 @@ export const YoureTheBamboozler: Story = {
 export const GoesAway: Story = {
   args: { showMs: 300 },
   play: async ({ canvas }) => {
-    await waitFor(() => expect(canvas.queryByRole("status")).toBeNull(), { timeout: 2_000 });
+    await waitFor(() => expect(canvas.queryByTestId("secret-reveal")).toBeNull(), { timeout: 2_000 });
   },
 };

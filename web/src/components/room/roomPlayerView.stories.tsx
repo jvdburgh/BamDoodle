@@ -81,7 +81,7 @@ export const Watching: Story = {
     await expect(wornHats(canvas.getByRole("list", { name: "Players" }))).toHaveLength(0);
     // In the header, and right in your face as the round starts.
     await expect(canvas.getAllByText("Giraffe")).toHaveLength(2);
-    await expect(canvas.getByRole("status", { name: "" })).toHaveTextContent("The secret word is");
+    await expect(canvas.getByTestId("secret-reveal")).toHaveTextContent("The secret word is");
     await expect(canvas.getByRole("img", { name: "Shared drawing. Pip is drawing." })).toBeVisible();
     // On a phone: everyone in the strip at the top, no tools while someone else draws.
     await expect(within(canvas.getByRole("list", { name: "Players" })).getAllByRole("listitem")).toHaveLength(6);
@@ -156,6 +156,8 @@ export const HowToPlay: Story = {
     await expect(sheet.getByRole("heading", { name: "Spot the bamboozler" })).toBeVisible();
     await userEvent.click(sheet.getByRole("button", { name: "Close" }));
     await expect(canvas.queryByRole("dialog", { name: "How to play" })).toBeNull();
+    // Back where you were: the keyboard isn't left on the page.
+    await expect(canvas.getByRole("button", { name: "How to play" })).toHaveFocus();
   },
 };
 
