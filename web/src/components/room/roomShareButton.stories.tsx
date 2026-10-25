@@ -12,6 +12,16 @@ function stub<K extends "share" | "clipboard">(key: K, value: Navigator[K] | und
   };
 }
 
+/** The old way of copying (a selection and `execCommand`), for a page without the Clipboard API. */
+function stubCopyCommand(copies: boolean) {
+  const copy = fn((_command: string) => copies);
+  Object.defineProperty(document, "execCommand", { value: copy, configurable: true });
+  return {
+    copy,
+    restore: () => delete (document as Partial<Document>).execCommand,
+  };
+}
+
 const writeText = fn(async (_text: string) => {});
 const share = fn(async (_data?: ShareData) => {});
 
@@ -31,42 +41,22 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** No share sheet (Firefox on a laptop): the address goes on the clipboard, and it says so. */
+/** The link is there to read out, and a tap puts it on the clipboard (`https://bamdoodle.io/BKZW`) and says so. */
 export const CopiesTheLink: Story = {
   beforeEach: () => {
     writeText.mockClear();
-    const unshare = stub("share", undefined);
-    const unclip = stub("clipboard", { writeText } as unknown as Clipboard);
-    return () => {
-      unshare();
-      unclip();
-    };
+    return stub("clipboard", { writeText } as unknown as Clipboard);
   },
   play: async ({ canvas, userEvent }) => {
-    await userEvent.click(canvas.getByRole("button", { name: "Share link" }));
-    await expect(writeText).toHaveBeenCalledWith(`${location.host}/BKZW`);
+    await expect(canvas.getByText(`${location.host}/BKZW`)).toBeVisible();
+    await userEvent.click(canvas.getByRole("button", { name: "Copy link" }));
+    await expect(writeText).toHaveBeenCalledWith(`${location.origin}/BKZW`);
     await expect(canvas.getByRole("status")).toHaveTextContent("Link copied");
   },
 };
 
-/** No clipboard either (a page that isn't https): the address to send, so nothing just fails silently. */
-export const NoClipboard: Story = {
-  beforeEach: () => {
-    const unshare = stub("share", undefined);
-    const unclip = stub("clipboard", undefined);
-    return () => {
-      unshare();
-      unclip();
-    };
-  },
-  play: async ({ canvas, userEvent }) => {
-    await userEvent.click(canvas.getByRole("button", { name: "Share link" }));
-    await expect(canvas.getByRole("status")).toHaveTextContent(`Send them ${location.host}/BKZW`);
-  },
-};
-
-/** On a phone: the phone's own share sheet with the room's address, nothing copied. */
-export const SharesFromThePhone: Story = {
+/** A phone with a share sheet copies too: the share sheet is never what a tap opens. */
+export const CopiesOnAPhoneToo: Story = {
   beforeEach: () => {
     share.mockClear();
     writeText.mockClear();
@@ -78,9 +68,43 @@ export const SharesFromThePhone: Story = {
     };
   },
   play: async ({ canvas, userEvent }) => {
-    await userEvent.click(canvas.getByRole("button", { name: "Share link" }));
-    await expect(share).toHaveBeenCalledWith(expect.objectContaining({ url: `${location.origin}/BKZW` }));
-    await expect(writeText).not.toHaveBeenCalled();
-    await expect(canvas.queryByText("Link copied")).toBeNull();
+    await userEvent.click(canvas.getByRole("button", { name: "Copy link" }));
+    await expect(writeText).toHaveBeenCalledWith(`${location.origin}/BKZW`);
+    await expect(share).not.toHaveBeenCalled();
+    await expect(canvas.getByRole("status")).toHaveTextContent("Link copied");
+  },
+};
+
+/** No Clipboard API (a page that isn't https, like the dev server on a phone): the link is selected and copied. */
+export const NoClipboard: Story = {
+  beforeEach: () => {
+    const unclip = stub("clipboard", undefined);
+    const command = stubCopyCommand(true);
+    return () => {
+      unclip();
+      command.restore();
+    };
+  },
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Copy link" }));
+    await expect(document.getSelection()?.toString()).toBe(`${location.host}/BKZW`);
+    await expect(canvas.getByRole("status")).toHaveTextContent("Link copied");
+  },
+};
+
+/** Nothing copies at all: the link stays selected, and it says how to copy it, so nothing just fails silently. */
+export const NothingCopies: Story = {
+  beforeEach: () => {
+    const unclip = stub("clipboard", undefined);
+    const command = stubCopyCommand(false);
+    return () => {
+      unclip();
+      command.restore();
+    };
+  },
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Copy link" }));
+    await expect(document.getSelection()?.toString()).toBe(`${location.host}/BKZW`);
+    await expect(canvas.getByRole("status")).toHaveTextContent("Couldn’t copy it: copy the link above by hand");
   },
 };

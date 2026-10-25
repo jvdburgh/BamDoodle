@@ -257,7 +257,7 @@ export const HostInTheLobby: Story = {
     await expect(canvas.queryByRole("status", { name: "Round progress" })).toBeNull();
     await expect(canvas.queryByRole("img", { name: /Shared drawing/ })).toBeNull();
     await expect(canvas.getByText("One stroke · 3 turns each · 5 rounds · English · 2 categories")).toBeVisible();
-    await expect(canvas.getByRole("button", { name: "Share link" })).toBeVisible();
+    await expect(canvas.getByRole("button", { name: "Copy link" })).toBeVisible();
     const primer = within(canvas.getByRole("list", { name: "How it goes" }));
     await expect(primer.getAllByRole("listitem")).toHaveLength(3);
     await expect(primer.getByText("Vote who was sketchy.")).toBeVisible();
@@ -285,7 +285,7 @@ export const GuestInTheLobby: Story = {
   play: async ({ canvas }) => {
     await expect(canvas.getByText("5 rounds · waiting for Juno to start")).toBeVisible();
     await expect(canvas.getByText("One stroke · 3 turns each · 5 rounds · English · 2 categories")).toBeVisible();
-    await expect(canvas.getByRole("button", { name: "Share link" })).toBeVisible();
+    await expect(canvas.getByRole("button", { name: "Copy link" })).toBeVisible();
     await expect(canvas.queryByRole("button", { name: "Start round" })).toBeNull();
     await expect(canvas.queryByRole("button", { name: "Room settings" })).toBeNull();
   },
