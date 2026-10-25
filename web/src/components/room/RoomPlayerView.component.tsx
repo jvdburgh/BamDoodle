@@ -36,7 +36,7 @@ import { SoundToggle } from "@/components/sound/SoundToggle.component";
 import { SoundPlayer } from "@/components/sound/_utils/soundPlayer.utils";
 import { VotePrompt } from "@/components/vote/VotePrompt.component";
 import type { ClientMessage } from "@/protocol/generated/ClientMessage";
-import { RoomStateUtils } from "@/protocol/roomState.utils";
+import { RoomStateUtils, type Countdown } from "@/protocol/roomState.utils";
 
 type RoomPlayerViewProps = {
   state: RoomViewState;
@@ -65,9 +65,11 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
   const [chosenColour, setChosenColour] = useState(CanvasTools.colours[0]?.value ?? "#000000");
   const [brushSize, setBrushSize] = useState(CanvasTools.brushes[1]?.size ?? 0.014);
   /** Strokes you began this turn: a timed turn takes no more than the server allows. */
-  const [turnStrokes, setTurnStrokes] = useState({ turn: 0, count: 0 });
+  const [turnStrokes, setTurnStrokes] = useState<{ turn: Countdown | null; count: number }>({ turn: null, count: 0 });
   /** The turn whose one line you drew: until the server passes it on, the pen is up. */
-  const [lineDoneTurn, setLineDoneTurn] = useState(0);
+  const [lineDoneTurn, setLineDoneTurn] = useState<Countdown | null>(null);
+  /** You've suspected someone in this room: the faces need no more explaining. */
+  const [suspectedOnce, setSuspectedOnce] = useState(false);
   /** The final round's results are shown first; the podium once you ask for it. */
   const [podiumFor, setPodiumFor] = useState<string | null>(null);
   const spotlight = useSpotlight();
@@ -85,13 +87,14 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
   const isHost = !!you && room.hostId === you.id;
   const playing = !!you && !!round?.turnOrder.includes(you.id);
   const yourTurn = playing && active?.id === you?.id;
-  const turnKey = RoomViewUtils.turnCount(round);
+  /** Each turn starts its own countdown, unlike the turn count, which comes round again in the next round. */
+  const turnKey = state.timers.turn;
   const strokesUsedUp =
     room.settings.mode === "timed" &&
     turnStrokes.turn === turnKey &&
     turnStrokes.count >= StrokeWireUtils.limits.strokesPerTimedTurn;
   const oneStroke = room.settings.mode === "oneStroke";
-  const lineDone = yourTurn && oneStroke && lineDoneTurn === turnKey;
+  const lineDone = yourTurn && oneStroke && turnKey !== null && lineDoneTurn === turnKey;
   const youAreBamboozler = round?.role === "bamboozler";
   const bamboozler = players.find((player) => player.id === view.bamboozlerId);
   const spotlit = players.find((player) => player.id === spotlight.shown);
@@ -138,6 +141,7 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
             onChoose: (id) => {
               send({ type: "suspect", suspectId: id });
               SoundPlayer.play("suspect");
+              if (id !== null) setSuspectedOnce(true);
             },
           }
         : phase === "voting" && round
@@ -220,7 +224,7 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
   const waiting = RoomViewUtils.waitingForPlayers(players);
   const watching = phase === "drawing" && playing && !yourTurn;
   /** Once, while the first word is drawn and you haven't suspected anyone yet: how the faces work. */
-  const coach = watching && round?.number === 1 && suspicion === null;
+  const coach = watching && round?.number === 1 && suspicion === null && !suspectedOnce;
 
   /** On your turn on a phone the tools are pinned to the bottom: the page leaves room for them. */
   const toolsPinned = phase === "drawing" && yourTurn;
@@ -242,7 +246,7 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
           />
           {phase === "lobby" && (
             <p className="col-start-2 row-start-1 text-center font-display text-lg leading-tight text-white/80 @5xl/room:text-xl sideways:@max-5xl/room:hidden">
-              {players.length} {players.length === 1 ? "player" : "players"} in the room
+              {othersHere.length + 1} {othersHere.length === 0 ? "player" : "players"} in the room
             </p>
           )}
           <div className="col-start-3 row-start-1 flex items-center gap-1.5 justify-self-end">

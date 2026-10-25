@@ -5,6 +5,7 @@ type RoomShareButtonProps = {
   roomCode: string;
 };
 
+const COPIED = "Link copied";
 const COPIED_MS = 2_500;
 
 /**
@@ -12,13 +13,13 @@ const COPIED_MS = 2_500;
  * on the clipboard, with "Link copied" to say so.
  */
 export function RoomShareButton({ roomCode }: RoomShareButtonProps) {
-  const [copied, setCopied] = useState(false);
+  const [status, setStatus] = useState("");
 
   useEffect(() => {
-    if (!copied) return;
-    const timer = window.setTimeout(() => setCopied(false), COPIED_MS);
+    if (status !== COPIED) return;
+    const timer = window.setTimeout(() => setStatus(""), COPIED_MS);
     return () => window.clearTimeout(timer);
-  }, [copied]);
+  }, [status]);
 
   const share = async () => {
     const path = `/${roomCode}`;
@@ -35,8 +36,13 @@ export function RoomShareButton({ roomCode }: RoomShareButtonProps) {
         if (error instanceof DOMException && error.name === "AbortError") return;
       }
     }
-    await navigator.clipboard.writeText(location.host + path);
-    setCopied(true);
+    try {
+      await navigator.clipboard.writeText(location.host + path);
+      setStatus(COPIED);
+    } catch {
+      // No clipboard here (a page that isn't https, or permission denied): the address to type, then.
+      setStatus(`Send them ${location.host + path}`);
+    }
   };
 
   return (
@@ -46,7 +52,7 @@ export function RoomShareButton({ roomCode }: RoomShareButtonProps) {
         Share link
       </button>
       <p role="status" className="text-sm text-sun">
-        {copied ? "Link copied" : ""}
+        {status}
       </p>
     </div>
   );

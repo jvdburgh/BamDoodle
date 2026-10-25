@@ -1,9 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { expect, fn, waitFor, within } from "storybook/test";
 import { RoomPlayerView } from "./RoomPlayerView.component";
 import { resultFixture, roomStateFixture, roundFixture, strokeViewsFixture } from "./_fixtures/roomState.fixture";
 import type { ClientMessage } from "@/protocol/generated/ClientMessage";
+import type { ServerMessage } from "@/protocol/generated/ServerMessage";
+import { RoomStateUtils } from "@/protocol/roomState.utils";
 import type { PhaseView } from "@/protocol/generated/PhaseView";
 import type { RejectReason } from "@/protocol/generated/RejectReason";
 
@@ -25,6 +27,9 @@ type Props = {
   onSettings?: () => void;
 };
 
+const SERVER_SAYS = "story:server-says";
+const serverSays = (message: ServerMessage) => window.dispatchEvent(new CustomEvent(SERVER_SAYS, { detail: message }));
+
 /** Renders the view from a server-state fixture made at render time, so the countdowns start when the story does. */
 function PlayerFromState({
   phase,
@@ -39,7 +44,7 @@ function PlayerFromState({
   send,
   onSettings,
 }: Props) {
-  const [state] = useState(() => {
+  const [state, setState] = useState(() => {
     const base = roomStateFixture({
       phase,
       you,
@@ -54,6 +59,16 @@ function PlayerFromState({
     const fixture = { ...base, room, pendingVote: pendingVote ?? null };
     return rejection ? { ...fixture, rejection: { reason: rejection, at: Date.now() } } : fixture;
   });
+  // A play function plays the server: `serverSays(message)` applies a message the way the connection would.
+  useEffect(() => {
+    const apply = (event: Event) =>
+      setState(
+        (current) =>
+          RoomStateUtils.apply(current, (event as CustomEvent<ServerMessage>).detail, Date.now()) as typeof current,
+      );
+    window.addEventListener(SERVER_SAYS, apply);
+    return () => window.removeEventListener(SERVER_SAYS, apply);
+  }, []);
   return (
     <div style={{ width }}>
       <RoomPlayerView state={state} send={send} onSettings={onSettings} />
@@ -107,6 +122,8 @@ export const Watching: Story = {
     await userEvent.click(canvas.getByRole("button", { name: /^Mo\b/ }));
     await userEvent.click(canvas.getByRole("button", { name: "Suspect" }));
     await expect(args.send).toHaveBeenCalledWith({ type: "suspect", suspectId: 3 });
+    // Once you've suspected someone the coach line is done, even before the server confirms or if you take it back.
+    await expect(canvas.queryByText("Tap a face to suspect them. Everyone sees it.")).toBeNull();
   },
 };
 
@@ -156,6 +173,34 @@ export const YourTurn: Story = {
     await expect(new Set(swatchTops).size).toBe(1);
     const pens = canvas.getByRole("radio", { name: "Bold" }).getBoundingClientRect();
     await expect(pens.right).toBeLessThan(canvas.getByRole("radio", { name: "Black" }).getBoundingClientRect().left);
+  },
+};
+
+/** The next round can give you the same place in the order: your line from before doesn't keep the pen up. */
+export const YourTurnInTheNextRound: Story = {
+  args: { phase: { phase: "drawing", round: roundFixture({ activePlayerId: 2, strokes: [] }) } },
+  play: async ({ canvas }) => {
+    const board = () => canvas.getByRole("img", { name: "Shared drawing. Your turn to draw." });
+    const box = board().getBoundingClientRect();
+    const at = (x: number): PointerEventInit => ({
+      clientX: box.left + x * box.width,
+      clientY: box.top + box.height / 2,
+      pointerId: 1,
+      pointerType: "mouse",
+      pressure: 0.5,
+      button: 0,
+      buttons: 1,
+      bubbles: true,
+    });
+    board().dispatchEvent(new PointerEvent("pointerdown", at(0.2)));
+    board().dispatchEvent(new PointerEvent("pointermove", at(0.5)));
+    board().dispatchEvent(new PointerEvent("pointerup", at(0.5)));
+    await waitFor(() => expect(canvas.getByText("Line done, passing on…")).toBeVisible());
+
+    serverSays({ type: "roundStarted", round: roundFixture({ number: 2, activePlayerId: 2, strokes: [] }) });
+    await waitFor(() => expect(canvas.getByRole("status", { name: "Round progress" })).toHaveTextContent("Word 2"));
+    await expect(canvas.getByRole("status", { name: "Round progress" })).toHaveTextContent("Your turn: one line!");
+    await expect(board()).toHaveClass("cursor-crosshair");
   },
 };
 

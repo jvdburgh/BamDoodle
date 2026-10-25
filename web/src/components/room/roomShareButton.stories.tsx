@@ -49,6 +49,22 @@ export const CopiesTheLink: Story = {
   },
 };
 
+/** No clipboard either (a page that isn't https): the address to send, so nothing just fails silently. */
+export const NoClipboard: Story = {
+  beforeEach: () => {
+    const unshare = stub("share", undefined);
+    const unclip = stub("clipboard", undefined);
+    return () => {
+      unshare();
+      unclip();
+    };
+  },
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Share link" }));
+    await expect(canvas.getByRole("status")).toHaveTextContent(`Send them ${location.host}/BKZW`);
+  },
+};
+
 /** On a phone: the phone's own share sheet with the room's address, nothing copied. */
 export const SharesFromThePhone: Story = {
   beforeEach: () => {
