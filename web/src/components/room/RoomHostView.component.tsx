@@ -115,7 +115,7 @@ export function RoomHostView({ state, revealCode = false, home = "/", controls }
   return (
     <div className="@container/room relative flex min-h-svh flex-col gap-3 px-4 py-3 lg:h-svh lg:gap-4 lg:px-8 lg:py-5">
       <header className="grid grid-cols-[1fr_auto] items-center gap-4 lg:grid-cols-[1fr_auto_1fr]">
-        <BrandLogo named href={home} className="size-12 lg:size-16" nameClassName="text-lg lg:text-2xl" />
+        <BrandLogo named href={home} confirmLeave className="size-12 lg:size-16" nameClassName="text-lg lg:text-2xl" />
         <div className="col-span-2 row-start-2 lg:col-span-1 lg:row-start-auto">
           {view.category !== null && (
             <p className="flex flex-col items-center gap-2 text-center leading-none">

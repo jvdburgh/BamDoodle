@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
-import { expect, fn, waitFor } from "storybook/test";
+import { expect, fn, waitFor, within } from "storybook/test";
 import { RoomHostView } from "./RoomHostView.component";
 import { AvatarUtils } from "@/components/avatar/_utils/avatar.utils";
 import { hostRound, resultFixture, roomStateFixture, strokeViewsFixture } from "./_fixtures/roomState.fixture";
@@ -74,6 +74,26 @@ export const NeverShowsTheWord: Story = {
     await expect(canvas.getByRole("img", { name: /^QR code to join: .*\/BKZW$/ })).toBeVisible();
     await settle();
     await expect(wornHats(canvas.getByRole("list", { name: "Players" }))).toHaveLength(0);
+  },
+};
+
+/** The big screen's logo asks before it leaves the room too; Stay keeps the room on screen. */
+export const LogoAsksBeforeLeaving: Story = {
+  args: { hosting: true, onStart: fn(), onSettings: fn() },
+  beforeEach: () => {
+    // A logo that didn't ask would take the test run with it.
+    const stay = (event: Event) => {
+      if (event.target instanceof Element && event.target.closest("a")) event.preventDefault();
+    };
+    document.addEventListener("click", stay, true);
+    return () => document.removeEventListener("click", stay, true);
+  },
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole("link", { name: /^BamDoodle/ }));
+    const question = canvas.getByRole("dialog", { name: "Leave the game?" });
+    await userEvent.click(within(question).getByRole("button", { name: "Stay" }));
+    await waitFor(() => expect(canvas.queryByRole("dialog", { name: "Leave the game?" })).toBeNull());
+    await expect(canvas.getByRole("img", { name: "Shared drawing. Pip is drawing." })).toBeVisible();
   },
 };
 

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { RouteUtils } from "@/app/route.utils";
 import type { AvatarStroke } from "@/components/avatar/_types/avatar.types";
+import { LEAVING_EVENT } from "@/components/brand/BrandLogo.component";
 import { AvatarUtils } from "@/components/avatar/_utils/avatar.utils";
 import { LobbySetup } from "@/components/lobby/LobbySetup.component";
 import { LobbyStart, type LobbyEntry } from "@/components/lobby/LobbyStart.component";
@@ -227,12 +228,18 @@ function GameRoom({ state, connection, createdHere }: GameRoomProps) {
     if (window.location.pathname !== path) window.history.replaceState(null, "", path);
   }, [room.code]);
 
-  // Mid-round, leaving (the logo, reload, closing the tab) asks first, with the browser's own prompt.
+  // Mid-round, reloading or closing the tab asks first, with the browser's own prompt. The logo asks in the room
+  // itself; after Leave there, the browser doesn't ask again.
   useEffect(() => {
     if (!playing) return;
     const confirmLeave = (event: BeforeUnloadEvent) => event.preventDefault();
+    const leaving = () => window.removeEventListener("beforeunload", confirmLeave);
     window.addEventListener("beforeunload", confirmLeave);
-    return () => window.removeEventListener("beforeunload", confirmLeave);
+    window.addEventListener(LEAVING_EVENT, leaving);
+    return () => {
+      window.removeEventListener("beforeunload", confirmLeave);
+      window.removeEventListener(LEAVING_EVENT, leaving);
+    };
   }, [playing]);
 
   if (settingUp && isHost && betweenRounds) {

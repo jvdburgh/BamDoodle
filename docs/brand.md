@@ -6,7 +6,9 @@
 - Tagline: **Draw • Guess • Deceive** (the dots in berry pink).
 - The top left of every screen is the logo with the name and tagline beside it (`BrandLogo named`), and the whole
   block is one link to the start page. In the room, below the laptop layout, the logo stands alone: the word, the
-  players and the room code need the space.
+  players and the room code need the space. In a room (a phone, a laptop and the host screen) the logo asks "Are you
+  sure you want to leave the game?" first, in a small card in the middle of the screen (`BrandLogo confirmLeave`, a
+  `BrandSheet question`), with Stay (the sun button, focused) and Leave.
 - Second line, for the game itself (round start, reveal, loading): **Who's sketchy?** The logo is a sketchy
   character, the game is about finding the sketchy one, and everything is sketched. Use it as a playful question,
   not as the main tagline.

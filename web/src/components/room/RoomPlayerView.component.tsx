@@ -236,6 +236,7 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
             key={view.roundNumber}
             named
             href={home}
+            confirmLeave
             sly={youAreBamboozler && !result}
             className="size-10"
             nameClassName="sr-only text-sm @5xl/room:not-sr-only"

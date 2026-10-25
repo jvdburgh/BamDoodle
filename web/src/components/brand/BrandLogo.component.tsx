@@ -1,5 +1,7 @@
 import { useEffect, useId, useState } from "react";
+import { BrandSheet } from "@/components/brand/BrandSheet.component";
 import { BrandTagline } from "@/components/brand/BrandTagline.component";
+import { BrandStyles } from "@/components/brand/_utils/brandStyles.utils";
 
 type BrandLogoProps = {
   /** The logo's size. */
@@ -20,7 +22,12 @@ type BrandLogoProps = {
   sly?: boolean;
   /** The start page: hovering turns the hat's colours one round, leaving turns them back (not with reduced motion). */
   swirlOnHover?: boolean;
+  /** In a room, the link asks "Are you sure you want to leave the game?" first, with Stay and Leave. */
+  confirmLeave?: boolean;
 };
+
+/** Fired on `window` when you confirm leaving the room, right before the page goes. */
+export const LEAVING_EVENT = "bamdoodle:leaving";
 
 let logoMarkup: Promise<string> | undefined;
 
@@ -49,8 +56,10 @@ export function BrandLogo({
   swirlOnHover = false,
   named = false,
   nameClassName = "text-sm",
+  confirmLeave = false,
 }: BrandLogoProps) {
   const idPrefix = useId();
+  const [askingToLeave, setAskingToLeave] = useState(false);
   const markup = useLogoMarkup(sly || swirlOnHover, idPrefix);
   // Beside the written name the picture adds nothing for a screen reader.
   const alt = named ? "" : "BamDoodle";
@@ -102,12 +111,40 @@ export function BrandLogo({
   );
   if (!href) return mark;
   return (
-    <a
-      href={href}
-      title="Back to the start page"
-      className={`flex w-fit shrink-0 items-center gap-2.5 rounded-xl focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-white`}
-    >
-      {content}
-    </a>
+    <>
+      <a
+        href={href}
+        title="Back to the start page"
+        aria-haspopup={confirmLeave ? "dialog" : undefined}
+        onClick={(event) => {
+          // A new tab (a modifier, the middle button) leaves nothing.
+          if (!confirmLeave || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+            return;
+          event.preventDefault();
+          setAskingToLeave(true);
+        }}
+        className={`flex w-fit shrink-0 items-center gap-2.5 rounded-xl focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-white`}
+      >
+        {content}
+      </a>
+      {askingToLeave && (
+        <BrandSheet label="Leave the game?" onClose={() => setAskingToLeave(false)} question>
+          <p className="text-center font-display text-2xl">Are you sure you want to leave the game?</p>
+          <form method="dialog" className="flex flex-wrap justify-center gap-3">
+            <button type="submit" className={BrandStyles.primaryButton}>
+              Stay
+            </button>
+            <a
+              href={href}
+              // You said so already: the room drops its own "leave this page?" (`beforeunload`) before the page goes.
+              onClick={() => window.dispatchEvent(new Event(LEAVING_EVENT))}
+              className={BrandStyles.quietButton}
+            >
+              Leave
+            </a>
+          </form>
+        </BrandSheet>
+      )}
+    </>
   );
 }

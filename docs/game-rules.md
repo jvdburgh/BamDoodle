@@ -163,7 +163,10 @@ change it until time's up." and whose suspicion counts if you don't vote. Then t
 room for the cards, and a small card for every other player: face, name, "voted ✓" beside it once they have (never
 for whom), their mini-map as a thumbnail and a quiet Vote button that turns sun with "Your vote ✓". Two columns on a
 phone, three when there's room, four on its side or on a laptop; the sheet closes when the vote ends. The room's
-header is just the logo, the "?" (with the room code in it during play) and the sound. The round banner says where
+header is just the logo, the "?" (with the room code in it during play) and the sound. Tapping the logo in a room
+(lobby or game, phone, laptop or host screen) asks "Are you sure you want to leave the game?" with Stay and Leave
+before it goes to the start page; mid-round, reloading or closing the tab still gets the browser's own prompt, but
+not after Leave. The round banner says where
 the round is: the category and the word (or the bamboozler's "???") on top, then "Noor's turn (1 of 2 each) · 15s",
 "Word 1 of 4" at the right and the countdown as a bar across. Rounds are words there, so "Round" never sits next to
 "Turn". On a laptop everything fits one screen (the banner in the middle of the header, cards in one column on the

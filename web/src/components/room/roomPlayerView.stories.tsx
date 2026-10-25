@@ -127,6 +127,26 @@ export const Watching: Story = {
   },
 };
 
+/** Mid-game the logo doesn't just leave: it asks first, and Stay keeps you in the room. */
+export const LogoAsksBeforeLeaving: Story = {
+  beforeEach: () => {
+    // A logo that didn't ask would take the test run with it.
+    const stay = (event: Event) => {
+      if (event.target instanceof Element && event.target.closest("a")) event.preventDefault();
+    };
+    document.addEventListener("click", stay, true);
+    return () => document.removeEventListener("click", stay, true);
+  },
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole("link", { name: /^BamDoodle/ }));
+    const question = canvas.getByRole("dialog", { name: "Leave the game?" });
+    await expect(question).toHaveTextContent("Are you sure you want to leave the game?");
+    await userEvent.click(within(question).getByRole("button", { name: "Stay" }));
+    await waitFor(() => expect(canvas.queryByRole("dialog", { name: "Leave the game?" })).toBeNull());
+    await expect(canvas.getByRole("img", { name: "Shared drawing. Pip is drawing." })).toBeVisible();
+  },
+};
+
 /** One stroke each: the banner says it's one line, and after you lift the pen that the turn is passing on. */
 export const YourTurn: Story = {
   args: { phase: { phase: "drawing", round: roundFixture({ activePlayerId: 2, strokes: [] }) } },
