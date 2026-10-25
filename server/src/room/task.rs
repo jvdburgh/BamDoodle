@@ -11,7 +11,7 @@ use tokio::{
     time::{Instant, sleep_until},
 };
 
-use super::{Audience, Outbox, Room, Viewer};
+use super::{Audience, HostClaim, Outbox, Room, Viewer};
 use crate::{
     limits,
     protocol::{ClientMessage, PlayerId, RejectReason, ServerMessage},
@@ -29,7 +29,9 @@ pub enum RoomCommand {
         session_token: Option<String>,
         reply: oneshot::Sender<Result<Entered, RejectReason>>,
     },
+    /// A screen: just watching, or hosting with `host` (the room's creator, or the host screen back after a reload).
     Watch {
+        host: Option<HostClaim>,
         reply: oneshot::Sender<Result<Entered, RejectReason>>,
     },
     Message {
@@ -43,6 +45,8 @@ pub enum RoomCommand {
 
 struct Connection {
     viewer: Viewer,
+    /// The host screen: it may change settings and start rounds, and keeps the room open like a player.
+    hosting: bool,
     sender: mpsc::Sender<ServerMessage>,
 }
 
@@ -88,17 +92,26 @@ async fn run(mut room: Room, mut commands: mpsc::Receiver<RoomCommand>, registry
             }
             _ => {}
         }
-        let mut connect =
-            |viewer: Viewer, connections: &mut HashMap<ConnectionId, Connection>, first: ServerMessage| {
-                let (sender, receiver) = mpsc::channel(limits::OUTBOX_CAPACITY);
-                let id = next_connection;
-                next_connection += 1;
-                sender
-                    .try_send(first)
-                    .expect("a fresh channel has room for one message");
-                connections.insert(id, Connection { viewer, sender });
-                (id, receiver)
-            };
+        let mut connect = |viewer: Viewer,
+                           hosting: bool,
+                           connections: &mut HashMap<ConnectionId, Connection>,
+                           first: ServerMessage| {
+            let (sender, receiver) = mpsc::channel(limits::OUTBOX_CAPACITY);
+            let id = next_connection;
+            next_connection += 1;
+            sender
+                .try_send(first)
+                .expect("a fresh channel has room for one message");
+            connections.insert(
+                id,
+                Connection {
+                    viewer,
+                    hosting,
+                    sender,
+                },
+            );
+            (id, receiver)
+        };
 
         let outbox = match command {
             Some(RoomCommand::Join {
@@ -115,7 +128,7 @@ async fn run(mut room: Room, mut commands: mpsc::Receiver<RoomCommand>, registry
                         room: Box::new(room.snapshot(viewer, now.into_std())),
                         server_version: crate::VERSION.into(),
                     };
-                    let entered = connect(viewer, &mut connections, joined);
+                    let entered = connect(viewer, false, &mut connections, joined);
                     let id = entered.0;
                     seated_anyone = true;
                     if reply.send(Ok(entered)).is_ok() {
@@ -132,27 +145,43 @@ async fn run(mut room: Room, mut commands: mpsc::Receiver<RoomCommand>, registry
                     Vec::new()
                 }
             },
-            Some(RoomCommand::Watch { reply }) => {
+            Some(RoomCommand::Watch { host, reply }) => {
                 let screens = connections
                     .values()
                     .filter(|connection| connection.viewer == Viewer::Screen)
                     .count();
                 if screens >= limits::MAX_SCREENS {
                     let _ = reply.send(Err(RejectReason::RoomFull));
+                    Vec::new()
                 } else {
+                    let (session_token, outbox) = match host {
+                        Some(claim) => room.attach_host_screen(claim, now.into_std()),
+                        None => (None, Vec::new()),
+                    };
+                    let hosting = session_token.is_some();
+                    if hosting {
+                        // The host screen is back on a new connection: the old one is no longer the host.
+                        connections.retain(|_, connection| !connection.hosting);
+                    }
                     let joined = ServerMessage::Joined {
                         you: None,
-                        session_token: None,
+                        session_token,
                         room: Box::new(room.snapshot(Viewer::Screen, now.into_std())),
                         server_version: crate::VERSION.into(),
                     };
-                    let entered = connect(Viewer::Screen, &mut connections, joined);
+                    let entered = connect(Viewer::Screen, hosting, &mut connections, joined);
                     let id = entered.0;
                     if reply.send(Ok(entered)).is_err() {
                         connections.remove(&id);
+                        let mut outbox = outbox;
+                        if hosting {
+                            outbox.extend(room.detach_host_screen(now.into_std()));
+                        }
+                        outbox
+                    } else {
+                        outbox
                     }
                 }
-                Vec::new()
             }
             Some(RoomCommand::Message { connection, message }) => match connections.get(&connection) {
                 Some(Connection {
@@ -161,12 +190,17 @@ async fn run(mut room: Room, mut commands: mpsc::Receiver<RoomCommand>, registry
                 }) => room.handle(*player_id, message, now.into_std()),
                 Some(Connection {
                     viewer: Viewer::Screen,
+                    hosting,
                     sender,
                 }) => {
                     if matches!(message, ClientMessage::Ping) {
                         let _ = sender.try_send(ServerMessage::Pong);
+                        Vec::new()
+                    } else if *hosting {
+                        room.handle_host_screen(message, now.into_std())
+                    } else {
+                        Vec::new()
                     }
-                    Vec::new()
                 }
                 None => Vec::new(),
             },
@@ -175,6 +209,7 @@ async fn run(mut room: Room, mut commands: mpsc::Receiver<RoomCommand>, registry
                     viewer: Viewer::Player(player_id),
                     ..
                 }) => room.disconnect(player_id, now.into_std()),
+                Some(Connection { hosting: true, .. }) => room.detach_host_screen(now.into_std()),
                 _ => Vec::new(),
             },
             None => room.tick(now.into_std()),
@@ -196,7 +231,7 @@ async fn run(mut room: Room, mut commands: mpsc::Receiver<RoomCommand>, registry
 
         let players_here = connections
             .values()
-            .any(|connection| connection.viewer != Viewer::Screen);
+            .any(|connection| connection.viewer != Viewer::Screen || connection.hosting);
         if players_here {
             empty_since = None;
         } else {
@@ -300,8 +335,12 @@ mod tests {
     }
 
     async fn watch(room: &RoomHandle) -> Result<Entered, RejectReason> {
+        screen(room, None).await
+    }
+
+    async fn screen(room: &RoomHandle, host: Option<HostClaim>) -> Result<Entered, RejectReason> {
         let (reply, answer) = oneshot::channel();
-        room.commands.send(RoomCommand::Watch { reply }).await.unwrap();
+        room.commands.send(RoomCommand::Watch { host, reply }).await.unwrap();
         answer.await.unwrap()
     }
 
@@ -447,6 +486,7 @@ mod tests {
                 1,
                 Connection {
                     viewer: Viewer::Player(sam.player_id),
+                    hosting: false,
                     sender: slow,
                 },
             ),
@@ -454,6 +494,7 @@ mod tests {
                 2,
                 Connection {
                     viewer: Viewer::Player(noor.player_id),
+                    hosting: false,
                     sender: fast,
                 },
             ),

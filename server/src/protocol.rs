@@ -111,10 +111,18 @@ pub enum ClientMessage {
         name: String,
         session_token: Option<String>,
     },
-    /// First message on a new connection: follow a room as a host screen (TV, beamer) that never sees the word.
+    /// First message on a new connection: start a room hosted by this screen (a TV, a laptop everyone can see). It
+    /// runs the game (settings, starting rounds) but doesn't play and never sees the word.
+    #[serde(rename_all = "camelCase")]
+    HostRoom {
+        settings: Option<RoomSettings>,
+    },
+    /// First message on a new connection: follow a room as a screen that never sees the word. With the session token
+    /// its `hostRoom` got, a host screen that reloads takes the host role back.
     #[serde(rename_all = "camelCase")]
     WatchRoom {
         code: String,
+        session_token: Option<String>,
     },
     /// Host only, between rounds.
     #[serde(rename_all = "camelCase")]
@@ -312,7 +320,10 @@ pub struct PlayerSummary {
 #[ts(export)]
 pub struct RoomSnapshot {
     pub code: String,
+    /// The player who hosts; none while a host screen does.
     pub host_id: Option<PlayerId>,
+    /// A screen hosts this room (`hostRoom`): no player starts rounds or changes settings while it's there.
+    pub host_screen: bool,
     pub players: Vec<PlayerSummary>,
     pub settings: RoomSettings,
     /// Every category the host can pick from, in every language.
@@ -559,6 +570,17 @@ mod tests {
             serde_json::to_value(ServerMessage::PlayerReady { player_id: 2 }).unwrap(),
             serde_json::json!({ "type": "playerReady", "playerId": 2 })
         );
+    }
+
+    #[test]
+    fn a_host_screen_says_so_and_comes_back_with_its_token() {
+        let host: ClientMessage =
+            serde_json::from_value(serde_json::json!({ "type": "hostRoom", "settings": null })).unwrap();
+        assert!(matches!(host, ClientMessage::HostRoom { settings: None }));
+        let back: ClientMessage =
+            serde_json::from_value(serde_json::json!({ "type": "watchRoom", "code": "BKTZ", "sessionToken": "t" }))
+                .unwrap();
+        assert!(matches!(back, ClientMessage::WatchRoom { session_token: Some(token), .. } if token == "t"));
     }
 
     #[test]

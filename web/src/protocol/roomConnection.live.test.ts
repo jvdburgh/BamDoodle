@@ -110,6 +110,23 @@ describe.skipIf(!url)("RoomConnection against the real server", () => {
     expect(finished.room!.players.filter((player) => player.score === 1)).toHaveLength(2);
   });
 
+  it("lets a screen host a room it doesn't play in", async () => {
+    const tv = open({ kind: "host" });
+    const { room, hosting } = await until(tv, (state) => state.status === "joined");
+    expect(hosting).toBe(true);
+    expect(room?.hostScreen).toBe(true);
+    const code = room!.code;
+
+    const players = ["Sam", "Noor", "Jip"].map((name) => open({ kind: "join", code, name }));
+    await until(tv, (state) => state.room?.players.length === 3);
+    expect(players[0]!.getState().room?.hostId).toBeNull();
+
+    tv.send({ type: "startRound" });
+    const screenRound = RoomStateUtils.round(await until(tv, (state) => RoomStateUtils.round(state) !== null));
+    expect(screenRound?.word).toBeNull();
+    expect(screenRound?.turnOrder).toHaveLength(3);
+  });
+
   it("fails cleanly for a room that doesn't exist", async () => {
     const lost = open({ kind: "join", code: "ZZZZ", name: "Sam" });
     const state = await until(lost, (current) => current.status === "failed");

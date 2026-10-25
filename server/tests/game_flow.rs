@@ -117,7 +117,12 @@ async fn a_whole_round_with_three_players_and_a_host_screen() {
     }
 
     let mut screen = Client::connect(&address).await;
-    screen.send(&ClientMessage::WatchRoom { code: code.clone() }).await;
+    screen
+        .send(&ClientMessage::WatchRoom {
+            code: code.clone(),
+            session_token: None,
+        })
+        .await;
     let (you, token, _, _) = screen.joined().await;
     assert_eq!((you, token), (None, None));
 
@@ -422,4 +427,69 @@ async fn a_second_device_with_the_same_token_replaces_the_first() {
         })
         .await;
     assert_eq!(reason, RejectReason::Replaced);
+}
+
+#[tokio::test]
+async fn a_host_screen_runs_the_room_without_playing_and_takes_it_back_after_a_reload() {
+    let (address, registry) = start_server_with_registry().await;
+    let settings = RoomSettings {
+        rounds: 3,
+        ..Room::default_settings(registry.words())
+    };
+    let mut tv = Client::connect(&address).await;
+    tv.send(&ClientMessage::HostRoom {
+        settings: Some(settings),
+    })
+    .await;
+    let (you, Some(token), code, _) = tv.joined().await else {
+        panic!("a host screen gets a session token")
+    };
+    assert_eq!(you, None);
+    tv.expect(|message| match message {
+        ServerMessage::SettingsChanged { settings } => (settings.rounds == 3).then_some(()),
+        _ => None,
+    })
+    .await;
+
+    let mut players = Vec::new();
+    for name in ["Sam", "Noor", "Jip"] {
+        let mut client = Client::connect(&address).await;
+        client
+            .send(&ClientMessage::JoinRoom {
+                code: code.clone(),
+                name: name.into(),
+                session_token: None,
+            })
+            .await;
+        client.joined().await;
+        players.push(client);
+    }
+    players[0].send(&ClientMessage::StartRound).await;
+    players[0]
+        .expect(|message| match message {
+            ServerMessage::Rejected { reason } => (reason == RejectReason::NotHost).then_some(()),
+            _ => None,
+        })
+        .await;
+
+    // A reload: a new connection with the token is the host again.
+    drop(tv);
+    let mut tv = Client::connect(&address).await;
+    tv.send(&ClientMessage::WatchRoom {
+        code: code.clone(),
+        session_token: Some(token.clone()),
+    })
+    .await;
+    let (_, back, _, _) = tv.joined().await;
+    assert_eq!(back, Some(token));
+
+    tv.send(&ClientMessage::StartRound).await;
+    let round = tv
+        .expect(|message| match message {
+            ServerMessage::RoundStarted { round } => Some(round),
+            _ => None,
+        })
+        .await;
+    assert_eq!(round.word, None, "the host screen never gets the word");
+    assert_eq!(round.turn_order.len(), 3);
 }

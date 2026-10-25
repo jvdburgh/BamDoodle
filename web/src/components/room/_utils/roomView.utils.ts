@@ -41,6 +41,18 @@ function players(room: Pick<RoomSnapshot, "code" | "players">): RoomPlayer[] {
   });
 }
 
+/** Same as the server: `MIN_PLAYERS_TO_START` in limits.rs. */
+const MIN_PLAYERS_TO_START = 3;
+
+/** Why a round can't start yet (too few players here), or null when it can. */
+function waitingForPlayers(players: RoomPlayer[]): string | null {
+  const here = players.filter((player) => player.connected).length;
+  const missing = MIN_PLAYERS_TO_START - here;
+  if (missing <= 0) return null;
+  if (here === 0) return `Waiting for ${MIN_PLAYERS_TO_START} players to join`;
+  return `Waiting for ${missing} more ${missing === 1 ? "player" : "players"}`;
+}
+
 /** For the host in the lobby: who's still drawing their face, or null when everyone's in. */
 function stillOnTheirFace(players: RoomPlayer[]): string | null {
   const names = players.filter((player) => !player.ready).map((player) => player.name);
@@ -160,6 +172,7 @@ export const RoomViewUtils = {
   inRoom,
   problem,
   stillOnTheirFace,
+  waitingForPlayers,
   seed,
   players,
   active,

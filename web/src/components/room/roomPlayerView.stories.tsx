@@ -11,6 +11,8 @@ type Props = {
   phase: PhaseView;
   you: number;
   hostId: number;
+  /** A screen hosts the room: no player starts rounds. */
+  hostScreen?: boolean;
   width: string;
   rejection?: RejectReason;
   /** A vote you sent that the server hasn't confirmed yet. */
@@ -26,6 +28,7 @@ function PlayerFromState({
   phase,
   you,
   hostId,
+  hostScreen = false,
   width,
   rejection,
   pendingVote,
@@ -34,7 +37,7 @@ function PlayerFromState({
   onSettings,
 }: Props) {
   const [state] = useState(() => {
-    const base = roomStateFixture({ phase, you, hostId });
+    const base = roomStateFixture({ phase, you, hostScreen, hostId: hostScreen ? null : hostId });
     const room = base.room && {
       ...base.room,
       players: base.room.players.map((player) => ({ ...player, ready: !drawingFaces.includes(player.id) })),
@@ -128,11 +131,19 @@ export const Bamboozler: Story = {
   },
 };
 
+export const InARoomWithAHostScreen: Story = {
+  args: { phase: { phase: "lobby" }, hostScreen: true },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText("The host screen starts the round…")).toBeVisible();
+    await expect(canvas.queryByRole("button", { name: "Start round" })).toBeNull();
+  },
+};
+
 export const HostInTheLobby: Story = {
   args: { phase: { phase: "lobby" }, onSettings: fn() },
   play: async ({ args, canvas, userEvent }) => {
     await expect(canvas.getByText("6 players in the room")).toBeVisible();
-    await expect(canvas.getByRole("link", { name: "Show on a TV" })).toHaveAttribute("href", "/watch/BKZW");
+    await expect(canvas.queryByRole("link", { name: /TV/ })).toBeNull();
     await userEvent.click(canvas.getByRole("button", { name: "Room settings" }));
     await expect(args.onSettings).toHaveBeenCalled();
     await userEvent.click(canvas.getByRole("button", { name: "Start round" }));

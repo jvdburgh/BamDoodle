@@ -55,7 +55,7 @@ All live state lives in the process ([decision 0002](decisions/0002-in-memory-st
   every device shows the same doodle face seeded from the room code and player id.
 - **Cleanup:** a player who is gone between rounds loses their seat after 2 minutes; a room with no players
   connected closes after 5 minutes (30 seconds if nobody ever joined it), and any room closes after 30 minutes without
-  play (`roomClosed`). Host screens and pings don't keep a room open.
+  play (`roomClosed`). Watching screens and pings don't keep a room open; the host screen does.
 - **Words** come from `words/<language>/<pack>.toml`, loaded at startup (`WORDS_DIR`). Players pick categories, not
   files: the room snapshot lists every category (`wordCategories`), and `settings.categories` says which are in play.
 - **Limits** are all in `server/src/limits.rs`.
@@ -69,9 +69,13 @@ The catch: a deploy or crash ends all running games. At hobby scale that's accep
 - [ts-rs](https://github.com/Aleph-Alpha/ts-rs) generates the TypeScript types into `web/src/protocol/generated/`
   (`just protocol`). The generated files are committed, and CI fails if they are stale.
 - **The first message picks the room:** `createRoom { name, settings? }` (you become host; the settings are checked
-  like any `updateSettings`), `joinRoom { code, name,
-  sessionToken? }` or `watchRoom { code }` for a host screen. The answer is `joined` with your player id, your
-  session token and a snapshot of the room as you may see it, or `rejected` with a reason.
+  like any `updateSettings`), `joinRoom { code, name, sessionToken? }`, `hostRoom { settings? }` for a screen that
+  creates the room and hosts it without playing, or `watchRoom { code, sessionToken? }` for a screen (with the token
+  `hostRoom` got, the host screen takes its role back after a reload). The answer is `joined` with your player id
+  (none for a screen), your session token (a screen's only when it hosts) and a snapshot of the room as you may see
+  it, or `rejected` with a reason. `RoomSnapshot.hostScreen` says a screen hosts: no player does while it's connected
+  (`hostId` is null), its `updateSettings` and `startRound` count like a host player's, anything else it sends is
+  dropped, and after `HOST_GRACE` away the first player becomes host (`hostChanged`).
 - **Avatars:** any player sends `setAvatar { strokes }` at any time (also during a round: a face finished just as the
   host starts must still arrive), at most once a second, which replaces their whole avatar. A player done with their
   face (or joining mid-round) sends `ready`, again after every reconnect so a new seat hears it too; everyone gets `playerReady { playerId }` and `PlayerSummary.ready`
@@ -107,7 +111,7 @@ The catch: a deploy or crash ends all running games. At hobby scale that's accep
 - A suspicion can change at most once a second (every change is announced to everyone). The final vote counts once
   per round, never for yourself, only from players in the round; a suspicion counts as your vote if you don't submit
   one.
-- Only the host changes settings and starts rounds, only between rounds.
+- Only the host (a player, or the host screen) changes settings and starts rounds, only between rounds.
 - `ready` is announced once per seat; a repeat is ignored.
 - An avatar changes at any time, at most once a second: up to 48 strokes and 700 points in total, at least
   one point per stroke, points on the square (rounded to 3 decimals) and colours from the avatar palette only. Any
@@ -176,7 +180,9 @@ weight without helping freehand strokes. tldraw is out: its licence isn't open s
   `createRoom` with those settings. Between rounds the host reopens the setup from the snapshot's `settings` and
   `wordCategories`; every change there is an `updateSettings`. A connection that gives up brings you back to the start
   page with the reason; every try gets a fresh connection.
-- `/watch/BKZW` is a host screen: `watchRoom`, rendered by `RoomHostView` (`src/app/WatchRoute.tsx`).
+- `/watch/BKZW` is a screen: `watchRoom`, rendered by `RoomHostView` (`src/app/WatchRoute.tsx`). The screen that
+  created the room (`hostRoom` from the start page's "Host on this screen") lives at the same address, so a reload
+  hosts again; `RoomState.hosting` says so, and `HostRoom` adds Start round and the room settings.
 - `components/room/` only renders server state. What the screens need beyond the raw state (who's up next, counts,
   this round's points from the awards, standings, the table talk from comparing suspicions and votes) is worked out in
   `RoomViewUtils`, `FeedUtils` and `useRoomView`, never the rules themselves.

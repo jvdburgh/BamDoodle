@@ -41,6 +41,20 @@ pub enum Viewer {
 
 pub type Outbox = Vec<(Audience, ServerMessage)>;
 
+/// The screen that hosts a room: its session token takes the role back after a reload.
+#[derive(Debug)]
+struct HostScreen {
+    session_token: String,
+    connected: bool,
+}
+
+/// A screen asking to host: the one creating the room, or one coming back with its session token.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum HostClaim {
+    New,
+    Resume(String),
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Seat {
     pub player_id: PlayerId,
@@ -115,6 +129,8 @@ pub struct Room {
     /// Since when the host has been gone; the role waits `HOST_GRACE` for them. Kept apart from the seat grace, which
     /// restarts when a round ends.
     host_away_since: Option<Instant>,
+    /// The screen that hosts the room (`hostRoom`), until it's been gone longer than `HOST_GRACE`.
+    host_screen: Option<HostScreen>,
     used_words: HashSet<String>,
     words: Arc<WordLibrary>,
     rng: StdRng,
@@ -140,6 +156,7 @@ impl Room {
             rounds_played: 0,
             last_strokes: Vec::new(),
             host_away_since: None,
+            host_screen: None,
             used_words: HashSet::new(),
             words,
             rng: StdRng::seed_from_u64(seed),
@@ -239,10 +256,10 @@ impl Room {
 
     pub fn handle(&mut self, player_id: PlayerId, message: ClientMessage, now: Instant) -> Outbox {
         let result = match message {
-            ClientMessage::UpdateSettings { settings } => self.update_settings(player_id, settings),
+            ClientMessage::UpdateSettings { settings } => self.update_settings(Viewer::Player(player_id), settings),
             ClientMessage::SetAvatar { strokes } => Ok(self.set_avatar(player_id, strokes, now)),
             ClientMessage::Ready => Ok(self.ready(player_id)),
-            ClientMessage::StartRound => self.start_round(player_id, now),
+            ClientMessage::StartRound => self.start_round(Viewer::Player(player_id), now),
             ClientMessage::BeginStroke { colour, size, points } => {
                 Ok(self.begin_stroke(player_id, colour, size, points))
             }
@@ -252,11 +269,55 @@ impl Room {
             ClientMessage::CastVote { suspect_id } => self.cast_vote(player_id, suspect_id, now),
             ClientMessage::GuessWord { guess } => self.guess_word(player_id, &guess, now),
             ClientMessage::Ping => Ok(vec![(Audience::Player(player_id), ServerMessage::Pong)]),
-            ClientMessage::CreateRoom { .. } | ClientMessage::JoinRoom { .. } | ClientMessage::WatchRoom { .. } => {
-                Err(RejectReason::AlreadyJoined)
-            }
+            ClientMessage::CreateRoom { .. }
+            | ClientMessage::JoinRoom { .. }
+            | ClientMessage::HostRoom { .. }
+            | ClientMessage::WatchRoom { .. } => Err(RejectReason::AlreadyJoined),
         };
         result.unwrap_or_else(|reason| vec![(Audience::Player(player_id), ServerMessage::Rejected { reason })])
+    }
+
+    /// What the host screen may do: the host's settings and starting rounds. Anything else from it is dropped.
+    pub fn handle_host_screen(&mut self, message: ClientMessage, now: Instant) -> Outbox {
+        let result = match message {
+            ClientMessage::UpdateSettings { settings } => self.update_settings(Viewer::Screen, settings),
+            ClientMessage::StartRound => self.start_round(Viewer::Screen, now),
+            _ => Ok(Vec::new()),
+        };
+        result.unwrap_or_else(|reason| vec![(Audience::Screens, ServerMessage::Rejected { reason })])
+    }
+
+    /// A screen asks to host. Returns its session token when it does: a new room's creator, or the host screen back
+    /// with its token. Any other screen just watches.
+    pub fn attach_host_screen(&mut self, claim: HostClaim, now: Instant) -> (Option<String>, Outbox) {
+        let mut outbox = Vec::new();
+        let token = match (claim, &mut self.host_screen) {
+            (HostClaim::New, None) if self.players.is_empty() => {
+                let session_token = new_token(&mut self.rng);
+                self.host_screen = Some(HostScreen {
+                    session_token: session_token.clone(),
+                    connected: true,
+                });
+                Some(session_token)
+            }
+            (HostClaim::Resume(token), Some(screen)) if screen.session_token == token => {
+                screen.connected = true;
+                Some(token)
+            }
+            _ => None,
+        };
+        self.ensure_host(&mut outbox, now);
+        (token, outbox)
+    }
+
+    /// The host screen's connection went away: the role waits `HOST_GRACE` for it, like for a player host.
+    pub fn detach_host_screen(&mut self, now: Instant) -> Outbox {
+        if let Some(screen) = &mut self.host_screen {
+            screen.connected = false;
+        }
+        let mut outbox = Vec::new();
+        self.ensure_host(&mut outbox, now);
+        outbox
     }
 
     /// Moves the game along when a deadline has passed, and frees seats of players who left between rounds.
@@ -334,6 +395,7 @@ impl Room {
         RoomSnapshot {
             code: self.code.clone(),
             host_id: self.host_id,
+            host_screen: self.host_screen.is_some(),
             players: self.players.iter().map(summary).collect(),
             settings: self.settings.clone(),
             word_categories: self.words.catalogue(),
@@ -341,8 +403,8 @@ impl Room {
         }
     }
 
-    fn update_settings(&mut self, player_id: PlayerId, settings: RoomSettings) -> Result<Outbox, RejectReason> {
-        self.require_host(player_id)?;
+    fn update_settings(&mut self, by: Viewer, settings: RoomSettings) -> Result<Outbox, RejectReason> {
+        self.require_host(by)?;
         self.require_between_rounds()?;
         let valid = limits::TURNS_PER_PLAYER.contains(&settings.turns_per_player)
             && limits::TURN_SECONDS.contains(&settings.turn_seconds)
@@ -387,8 +449,8 @@ impl Room {
         }
     }
 
-    fn start_round(&mut self, player_id: PlayerId, now: Instant) -> Result<Outbox, RejectReason> {
-        self.require_host(player_id)?;
+    fn start_round(&mut self, by: Viewer, now: Instant) -> Result<Outbox, RejectReason> {
+        self.require_host(by)?;
         self.require_between_rounds()?;
 
         let mut turn_order: Vec<PlayerId> = self
@@ -809,9 +871,21 @@ impl Room {
         outbox
     }
 
-    /// The host is the earliest-joined connected player. When the host drops out, the role waits `HOST_GRACE` for
-    /// them (a refresh or a locked phone), then moves on.
+    /// The host is the host screen while it's there, otherwise the earliest-joined connected player. When the host
+    /// drops out, the role waits `HOST_GRACE` for them (a refresh or a locked phone), then moves on to a player.
     fn ensure_host(&mut self, outbox: &mut Outbox, now: Instant) {
+        if let Some(screen) = &self.host_screen {
+            if screen.connected {
+                self.host_away_since = None;
+                return;
+            }
+            let since = *self.host_away_since.get_or_insert(now);
+            if now < since + limits::HOST_GRACE {
+                return;
+            }
+            self.host_screen = None;
+            self.host_away_since = None;
+        }
         let host = self
             .host_id
             .and_then(|host_id| self.players.iter().find(|player| player.id == host_id));
@@ -835,12 +909,12 @@ impl Room {
         }
     }
 
-    fn require_host(&self, player_id: PlayerId) -> Result<(), RejectReason> {
-        if self.host_id == Some(player_id) {
-            Ok(())
-        } else {
-            Err(RejectReason::NotHost)
-        }
+    fn require_host(&self, by: Viewer) -> Result<(), RejectReason> {
+        let host = match by {
+            Viewer::Player(player_id) => self.host_screen.is_none() && self.host_id == Some(player_id),
+            Viewer::Screen => self.host_screen.as_ref().is_some_and(|screen| screen.connected),
+        };
+        if host { Ok(()) } else { Err(RejectReason::NotHost) }
     }
 
     fn require_between_rounds(&self) -> Result<(), RejectReason> {

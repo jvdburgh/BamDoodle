@@ -4,7 +4,15 @@ import type { PlayerSummary } from "./PlayerSummary";
 import type { RoomSettings } from "./RoomSettings";
 import type { WordCategory } from "./WordCategory";
 
-export type RoomSnapshot = { code: string, hostId: number | null, players: Array<PlayerSummary>, settings: RoomSettings, 
+export type RoomSnapshot = { code: string, 
+/**
+ * The player who hosts; none while a host screen does.
+ */
+hostId: number | null, 
+/**
+ * A screen hosts this room (`hostRoom`): no player starts rounds or changes settings while it's there.
+ */
+hostScreen: boolean, players: Array<PlayerSummary>, settings: RoomSettings, 
 /**
  * Every category the host can pick from, in every language.
  */

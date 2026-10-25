@@ -38,8 +38,9 @@ You need 3 to 8 players, each with a phone (or a laptop or tablet).
    the word, and everyone scores.
 6. **The End:** after the last round, the podium. Play again, or start a new room.
 
-Want everyone to watch the drawing together? The host taps **Show on a TV** in the lobby and opens that link on a
-laptop or TV: it shows the canvas, the players and the reveal, without anyone's secret. The full rules and scoring are in
+Want everyone to watch the drawing together? Create the room on a laptop or TV and pick **Host on this screen**: it
+shows the code, starts the rounds and shows the canvas, the players and the reveal, without anyone's secret, and
+doesn't play. The full rules and scoring are in
 [docs/game-rules.md](docs/game-rules.md).
 
 **Words:** English and Dutch, from everyday things to Efteling, Very British, Logos, Films, Superheroes, Memes and

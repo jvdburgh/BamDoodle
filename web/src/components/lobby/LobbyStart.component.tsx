@@ -9,7 +9,10 @@ import { LobbyHowToPlay } from "@/components/lobby/LobbyHowToPlay.component";
 import { SoundToggle } from "@/components/sound/SoundToggle.component";
 import { RoomCodeUtils } from "@/protocol/roomCode.utils";
 
-export type LobbyEntry = { name: string } & ({ kind: "create" } | { kind: "join"; code: string });
+export type LobbyEntry =
+  | ({ name: string } & ({ kind: "create" } | { kind: "join"; code: string }))
+  /** A new room hosted by this screen, which doesn't play: no name needed. */
+  | { kind: "host" };
 
 type LobbyStartProps = {
   onEnter: (entry: LobbyEntry) => void;
@@ -158,7 +161,7 @@ export function LobbyStart({
               className="relative grid w-full gap-5 rounded-[18px_24px_20px_16px] bg-night-soft/50 p-5"
             >
               <BrandSketchyFrame className="text-white/25" />
-              <h3 className="font-display text-2xl">{step === "join" ? "Join a room" : "And you are?"}</h3>
+              <h3 className="font-display text-2xl">{step === "join" ? "Join a room" : "Play or host?"}</h3>
 
               {step === "join" && (
                 <>
@@ -195,9 +198,27 @@ export function LobbyStart({
                   Back
                 </button>
                 <button type="submit" disabled={!canSubmit} className={BrandStyles.primaryButton}>
-                  {busy ? "Just a sec…" : step === "join" ? "Join" : "Create room"}
+                  {busy ? "Just a sec…" : step === "join" ? "Join" : "Play"}
                 </button>
               </div>
+
+              {step === "create" && (
+                <div className="grid gap-2 border-t-2 border-white/10 pt-5">
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => onEnter({ kind: "host" })}
+                    className={`${BrandStyles.quietButton} group gap-3`}
+                  >
+                    <BrandScribble shape="screen" className="size-7 text-sun motion-safe:group-hover:animate-wiggle" />
+                    Host on this screen
+                  </button>
+                  <p className="text-center text-sm text-white/70">
+                    For a TV or laptop everyone can see: it shows the code and the drawing and starts the rounds, but
+                    doesn’t play.
+                  </p>
+                </div>
+              )}
             </form>
           )}
         </main>

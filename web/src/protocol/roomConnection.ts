@@ -11,7 +11,13 @@ export type RoomIntent =
   /** With the settings picked before the room existed. */
   | { kind: "create"; name: string; settings?: RoomSettings }
   | { kind: "join"; code: string; name: string }
+  /** A new room this screen hosts without playing, with the settings picked before it existed. */
+  | { kind: "host"; settings?: RoomSettings }
+  /** A screen following a room; the host screen, when this device has the room's host token. */
   | { kind: "watch"; code: string };
+
+/** The host screen's token is kept under no name: no player has an empty one. */
+const HOST_SCREEN = "";
 
 export type SocketLike = Pick<WebSocket, "readyState" | "send" | "close" | "onopen" | "onmessage" | "onclose">;
 
@@ -240,8 +246,14 @@ export class RoomConnection {
           name: this.#intent.name,
           sessionToken: this.#tokens.get(this.#intent.code, this.#intent.name),
         };
+      case "host":
+        return { type: "hostRoom", settings: this.#intent.settings ?? null };
       case "watch":
-        return { type: "watchRoom", code: this.#intent.code };
+        return {
+          type: "watchRoom",
+          code: this.#intent.code,
+          sessionToken: this.#tokens.get(this.#intent.code, HOST_SCREEN),
+        };
     }
   }
 
@@ -283,7 +295,9 @@ export class RoomConnection {
     this.#attempt = 0;
     this.#clearHelloTimer();
     if (this.#intent.kind === "create") this.#intent = { kind: "join", code, name: this.#intent.name };
+    if (this.#intent.kind === "host") this.#intent = { kind: "watch", code };
     if (sessionToken && this.#intent.kind === "join") this.#tokens.set(code, this.#intent.name, sessionToken);
+    if (sessionToken && this.#intent.kind === "watch") this.#tokens.set(code, HOST_SCREEN, sessionToken);
     this.#startHeartbeat();
     // An avatar set while connecting or reconnecting couldn't go out yet.
     this.flushAvatar();
@@ -312,7 +326,7 @@ export class RoomConnection {
 
   /** The socket is gone. Try again, unless a create may already have made a room: retrying would make another. */
   #lost(): void {
-    if (this.#intent.kind === "create" && this.#helloSent) {
+    if ((this.#intent.kind === "create" || this.#intent.kind === "host") && this.#helloSent) {
       this.#stop("failed");
       return;
     }

@@ -50,6 +50,7 @@ class FakeSocket implements SocketLike {
 const room: RoomSnapshot = {
   code: "BKTZ",
   hostId: 1,
+  hostScreen: false,
   players: [{ id: 1, name: "Sam", score: 0, connected: true, avatar: [], ready: true }],
   settings: {
     mode: "oneStroke",
@@ -158,7 +159,7 @@ describe("RoomConnection: joining", () => {
       ],
       [
         { kind: "watch", code: "BKTZ" },
-        { type: "watchRoom", code: "BKTZ" },
+        { type: "watchRoom", code: "BKTZ", sessionToken: null },
       ],
     ] as const) {
       const { socket } = connect(intent, tokens);
@@ -241,6 +242,46 @@ describe("RoomConnection: joining", () => {
     expect(connection.getState()).toMatchObject({ status: "failed", failure: null });
     advance(60_000);
     expect(sockets).toHaveLength(1);
+  });
+});
+
+describe("RoomConnection: hosting on a screen", () => {
+  const hostJoined: ServerMessage = {
+    type: "joined",
+    serverVersion: "dev",
+    you: null,
+    sessionToken: "screen-token",
+    room: { ...room, hostId: null, hostScreen: true },
+  };
+
+  it("hosts a new room, then takes the host role back with its token after a reload or a drop", () => {
+    const tokens = SessionTokenUtils.memory();
+    const { socket } = connect({ kind: "host", settings: room.settings }, tokens);
+    socket().open();
+    expect(socket().sent).toEqual([{ type: "hostRoom", settings: room.settings }]);
+    socket().receive(hostJoined);
+
+    socket().drop();
+    advance(RoomConnection.backoff(0, 1));
+    socket().open();
+    expect(socket().sent).toEqual([{ type: "watchRoom", code: "BKTZ", sessionToken: "screen-token" }]);
+
+    const reloaded = connect({ kind: "watch", code: "BKTZ" }, tokens);
+    reloaded.socket().open();
+    expect(reloaded.socket().sent).toEqual([{ type: "watchRoom", code: "BKTZ", sessionToken: "screen-token" }]);
+  });
+
+  it("never makes a second room when the first hello drops", () => {
+    const { connection, socket } = connect({ kind: "host" });
+    socket().open();
+    socket().drop();
+    expect(connection.getState().status).toBe("failed");
+  });
+
+  it("just watches a room it doesn't host", () => {
+    const { socket } = connect({ kind: "watch", code: "BKTZ" });
+    socket().open();
+    expect(socket().sent).toEqual([{ type: "watchRoom", code: "BKTZ", sessionToken: null }]);
   });
 });
 
@@ -539,7 +580,7 @@ describe("RoomConnection: releases and closed rooms", () => {
     const { socket } = connect({ kind: "watch", code: "BKTZ" }, undefined, { appVersion: "dev", fetchVersion });
     socket().open();
     expect(fetchVersion).not.toHaveBeenCalled();
-    expect(socket().sent).toEqual([{ type: "watchRoom", code: "BKTZ" }]);
+    expect(socket().sent).toEqual([{ type: "watchRoom", code: "BKTZ", sessionToken: null }]);
   });
 
   it("calls a release outdated only when both sides are real releases and differ", () => {

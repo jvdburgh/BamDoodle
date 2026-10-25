@@ -166,3 +166,24 @@ describe("RoomViewUtils.stillOnTheirFace", () => {
     );
   });
 });
+
+describe("RoomViewUtils.waitingForPlayers", () => {
+  const seats = (connected: boolean[]) =>
+    RoomViewUtils.players({
+      code: "BKZW",
+      players: connected.map((online, index) => ({
+        id: index + 1,
+        name: `P${index}`,
+        score: 0,
+        connected: online,
+        avatar: [],
+        ready: true,
+      })),
+    });
+
+  it("says how many more players a round needs, counting only those here", () => {
+    expect(RoomViewUtils.waitingForPlayers(seats([]))).toBe("Waiting for 3 players to join");
+    expect(RoomViewUtils.waitingForPlayers(seats([true, true, false]))).toBe("Waiting for 1 more player");
+    expect(RoomViewUtils.waitingForPlayers(seats([true, true, true]))).toBeNull();
+  });
+});

@@ -55,19 +55,28 @@ export const BackFromTheSetup: Story = {
   },
 };
 
-/** After setting the room up: now your name, and Back returns to the setup. */
+/** After setting the room up: play with your name, or host on this screen; Back returns to the setup. */
 export const NameYourself: Story = {
   args: { step: "create", onBack: fn() },
   play: async ({ args, canvas, userEvent }) => {
-    await expect(canvas.getByRole("heading", { name: "And you are?" })).toBeVisible();
+    await expect(canvas.getByRole("heading", { name: "Play or host?" })).toBeVisible();
     const name = canvas.getByLabelText("Your name");
     await expect(name).toHaveFocus();
-    await expect(canvas.getByRole("button", { name: "Create room" })).toBeDisabled();
+    await expect(canvas.getByRole("button", { name: "Play" })).toBeDisabled();
     await userEvent.type(name, "  Joris ");
-    await userEvent.click(canvas.getByRole("button", { name: "Create room" }));
+    await userEvent.click(canvas.getByRole("button", { name: "Play" }));
     await expect(args.onEnter).toHaveBeenCalledWith({ kind: "create", name: "Joris" });
     await userEvent.click(canvas.getByRole("button", { name: "Back" }));
     await expect(args.onBack).toHaveBeenCalled();
+  },
+};
+
+/** A TV or laptop everyone can see hosts without a name and without playing. */
+export const HostOnThisScreen: Story = {
+  args: { step: "create" },
+  play: async ({ args, canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Host on this screen" }));
+    await expect(args.onEnter).toHaveBeenCalledWith({ kind: "host" });
   },
 };
 

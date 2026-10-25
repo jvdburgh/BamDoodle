@@ -61,3 +61,7 @@ export const Check: Story = {
 export const Plus: Story = {
   args: { shape: "plus", className: "size-10 text-white" },
 };
+
+export const Screen: Story = {
+  args: { shape: "screen", className: "size-16 text-white" },
+};

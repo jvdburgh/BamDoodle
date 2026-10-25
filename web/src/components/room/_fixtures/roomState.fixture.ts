@@ -76,7 +76,10 @@ export function resultFixture(patch: Partial<RoundResult> = {}): RoundResult {
 type Options = {
   /** Whose device: a player id, or null for a host screen. Juno by default. */
   you?: number | null;
-  hostId?: number;
+  /** The host player; leave out with `hostScreen`. */
+  hostId?: number | null;
+  /** A screen hosts the room (`hostRoom`). */
+  hostScreen?: boolean;
   phase?: PhaseView;
   players?: number;
 };
@@ -85,7 +88,13 @@ type Options = {
  * A device's room state in any phase, built the way the server's messages build it, with the countdowns starting
  * now. Call it when the story renders, so the clocks haven't run out yet.
  */
-export function roomStateFixture({ you = 2, hostId = 2, phase = { phase: "lobby" }, players = 6 }: Options = {}) {
+export function roomStateFixture({
+  you = 2,
+  hostScreen = false,
+  hostId = hostScreen ? null : 2,
+  phase = { phase: "lobby" },
+  players = 6,
+}: Options = {}) {
   const now = Date.now();
   const at = (ms: number) => ({ endsAt: now + ms, totalMs: ms });
   const seats = playersFixture.slice(0, players);
@@ -102,6 +111,7 @@ export function roomStateFixture({ you = 2, hostId = 2, phase = { phase: "lobby"
     room: {
       code: roomCodeFixture,
       hostId,
+      hostScreen,
       players: seats.map(
         (player) =>
           scores?.find((score) => score.id === player.id) ?? {

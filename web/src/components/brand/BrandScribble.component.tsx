@@ -14,7 +14,8 @@ export type BrandScribbleShape =
   | "pencil"
   | "pencilPlus"
   | "check"
-  | "plus";
+  | "plus"
+  | "screen";
 
 const speakerBody = [
   [8, 19, 0.5],
@@ -123,6 +124,21 @@ const shapes: Record<BrandScribbleShape, { viewBox: string; paths: (seed: number
       CanvasUtils.freehandPath(ScribbleUtils.line(seed + 7, 11, 44, 19, 44, 2.5), 2.6 * weight),
       CanvasUtils.freehandPath(ScribbleUtils.line(seed + 8, 38, 26, 37, 44, 0.6), 3.8 * weight),
       CanvasUtils.freehandPath(ScribbleUtils.line(seed + 9, 29, 35, 46, 34, -0.6), 3.8 * weight),
+    ],
+  },
+  screen: {
+    viewBox: "0 0 48 48",
+    paths: (seed, weight) => [
+      ...[
+        // A wobbly telly on a stand, with a doodle on it.
+        ScribbleUtils.line(seed, 5, 9, 43, 8, -0.6),
+        ScribbleUtils.line(seed + 1, 43, 8, 44, 33, 0.6),
+        ScribbleUtils.line(seed + 2, 44, 33, 4, 34, -0.6),
+        ScribbleUtils.line(seed + 3, 4, 34, 5, 9, 0.6),
+        ScribbleUtils.line(seed + 4, 24, 34, 24, 41),
+        ScribbleUtils.line(seed + 5, 14, 42, 34, 41, -0.5),
+      ].map((points) => CanvasUtils.freehandPath(points, 3.4 * weight)),
+      CanvasUtils.freehandPath(ScribbleUtils.line(seed + 6, 13, 26, 34, 17, -6), 2.6 * weight),
     ],
   },
   check: {

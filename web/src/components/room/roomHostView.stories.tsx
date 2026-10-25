@@ -1,17 +1,29 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
-import { expect } from "storybook/test";
+import { expect, fn } from "storybook/test";
 import { RoomHostView } from "./RoomHostView.component";
 import { hostRound, resultFixture, roomStateFixture, strokeViewsFixture } from "./_fixtures/roomState.fixture";
 import type { PhaseView } from "@/protocol/generated/PhaseView";
 
+type Props = {
+  phase: PhaseView;
+  reconnecting?: boolean;
+  /** This screen hosts the room (`hostRoom`): Start round and the settings are here. */
+  hosting?: boolean;
+  players?: number;
+  onStart?: () => void;
+  onSettings?: () => void;
+};
+
 /** A host screen's state (`watchRoom`): made at render time, so the countdowns start when the story does. */
-function HostFromState({ phase, reconnecting = false }: { phase: PhaseView; reconnecting?: boolean }) {
+function HostFromState({ phase, reconnecting = false, hosting = false, players, onStart, onSettings }: Props) {
   const [state] = useState(() => {
-    const fixture = roomStateFixture({ phase, you: null });
+    const fixture = { ...roomStateFixture({ phase, you: null, hostScreen: hosting, players }), hosting };
     return reconnecting ? { ...fixture, status: "reconnecting" as const } : fixture;
   });
-  return <RoomHostView state={state} />;
+  return (
+    <RoomHostView state={state} controls={hosting && onStart && onSettings ? { onStart, onSettings } : undefined} />
+  );
 }
 
 /** Fedoras anyone can see right now: worn ones, not the faint preview that waits for a hover. */
@@ -48,6 +60,41 @@ export const Lobby: Story = {
   play: async ({ canvas }) => {
     await expect(canvas.getByText("Juno starts the round from their phone.")).toBeVisible();
     await expect(canvas.queryByRole("button", { name: "Start round" })).toBeNull();
+  },
+};
+
+/** This screen hosts: the join card comes first, then Start round and the settings, then who's in. */
+export const HostingTheLobby: Story = {
+  args: { phase: { phase: "lobby" }, hosting: true, onStart: fn(), onSettings: fn() },
+  play: async ({ args, canvas, userEvent }) => {
+    const code = canvas.getByText("Join at", { exact: false });
+    const players = canvas.getByRole("list", { name: "Players" });
+    await expect(code.compareDocumentPosition(players) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    await userEvent.click(canvas.getByRole("button", { name: "Start round" }));
+    await expect(args.onStart).toHaveBeenCalled();
+    await userEvent.click(canvas.getByRole("button", { name: "Room settings" }));
+    await expect(args.onSettings).toHaveBeenCalled();
+  },
+};
+
+export const HostingWaitsForPlayers: Story = {
+  args: { phase: { phase: "lobby" }, hosting: true, players: 2, onStart: fn(), onSettings: fn() },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("button", { name: "Start round" })).toBeDisabled();
+    await expect(canvas.getByText("Waiting for 1 more player")).toBeVisible();
+  },
+};
+
+export const HostingTheNextRound: Story = {
+  args: {
+    phase: { phase: "finished", result: resultFixture(), strokes: strokeViewsFixture },
+    hosting: true,
+    onStart: fn(),
+    onSettings: fn(),
+  },
+  play: async ({ args, canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Next round" }));
+    await expect(args.onStart).toHaveBeenCalled();
   },
 };
 

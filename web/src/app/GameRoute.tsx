@@ -16,6 +16,7 @@ import type { RoomSettings } from "@/protocol/generated/RoomSettings";
 import type { WordCategory } from "@/protocol/generated/WordCategory";
 import type { RoomDefaults } from "@/protocol/generated/RoomDefaults";
 import { RoomDefaultsUtils } from "@/protocol/roomDefaults.utils";
+import { HostRoom } from "@/app/WatchRoute";
 import { useRoomConnection } from "@/protocol/room.hook";
 import { RoomConnection } from "@/protocol/roomConnection";
 
@@ -104,7 +105,7 @@ export function GameRoute({ joinCode }: { joinCode?: string }) {
 
   const navigation: LobbyNavigation = {
     onEnter: (entry) => {
-      saveName(entry.name);
+      if (entry.kind !== "host") saveName(entry.name);
       setAttempt((last) => ({ number: (last?.number ?? 0) + 1, entry }));
     },
     onCreate: create,
@@ -157,12 +158,17 @@ type GameConnectionProps = LobbyNavigation & {
 
 function GameConnection({ entry, settings, onEnter, onCreate, onBackToSetup }: GameConnectionProps) {
   const { connection, state } = useRoomConnection(
-    entry.kind === "create" ? { kind: "create", name: entry.name, settings } : entry,
+    entry.kind === "create"
+      ? { kind: "create", name: entry.name, settings }
+      : entry.kind === "host"
+        ? { kind: "host", settings }
+        : entry,
   );
   const status = state?.status;
   const gaveUp = status === "failed" || status === "replaced" || status === "closed";
 
   if (!gaveUp && connection && RoomViewUtils.inRoom(state)) {
+    if (entry.kind === "host") return <HostRoom state={state} connection={connection} createdHere />;
     return <GameRoom state={state} connection={connection} createdHere={entry.kind === "create"} />;
   }
 
@@ -175,14 +181,14 @@ function GameConnection({ entry, settings, onEnter, onCreate, onBackToSetup }: G
         : UNREACHABLE;
   return (
     <LobbyStart
-      defaultName={entry.name}
+      defaultName={entry.kind === "host" ? savedName() : entry.name}
       defaultCode={entry.kind === "join" ? entry.code : undefined}
-      step={entry.kind}
+      step={entry.kind === "host" ? "create" : entry.kind}
       problem={problem}
       busy={!gaveUp}
       onEnter={onEnter}
       onCreate={onCreate}
-      onBack={entry.kind === "create" ? onBackToSetup : undefined}
+      onBack={entry.kind === "join" ? undefined : onBackToSetup}
     />
   );
 }

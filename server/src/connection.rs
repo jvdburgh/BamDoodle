@@ -14,7 +14,7 @@ use crate::{
     protocol::{ClientMessage, RejectReason, ServerMessage},
     registry::{Registry, RoomHandle},
     room::{
-        clean_name,
+        HostClaim, clean_name,
         task::{ConnectionId, Entered, RoomCommand},
     },
 };
@@ -102,18 +102,31 @@ async fn enter(
             let (connection, outbox) = join(&room, name, session_token).await?;
             Ok((room, connection, outbox))
         }
-        ClientMessage::WatchRoom { code } => {
+        ClientMessage::HostRoom { settings } => {
+            let (_, room) = registry.create()?;
+            let (connection, outbox) = watch(&room, Some(HostClaim::New)).await?;
+            if let Some(settings) = settings {
+                let message = ClientMessage::UpdateSettings { settings };
+                let _ = room.commands.send(RoomCommand::Message { connection, message }).await;
+            }
+            Ok((room, connection, outbox))
+        }
+        ClientMessage::WatchRoom { code, session_token } => {
             let room = registry.find(&code).ok_or(RejectReason::RoomNotFound)?;
-            let (reply, answer) = oneshot::channel();
-            room.commands
-                .send(RoomCommand::Watch { reply })
-                .await
-                .map_err(|_| RejectReason::RoomNotFound)?;
-            let (connection, outbox) = answer.await.map_err(|_| RejectReason::RoomNotFound)??;
+            let (connection, outbox) = watch(&room, session_token.map(HostClaim::Resume)).await?;
             Ok((room, connection, outbox))
         }
         _ => Err(RejectReason::NotJoined),
     }
+}
+
+async fn watch(room: &RoomHandle, host: Option<HostClaim>) -> Result<Entered, RejectReason> {
+    let (reply, answer) = oneshot::channel();
+    room.commands
+        .send(RoomCommand::Watch { host, reply })
+        .await
+        .map_err(|_| RejectReason::RoomNotFound)?;
+    answer.await.map_err(|_| RejectReason::RoomNotFound)?
 }
 
 async fn join(room: &RoomHandle, name: String, session_token: Option<String>) -> Result<Entered, RejectReason> {

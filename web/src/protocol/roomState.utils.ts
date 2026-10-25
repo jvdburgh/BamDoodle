@@ -23,8 +23,13 @@ export type RoomState = {
   status: ConnectionStatus;
   /** Why the connection gave up, when `status` is `failed`; `null` there means the server couldn't be reached. */
   failure: RejectReason | null;
-  /** Absent for a host screen. */
+  /** Absent for a screen. */
   you: number | null;
+  /**
+   * This screen hosts the room: its `hostRoom` (or `watchRoom` with the host token) got a session token back. A host
+   * screen that was gone too long has handed the role to a player (`hostChanged`).
+   */
+  hosting: boolean;
   room: RoomSnapshot | null;
   timers: RoomTimers;
   /** The last thing the server turned down, for a short message in the UI. */
@@ -46,6 +51,7 @@ export const RoomStateUtils = {
       status: "connecting",
       failure: null,
       you: null,
+      hosting: false,
       room: null,
       timers: noTimers,
       rejection: null,
@@ -71,6 +77,7 @@ export const RoomStateUtils = {
       return {
         ...state,
         you: message.you,
+        hosting: message.you === null && message.sessionToken !== null,
         room: message.room,
         timers: timersFor(message.room.phase, now),
         rejection: null,
@@ -115,7 +122,8 @@ export const RoomStateUtils = {
           players: room.players.map((player) => (player.id === message.playerId ? { ...player, ready: true } : player)),
         });
       case "hostChanged":
-        return withRoom(state, { ...room, hostId: message.hostId });
+        // Only a player is ever handed the role: a host screen that was gone for good is no longer the host.
+        return { ...withRoom(state, { ...room, hostId: message.hostId, hostScreen: false }), hosting: false };
       case "settingsChanged":
         return withRoom(state, { ...room, settings: message.settings });
       case "gameStarted":

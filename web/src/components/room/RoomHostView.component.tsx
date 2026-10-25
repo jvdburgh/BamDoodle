@@ -31,13 +31,15 @@ type RoomHostViewProps = {
   revealCode?: boolean;
   /** Where the logo leads. */
   home?: string;
+  /** When this screen hosts the room (`hostRoom`): starting rounds and the settings. */
+  controls?: { onStart: () => void; onSettings: () => void };
 };
 
 /**
  * The optional big screen (TV, beamer, laptop): the canvas large, everyone's mini-maps, the table talk, the vote,
  * the reveal and the scores. It never gets the word and nobody draws on it.
  */
-export function RoomHostView({ state, revealCode = false, home = "/" }: RoomHostViewProps) {
+export function RoomHostView({ state, revealCode = false, home = "/", controls }: RoomHostViewProps) {
   const view = useRoomView(state);
   const { room, phase, round, reveal, result, now, players, drawing, active, next, order } = view;
   const roomCode = room.code;
@@ -63,6 +65,28 @@ export function RoomHostView({ state, revealCode = false, home = "/" }: RoomHost
   }, [phase, showPodium]);
   const spotlit = players.find((player) => player.id === spotlight.shown);
   const bamboozler = players.find((player) => player.id === view.bamboozlerId);
+  const waiting = RoomViewUtils.waitingForPlayers(players);
+  const stillDrawing = RoomViewUtils.stillOnTheirFace(players.filter((player) => player.connected));
+
+  const playerList = (
+    <div ref={playersRef} tabIndex={-1} role="group" aria-label="Players" className="w-full outline-none">
+      <RoomPlayerList
+        players={players}
+        drawing={drawing}
+        youId={null}
+        activeId={active?.id ?? null}
+        nextId={next?.id ?? null}
+        spotlightId={spotlight.pinned}
+        onSpotlight={spotlight.pin}
+        onPeek={spotlight.setPeek}
+        suspectedBy={phase === "drawing" ? RoomViewUtils.suspectedBy(round) : {}}
+        votedIds={phase === "voting" ? (round?.voted ?? []) : []}
+        outcome={RoomViewUtils.outcome(reveal, result, room.players)}
+        showFaceStatus={phase === "lobby"}
+        layout={phase === "lobby" ? "row" : "grid"}
+      />
+    </div>
+  );
 
   return (
     <div className="@container/room relative min-h-full">
@@ -109,30 +133,55 @@ export function RoomHostView({ state, revealCode = false, home = "/" }: RoomHost
 
         {showPodium ? (
           <div ref={podiumRef} tabIndex={-1} className="outline-none">
-            <RoomPodium players={players} totals={RoomViewUtils.totals(room.players)} big />
+            <RoomPodium
+              players={players}
+              totals={RoomViewUtils.totals(room.players)}
+              onNewGame={controls?.onStart}
+              big
+            />
+          </div>
+        ) : phase === "lobby" ? (
+          // How to get in comes first, big, the way a quiz night shows it; then who's in.
+          <div className="flex flex-col items-center gap-6 @4xl/room:gap-8">
+            <RoomJoinCard roomCode={roomCode} reveal={revealCode} big>
+              {controls ? (
+                <div className="flex flex-col items-center gap-3">
+                  <div className="flex flex-wrap justify-center gap-3">
+                    <button
+                      type="button"
+                      onClick={controls.onStart}
+                      disabled={waiting !== null}
+                      className={BrandStyles.primaryButton}
+                    >
+                      Start round
+                    </button>
+                    <button type="button" onClick={controls.onSettings} className={BrandStyles.quietButton}>
+                      Room settings
+                    </button>
+                  </div>
+                  <p className="text-center text-xl text-white/80">
+                    {waiting ?? (stillDrawing && `✏️ ${stillDrawing}`) ?? "Everyone’s in? Start when you’re ready."}
+                  </p>
+                </div>
+              ) : (
+                <p className="text-center text-xl text-white/80">
+                  {view.host
+                    ? `${view.host.name} starts the round from their phone.`
+                    : room.hostScreen
+                      ? "The host screen starts the round."
+                      : "Waiting for players…"}
+                </p>
+              )}
+            </RoomJoinCard>
+            {playerList}
           </div>
         ) : (
-          <div className="flex flex-col gap-4 @4xl/room:gap-6">
-            <div ref={playersRef} tabIndex={-1} role="group" aria-label="Players" className="outline-none">
-              <RoomPlayerList
-                players={players}
-                drawing={drawing}
-                youId={null}
-                activeId={active?.id ?? null}
-                nextId={next?.id ?? null}
-                spotlightId={spotlight.pinned}
-                onSpotlight={spotlight.pin}
-                onPeek={spotlight.setPeek}
-                suspectedBy={phase === "drawing" ? RoomViewUtils.suspectedBy(round) : {}}
-                votedIds={phase === "voting" ? (round?.voted ?? []) : []}
-                outcome={RoomViewUtils.outcome(reveal, result, room.players)}
-                showFaceStatus={phase === "lobby"}
-                layout="row"
-              />
-            </div>
+          // During a round the drawing is the big thing; on a wide screen the players are a rail beside it.
+          <div className="flex flex-col gap-4 @4xl/room:gap-6 @5xl/room:grid @5xl/room:grid-cols-[minmax(0,1fr)_minmax(16rem,22rem)] @5xl/room:items-start">
+            <div className="@5xl/room:col-start-2 @5xl/room:row-start-1">{playerList}</div>
 
-            <div className="mx-auto flex w-full min-w-0 flex-col gap-4 @4xl/room:max-w-[calc((100svh-31rem)*4/3)] @4xl/room:min-w-[36rem]">
-              {(phase === "lobby" || phase === "drawing" || phase === "voting") && (
+            <div className="mx-auto flex w-full min-w-0 flex-col gap-4 @4xl/room:max-w-[calc((100svh-14rem)*4/3)] @5xl/room:col-start-1 @5xl/room:row-start-1">
+              {(phase === "drawing" || phase === "voting") && (
                 <CanvasBoard
                   drawing={drawing}
                   order={order}
@@ -177,15 +226,6 @@ export function RoomHostView({ state, revealCode = false, home = "/" }: RoomHost
                       </div>
                     </div>
                   )}
-                  {phase === "lobby" && (
-                    <div className="absolute inset-0 grid place-items-center p-4">
-                      <RoomJoinCard roomCode={roomCode} reveal={revealCode} big>
-                        <p className="text-center text-xl text-white/80">
-                          {view.host ? `${view.host.name} starts the round from their phone.` : "Waiting for players…"}
-                        </p>
-                      </RoomJoinCard>
-                    </div>
-                  )}
                 </CanvasBoard>
               )}
 
@@ -224,6 +264,7 @@ export function RoomHostView({ state, revealCode = false, home = "/" }: RoomHost
                     guess={result.guess === null ? null : { text: result.guess, right: result.guessCorrect }}
                     roundNumber={result.number}
                     rounds={result.rounds}
+                    onNext={result.gameOver ? () => setPodiumFor(resultKey) : controls?.onStart}
                     big
                   />
                 </div>

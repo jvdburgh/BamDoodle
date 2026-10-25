@@ -1588,3 +1588,134 @@ mod avatars {
         assert_eq!(snapshot.players[1].avatar, face());
     }
 }
+
+mod host_screen {
+    use super::*;
+
+    /// A room created by a screen (`hostRoom`), with three players in it.
+    fn hosted() -> (Room, String, Vec<Seat>, Instant) {
+        let now = Instant::now();
+        let mut room = Room::new("BKTZ".into(), library(), 3);
+        let (token, _) = room.attach_host_screen(HostClaim::New, now);
+        let token = token.expect("the creator hosts");
+        let seats = ["Sam", "Noor", "Jip"]
+            .iter()
+            .map(|name| room.join(name, None, now).unwrap().0)
+            .collect();
+        (room, token, seats, now)
+    }
+
+    #[test]
+    fn no_player_hosts_while_the_host_screen_is_there() {
+        let (room, _, _, now) = hosted();
+        assert_eq!(room.host_id, None);
+        let snapshot = room.snapshot(Viewer::Player(1), now);
+        assert!(snapshot.host_screen);
+        assert_eq!(snapshot.host_id, None);
+    }
+
+    #[test]
+    fn the_host_screen_changes_settings_and_starts_rounds_but_players_cant() {
+        let (mut room, _, seats, now) = hosted();
+        let sam = seats[0].player_id;
+        let mut settings = room.settings.clone();
+        settings.rounds = 3;
+        let outbox = room.handle(
+            sam,
+            ClientMessage::UpdateSettings {
+                settings: settings.clone(),
+            },
+            now,
+        );
+        assert!(has(&outbox, |message| matches!(
+            message,
+            ServerMessage::Rejected {
+                reason: RejectReason::NotHost
+            }
+        )));
+        let outbox = room.handle(sam, ClientMessage::StartRound, now);
+        assert!(has(&outbox, |message| matches!(
+            message,
+            ServerMessage::Rejected {
+                reason: RejectReason::NotHost
+            }
+        )));
+
+        let outbox = room.handle_host_screen(ClientMessage::UpdateSettings { settings }, now);
+        assert!(has(&outbox, |message| matches!(
+            message,
+            ServerMessage::SettingsChanged { settings } if settings.rounds == 3
+        )));
+        let outbox = room.handle_host_screen(ClientMessage::StartRound, now);
+        assert!(has(&outbox, |message| matches!(
+            message,
+            ServerMessage::RoundStarted { .. }
+        )));
+        // The screen isn't a player: it doesn't draw, and never gets the word.
+        let Phase::Drawing(round) = &room.phase else {
+            panic!("not drawing")
+        };
+        assert_eq!(round.turn_order.len(), 3);
+        let PhaseView::Drawing { round } = room.snapshot(Viewer::Screen, now).phase else {
+            panic!("not drawing")
+        };
+        assert_eq!(round.word, None);
+    }
+
+    #[test]
+    fn a_host_screen_does_nothing_but_host() {
+        let (mut room, _, _, now) = hosted();
+        let outbox = room.handle_host_screen(ClientMessage::Suspect { suspect_id: Some(1) }, now);
+        assert!(outbox.is_empty());
+    }
+
+    #[test]
+    fn it_takes_the_role_back_with_its_token_after_a_reload_and_other_screens_just_watch() {
+        let (mut room, token, _, now) = hosted();
+        room.detach_host_screen(now);
+        assert_eq!(
+            room.handle_host_screen(ClientMessage::StartRound, now).len(),
+            1,
+            "gone: not the host"
+        );
+
+        let (stranger, _) = room.attach_host_screen(HostClaim::Resume("not-the-token".into()), now);
+        assert_eq!(stranger, None);
+        let (late, _) = room.attach_host_screen(HostClaim::New, now);
+        assert_eq!(late, None, "a room already has its host");
+
+        let (back, outbox) = room.attach_host_screen(HostClaim::Resume(token.clone()), now + limits::HOST_GRACE / 2);
+        assert_eq!(back, Some(token));
+        assert!(!has(&outbox, |message| matches!(
+            message,
+            ServerMessage::HostChanged { .. }
+        )));
+        let outbox = room.handle_host_screen(ClientMessage::StartRound, now);
+        assert!(has(&outbox, |message| matches!(
+            message,
+            ServerMessage::RoundStarted { .. }
+        )));
+    }
+
+    #[test]
+    fn the_first_player_takes_over_when_the_host_screen_stays_away() {
+        let (mut room, token, seats, now) = hosted();
+        room.detach_host_screen(now);
+        assert_eq!(room.next_deadline(now), Some(now + limits::HOST_GRACE));
+        let outbox = room.tick(now + limits::HOST_GRACE);
+        let sam = seats[0].player_id;
+        assert!(has(
+            &outbox,
+            |message| matches!(message, ServerMessage::HostChanged { host_id } if *host_id == sam)
+        ));
+        assert!(!room.snapshot(Viewer::Screen, now).host_screen);
+
+        let (back, _) = room.attach_host_screen(HostClaim::Resume(token), now + limits::HOST_GRACE);
+        assert_eq!(back, None, "too late: a player hosts now");
+        let outbox = room.handle(sam, ClientMessage::StartRound, now + limits::HOST_GRACE);
+        assert!(has(&outbox, |message| matches!(
+            message,
+            ServerMessage::RoundStarted { .. }
+        )));
+    }
+}

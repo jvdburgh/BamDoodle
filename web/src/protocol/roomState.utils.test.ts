@@ -8,6 +8,7 @@ import { type RoomState, RoomStateUtils } from "@/protocol/roomState.utils";
 const lobby: RoomSnapshot = {
   code: "BKTZ",
   hostId: 1,
+  hostScreen: false,
   players: [
     { id: 1, name: "Sam", score: 0, connected: true, avatar: [], ready: true },
     { id: 2, name: "Noor", score: 0, connected: true, avatar: [], ready: true },
@@ -55,6 +56,23 @@ describe("RoomStateUtils.apply", () => {
     const state = play([joined]);
     expect(state.you).toBe(1);
     expect(state.room?.code).toBe("BKTZ");
+  });
+
+  it("hands the host role from a host screen that's gone to a player", () => {
+    const hosted: ServerMessage = {
+      type: "joined",
+      serverVersion: "dev",
+      you: null,
+      sessionToken: "screen",
+      room: { ...lobby, hostId: null, hostScreen: true },
+    };
+    expect(play([hosted]).hosting).toBe(true);
+    expect(play([{ ...hosted, sessionToken: null } as ServerMessage]).hosting).toBe(false);
+    expect(play([joined]).hosting).toBe(false);
+    const state = play([hosted, { type: "hostChanged", hostId: 2 }]);
+    expect(state.hosting).toBe(false);
+    expect(state.room?.hostScreen).toBe(false);
+    expect(state.room?.hostId).toBe(2);
   });
 
   it("keeps the player list up to date", () => {

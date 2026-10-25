@@ -281,14 +281,6 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
                                 Room settings
                               </button>
                             )}
-                            <a
-                              href={`/watch/${room.code}`}
-                              target="_blank"
-                              rel="noreferrer"
-                              className={BrandStyles.ghostButton}
-                            >
-                              Show on a TV
-                            </a>
                             {stillDrawing && (
                               <p className="w-full text-center text-sm text-white/80">
                                 <span aria-hidden="true">✏️ </span>
@@ -298,7 +290,9 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
                           </div>
                         ) : (
                           <p className="text-center text-white/80">
-                            Waiting for {view.host?.name ?? "the host"} to start…
+                            {room.hostScreen
+                              ? "The host screen starts the round…"
+                              : `Waiting for ${view.host?.name ?? "the host"} to start…`}
                           </p>
                         )}
                       </RoomJoinCard>
@@ -425,7 +419,9 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
                 )}
                 {result && !result.gameOver && !isHost && (
                   <p className="text-center text-white/70">
-                    Waiting for {view.host?.name ?? "the host"} to start the next round…
+                    {room.hostScreen
+                      ? "The host screen starts the next round…"
+                      : `Waiting for ${view.host?.name ?? "the host"} to start the next round…`}
                   </p>
                 )}
                 {result && isHost && onSettings && (
