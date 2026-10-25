@@ -51,4 +51,11 @@ const faq = (): { question: string; answer: string }[] => [
   { question: "What do I need to play?", answer: anyDevice.text },
 ];
 
-export const HowToPlayUtils = { steps, more: [points, rounds, anyDevice], faq };
+/** The steps in one short line each, for the room's lobby while everyone waits. */
+const primer = [
+  "Everyone gets the same word, except the bamboozler.",
+  "Take turns drawing it on one canvas.",
+  "Vote who didn’t know it.",
+];
+
+export const HowToPlayUtils = { steps, primer, more: [points, rounds, anyDevice], faq };

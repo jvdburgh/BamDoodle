@@ -122,7 +122,7 @@ function waitingForPlayers(players: RoomPlayer[]): string | null {
   const here = players.filter((player) => player.connected).length;
   const missing = MIN_PLAYERS_TO_START - here;
   if (missing <= 0) return null;
-  return `Waiting for at least ${missing} more ${missing === 1 ? "player" : "players"} (${playerCount} can play)`;
+  return `${missing} more ${missing === 1 ? "player" : "players"} needed to start (up to ${MAX_PLAYERS} can play)`;
 }
 
 /** For the host in the lobby: who's still drawing their face, or null when everyone's in. */

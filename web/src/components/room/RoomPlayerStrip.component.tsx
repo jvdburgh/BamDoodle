@@ -18,7 +18,7 @@ type RoomPlayerStripProps = {
   onSpotlight: (playerId: number | null) => void;
   /** Who you suspect: they wear the hat on your screen. */
   suspicion: number | null;
-  /** While drawing, for a player in the round: mark someone as suspicious (null takes it back). */
+  /** While drawing, for a player in the round: suspect someone (null takes it back). */
   onSuspect?: (playerId: number | null) => void;
   /** On the bamboozler's own screen, their face wears the fedora. */
   youWearTheHat?: boolean;
@@ -32,7 +32,9 @@ type RoomPlayerStripProps = {
 
 /**
  * Everyone in the room as a row of faces at the top of a phone: name, points, the ring on whoever draws, the hat on
- * whoever you suspect. A tap opens what you can do with them right under the row: see their lines, mark them.
+ * whoever you suspect. A tap opens what you can do with them right under the row: see their lines, suspect them.
+ * While you can suspect, every other face shows the hat faintly (on hover, and always on a touch screen), so the
+ * faces read as something to tap.
  */
 export function RoomPlayerStrip({
   players,
@@ -73,7 +75,7 @@ export function RoomPlayerStrip({
                 aria-expanded={expanded}
                 aria-controls={expanded ? panelId : undefined}
                 onClick={() => setOpenId(expanded ? null : player.id)}
-                className={`relative grid w-[4.75rem] justify-items-center gap-0.5 rounded-[12px_16px_14px_10px] px-1 pt-1.5 pb-1.5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+                className={`group relative grid w-[4.75rem] justify-items-center gap-0.5 rounded-[12px_16px_14px_10px] px-1 pt-1.5 pb-1.5 transition active:bg-night-soft motion-safe:active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
                   expanded ? "bg-night-soft" : you ? "bg-iris/20" : "bg-night-deep/70"
                 } ${spotlightId === player.id ? "shadow-[inset_0_0_0_2px_var(--color-white)]" : ""} ${
                   player.connected ? "" : "opacity-50"
@@ -83,7 +85,7 @@ export function RoomPlayerStrip({
                   <AvatarDoodle
                     strokes={player.avatar}
                     backdrop={false}
-                    hat={hat ? "worn" : undefined}
+                    hat={hat ? "worn" : onSuspect && !you ? "preview" : undefined}
                     className="size-full"
                   />
                   {active && (
@@ -164,7 +166,13 @@ export function RoomPlayerStrip({
                 className={`${suspicion === open.id ? BrandStyles.primaryButton : BrandStyles.quietButton} min-h-11 flex-1 gap-2 px-3 text-base sm:text-lg`}
               >
                 <img src="/hat.svg" alt="" className="w-7" />
-                {suspicion === open.id ? "Suspected" : "Mark as suspicious"}
+                {suspicion === open.id ? (
+                  <>
+                    Suspected<span aria-hidden="true"> ✓</span>
+                  </>
+                ) : (
+                  "Suspect"
+                )}
               </button>
             )}
           </div>

@@ -84,7 +84,7 @@ export const HostingWaitsForPlayers: Story = {
   args: { phase: { phase: "lobby" }, hosting: true, players: 2, onStart: fn(), onSettings: fn() },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("button", { name: "Start round" })).toBeDisabled();
-    await expect(canvas.getByText(/Waiting for at least 1 more player/)).toBeVisible();
+    await expect(canvas.getByText(/1 more player needed to start/)).toBeVisible();
   },
 };
 

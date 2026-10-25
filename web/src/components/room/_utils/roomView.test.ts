@@ -182,11 +182,9 @@ describe("RoomViewUtils.waitingForPlayers", () => {
     });
 
   it("says how many more players a round needs, counting only those here", () => {
-    expect(RoomViewUtils.waitingForPlayers(seats([]))).toBe(
-      "Waiting for at least 3 more players (3 to 8 players can play)",
-    );
+    expect(RoomViewUtils.waitingForPlayers(seats([]))).toBe("3 more players needed to start (up to 8 can play)");
     expect(RoomViewUtils.waitingForPlayers(seats([true, true, false]))).toBe(
-      "Waiting for at least 1 more player (3 to 8 players can play)",
+      "1 more player needed to start (up to 8 can play)",
     );
     expect(RoomViewUtils.waitingForPlayers(seats([true, true, true]))).toBeNull();
   });

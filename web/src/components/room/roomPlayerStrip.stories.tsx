@@ -51,6 +51,9 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** Every fedora in a part of the page, worn or the faint one waiting to drop. */
+const hatsIn = (root: HTMLElement) => root.querySelectorAll('img[src="/hat.svg"]');
+
 /** Everyone in one row with their score; a tap opens what you can do with them. */
 export const WhileDrawing: Story = {
   play: async ({ args, canvas, userEvent }) => {
@@ -65,9 +68,10 @@ export const WhileDrawing: Story = {
     await expect(args.onSpotlight).toHaveBeenCalledWith(3);
     await expect(canvas.getByRole("button", { name: "See their lines" })).toHaveAttribute("aria-pressed", "true");
 
-    await userEvent.click(canvas.getByRole("button", { name: "Mark as suspicious" }));
+    await userEvent.click(canvas.getByRole("button", { name: "Suspect" }));
     await expect(args.onSuspect).toHaveBeenCalledWith(3);
     await expect(canvas.getByRole("button", { name: "Suspected" })).toHaveAttribute("aria-pressed", "true");
+    await expect(canvas.getByRole("button", { name: "Suspected" })).toHaveTextContent("Suspected ✓");
     await userEvent.click(canvas.getByRole("button", { name: "Suspected" }));
     await expect(args.onSuspect).toHaveBeenLastCalledWith(null);
 
@@ -92,7 +96,17 @@ export const YouAndAfterTheDrawing: Story = {
   play: async ({ canvas, userEvent }) => {
     await userEvent.click(canvas.getByRole("button", { name: /Juno, You/ }));
     await expect(canvas.getByRole("button", { name: "See your lines" })).toBeVisible();
-    await expect(canvas.queryByRole("button", { name: "Mark as suspicious" })).toBeNull();
+    await expect(canvas.queryByRole("button", { name: "Suspect" })).toBeNull();
+    // Nothing to suspect: no faint hats on the faces.
+    await expect(hatsIn(canvas.getByRole("list", { name: "Players" }))).toHaveLength(0);
+  },
+};
+
+/** While you can suspect, every face but yours has the hat ready to drop on: they look like something to tap. */
+export const FacesLookTappable: Story = {
+  play: async ({ canvas }) => {
+    await expect(hatsIn(canvas.getByRole("list", { name: "Players" }))).toHaveLength(5);
+    await expect(hatsIn(canvas.getByRole("button", { name: /Juno, You/ }))).toHaveLength(0);
   },
 };
 
