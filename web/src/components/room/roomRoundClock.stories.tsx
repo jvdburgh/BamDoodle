@@ -18,6 +18,13 @@ export const Running: Story = {
   },
 };
 
+export const HostScreenVote: Story = {
+  args: { big: true },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText("0:42")).toHaveClass("text-8xl");
+  },
+};
+
 export const LastSeconds: Story = {
   args: { msLeft: 7_400 },
   play: async ({ canvas }) => {

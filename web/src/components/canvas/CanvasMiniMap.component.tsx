@@ -23,10 +23,18 @@ export function CanvasMiniMap({ drawing, playerId, label }: CanvasMiniMapProps) 
     if (layer) context.drawImage(layer, 0, 0, canvas.width, canvas.height);
   });
 
+  // Its own claim keeps the layers drawn when no big canvas shows the drawing (a host screen's results).
   useCanvasSize(
     canvasRef,
-    useCallback(() => schedule(), [schedule]),
+    useCallback(
+      (width: number, height: number) => {
+        drawing.claim(canvasRef, width, height);
+        schedule();
+      },
+      [drawing, schedule],
+    ),
   );
+  useEffect(() => () => drawing.release(canvasRef), [drawing]);
 
   useEffect(
     () =>

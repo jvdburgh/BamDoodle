@@ -27,6 +27,7 @@ export const Phone: Story = {
 export const HostScreen: Story = {
   args: { big: true },
   play: async ({ canvasElement }) => {
-    await expect(canvasElement.querySelector("p")).toHaveClass("text-5xl");
+    // The host's header says whose turn it is: the call stays small and near the top, off the drawing.
+    await expect(canvasElement.querySelector("p")).toHaveClass("top-[4%]");
   },
 };

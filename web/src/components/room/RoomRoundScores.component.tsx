@@ -27,7 +27,7 @@ export function RoomRoundScores({ players, result, totals, youId, big = false }:
       <h3 id={headingId} className={`font-display ${big ? "text-4xl" : "text-xl"}`}>
         This round
       </h3>
-      <ol aria-labelledby={headingId} className={`grid ${big ? "gap-3" : "gap-1.5"}`}>
+      <ol aria-labelledby={headingId} className={`grid ${big ? "gap-2" : "gap-1.5"}`}>
         {lines.map((line, index) => {
           const player = players.find((seat) => seat.id === line.playerId);
           if (!player) return null;
@@ -37,7 +37,7 @@ export function RoomRoundScores({ players, result, totals, youId, big = false }:
               key={line.playerId}
               style={{ animationDelay: `${index * 120}ms` }}
               className={`grid animate-rise-in grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 rounded-[12px_16px_14px_10px] bg-night-deep/70 motion-reduce:animate-none ${
-                big ? "px-4 py-3" : "px-2 py-1.5"
+                big ? "px-4 py-2" : "px-2 py-1.5"
               }`}
             >
               <AvatarDoodle strokes={player.avatar} backdrop={false} className={big ? "size-14" : "size-9"} />

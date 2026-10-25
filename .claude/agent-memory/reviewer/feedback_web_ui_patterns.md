@@ -39,3 +39,6 @@ Seen 2026-10-25 (BrandSheet/RoomSecretReveal, 208b217; confirmed by scratch stor
 - A `<dialog>` closed by unmounting (Close -> setState) instead of `dialog.close()`: focus lands on body, not the opener.
   Scratch story note: userEvent `{Escape}` does not fire native dialog cancel; call `.close()` to test that path.
 - Round-start overlays with pointer-events-auto over the canvas while the server's first turn clock already runs.
+
+Seen 2026-10-25 (host screen couch layout): "fits one screen" checked only with the 6-seat fixture while rooms take 8
+(limits.rs MAX_PLAYERS): clone `li`s in Playwright against a static storybook build to test 7-8 players.

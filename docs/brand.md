@@ -52,6 +52,9 @@ All self-hosted through Fontsource npm packages. No Google Fonts CDN (privacy, G
 The drawing sheet is `paper` (`#f6f5fc`), a cool off-white: every ink colour, including black and night, shows up on
 it, and it reads as a lit sheet on the navy table. (A night-navy sheet was tried and dropped: dark inks vanish.)
 
+The host screen's QR code (the room's address) is printed the same way: `night` modules on `paper`, with a light
+margin so cameras find its edges. It is drawn in the browser as SVG (`qrcode-generator`, MIT), never fetched.
+
 ## Sound
 
 Every sound effect is synthesised in the browser with the Web Audio API (`web/src/components/sound/`): short triangle

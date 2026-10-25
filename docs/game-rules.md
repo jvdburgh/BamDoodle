@@ -18,9 +18,15 @@ same way and get a roomier layout.
 of playing: after the setup, your name and then **Host on this screen** (or **Play on this phone**, "laptop" on a
 wide screen with a mouse); the name is needed either way, so the players read who hosts (tapping Host without one
 says "Type your name first"). On a laptop the start page says so under its buttons: "On a TV or laptop? Create a
-room and host it on this screen." The host screen shows the code and
-`bamdoodle.io` first, big, then who's in; it starts the rounds and has the room settings, and shows the shared canvas
-big during the round. It never shows the secret word and doesn't draw or vote. While it's there, no player hosts; a
+room and host it on this screen." The host screen is read from the couch and always fits one screen (a laptop at
+1280×800 up to a 1080p TV), with big type throughout. In the lobby it shows the code first, big, beside a QR code of
+the room's address ("Scan or go to bamdoodle.io and type BKZW"), the room's settings in one line under Start round,
+then who's in as big face tiles. During the round the shared canvas is the stage with everyone's mini-maps beside it,
+the header says whose turn it is and the seconds left ("Jip's turn · 20s") under the category, and a footer keeps
+"Join at bamdoodle.io BKZW" with a small QR code. In the vote the countdown and "3 of 4 voted" are the biggest things
+on screen; the reveal and the word slide in over the drawing's lower part, and the results put the scoreboard (this
+round's points and why, with the totals) beside the drawing. It starts the rounds and has the room settings. It never
+shows the secret word and doesn't draw or vote. While it's there, no player hosts; a
 host screen that reloads takes the role back (its token is on that device), and one gone for 15 seconds hands the
 role to the first player. It's a bonus, never required.
 
