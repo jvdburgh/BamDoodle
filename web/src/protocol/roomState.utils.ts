@@ -1,6 +1,7 @@
 import type { PhaseView } from "@/protocol/generated/PhaseView";
 import type { RejectReason } from "@/protocol/generated/RejectReason";
 import type { RoomSnapshot } from "@/protocol/generated/RoomSnapshot";
+import type { RoundResult } from "@/protocol/generated/RoundResult";
 import type { RoundView } from "@/protocol/generated/RoundView";
 import type { ServerMessage } from "@/protocol/generated/ServerMessage";
 import type { StrokeView } from "@/protocol/generated/StrokeView";
@@ -36,6 +37,8 @@ export type RoomState = {
   rejection: { reason: RejectReason; at: number } | null;
   /** A final vote sent but not yet confirmed; the server only says *that* you voted. */
   pendingVote: number | null;
+  /** This game's round results as this device saw them finish, for the final scores; empty after (re)joining. */
+  history: RoundResult[];
 };
 
 /** What the server answers a vote it didn't count; the pending vote is void then. */
@@ -56,6 +59,7 @@ export const RoomStateUtils = {
       timers: noTimers,
       rejection: null,
       pendingVote: null,
+      history: [],
     };
   },
 
@@ -82,6 +86,7 @@ export const RoomStateUtils = {
         timers: timersFor(message.room.phase, now),
         rejection: null,
         pendingVote: null,
+        history: [],
       };
     }
     if (message.type === "rejected") {
@@ -194,6 +199,8 @@ export const RoomStateUtils = {
           }),
           timers: noTimers,
           pendingVote: null,
+          // A round number that isn't higher than the last one is a new game.
+          history: [...state.history.filter((round) => round.number < message.result.number), message.result],
         };
       case "pong":
         return state;

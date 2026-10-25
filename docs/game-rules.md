@@ -128,10 +128,18 @@ progress bottom-left). On a phone: the progress and the strip of faces at the to
 and colours pinned to the bottom (colours in one row that scrolls); on its side, the drawing on the left and the rest
 beside it. Then the reveal on the cards themselves: the hat drops
 onto the bamboozler, each card says who that player voted for (right or wrong), and once the round is scored each card
-pops its points and total. Under the canvas only the headline: who the bamboozler was and their guess (the guess's 20
-seconds start at the reveal), then the word and the host's "Next round". After the last round
-"The End": the podium with everyone's final score (on a phone when you tap "See the final scores", on the host
-screen ten seconds after the results), then what's next (the host plays again in the same room, everyone can create
+pops its points and total. The table talk ("Mo has voted") leaves the drawing as the vote ends. Under the canvas the
+headline: who the bamboozler was and what that means for the points ("1 of 3 spotted Sam, so Sam slips through (+1)",
+"Everyone spotted Noor! +1 each", "Nobody spotted Sam! Sam +1"), and their guess (the guess's 20 seconds start at the
+reveal): "Your one guess at the word (Animals).", with what the matching forgives (capitals, accents, spaces, one
+typo in longer words). On a phone on its side the bamboozler's field comes first, beside the drawing. Then "End of
+round 1 of 3. The word was GIRAFFE", the guess ("Sam guessed it: "giraffe"! +1" or "Sam guessed "horse": not it, no
+point."), "This round" (everyone's points with why, popping in, and their totals) and under it the host's "Next round",
+or for everyone else who they're waiting for ("Waiting for Juno to start round 2…", or "Joris starts round 2 from the
+big screen…"). After the last round
+"The End": the podium with everyone's final score and a fun line each from the whole game ("spotted the bamboozler
+3×", "slipped through twice", "caught on every bluff"; on a device that saw every round, not after a rejoin) (on a phone when you tap "See the final scores", which every player
+has, on the host screen ten seconds after the results), then what's next (the host plays again in the same room, everyone can create
 or join another room), our one ask (if you enjoyed it, support Ukrainian citizens) and the footer with who made
 it.
 

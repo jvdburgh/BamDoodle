@@ -10,15 +10,13 @@ import { CanvasBrushPicker } from "@/components/canvas/CanvasBrushPicker.compone
 import { CanvasPalette } from "@/components/canvas/CanvasPalette.component";
 import { CanvasTools } from "@/components/canvas/_utils/canvasTools.utils";
 import { RoomFeed } from "@/components/room/RoomFeed.component";
-import { RoomGuess } from "@/components/room/RoomGuess.component";
 import { RoomJoinCard } from "@/components/room/RoomJoinCard.component";
 import { RoomPenTag } from "@/components/room/RoomPenTag.component";
 import { RoomPlayerList, type RoomPlayerAction } from "@/components/room/RoomPlayerList.component";
 import { RoomPlayerStrip } from "@/components/room/RoomPlayerStrip.component";
 import { RoomPodium } from "@/components/room/RoomPodium.component";
 import { RoomProgress } from "@/components/room/RoomProgress.component";
-import { RoomResults } from "@/components/room/RoomResults.component";
-import { RoomReveal } from "@/components/room/RoomReveal.component";
+import { RoomRoundEnd } from "@/components/room/RoomRoundEnd.component";
 import { RoomSecretReveal } from "@/components/room/RoomSecretReveal.component";
 import { RoomSpotlightChip } from "@/components/room/RoomSpotlightChip.component";
 import { RoomTurnCall } from "@/components/room/RoomTurnCall.component";
@@ -83,7 +81,6 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
     turnStrokes.turn === turnKey &&
     turnStrokes.count >= StrokeWireUtils.limits.strokesPerTimedTurn;
   const youAreBamboozler = round?.role === "bamboozler";
-  const bamboozler = players.find((player) => player.id === view.bamboozlerId);
   const spotlit = players.find((player) => player.id === spotlight.shown);
   const drawingPhase = phase === "lobby" || phase === "drawing";
   const suspicion = you ? RoomStateUtils.suspicionOf(state, you.id) : null;
@@ -265,6 +262,7 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
             <RoomPodium
               players={players}
               totals={RoomViewUtils.totals(room.players)}
+              history={state.history}
               youId={you?.id}
               onNewGame={isHost ? startRound : undefined}
               hostName={view.host?.name}
@@ -451,62 +449,43 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
               />
             </section>
 
-            {/* After the drawing: the reveal with the guess, then the results, under a smaller canvas. */}
+            {/*
+              After the drawing: the reveal with the guess, then the results, under a smaller canvas. On a phone on its
+              side it heads the column beside the drawing, at the height there is, so both stay in view.
+            */}
             {(phase === "guessing" || phase === "finished") && (
               <div
                 ref={stageRef}
                 tabIndex={-1}
-                className={`${BrandStyles.panel} order-2 flex flex-col gap-4 outline-none @5xl/room:col-start-2 @5xl/room:row-start-2 @5xl/room:max-h-[24rem] @5xl/room:overflow-y-auto`}
+                className={`${BrandStyles.panel} order-2 flex flex-col gap-4 outline-none @5xl/room:col-start-2 @5xl/room:row-start-2 @5xl/room:max-h-[24rem] @5xl/room:overflow-y-auto sideways:@max-5xl/room:row-start-1 sideways:@max-5xl/room:max-h-[calc(100svh-6.5rem)] sideways:@max-5xl/room:gap-2 sideways:@max-5xl/room:overflow-y-auto sideways:@max-5xl/room:p-3`}
               >
-                {reveal && (
-                  <>
-                    <RoomReveal
-                      players={players}
-                      bamboozlerId={reveal.bamboozlerId}
-                      votes={RoomViewUtils.votes(reveal.votes)}
-                      youId={you?.id}
-                    />
-                    <RoomGuess
-                      bamboozlerName={bamboozler?.name ?? "The bamboozler"}
-                      yours={youAreBamboozler}
-                      msLeft={ClockUtils.left(state.timers.guess, now)}
-                      onGuess={(guess) => send({ type: "guessWord", guess })}
-                    />
-                  </>
-                )}
-                {result && (
-                  <RoomResults
-                    players={players}
-                    bamboozlerId={result.bamboozlerId}
-                    word={result.word}
-                    guess={result.guess === null ? null : { text: result.guess, right: result.guessCorrect }}
-                    roundNumber={result.number}
-                    rounds={result.rounds}
-                    youId={you?.id}
-                    onNext={
-                      result.gameOver
-                        ? () => setPodiumFor(resultKey)
-                        : isHost
-                          ? () => {
-                              spotlight.pin(null);
-                              startRound();
-                            }
-                          : undefined
-                    }
-                  />
-                )}
-                {result && !result.gameOver && !isHost && (
-                  <p className="text-center text-white/70">
-                    {room.hostScreen
-                      ? `${room.hostScreen} starts the next round from the big screen…`
-                      : `Waiting for ${view.host?.name ?? "the host"} to start the next round…`}
-                  </p>
-                )}
-                {result && isHost && onSettings && (
-                  <button type="button" onClick={onSettings} className={`${BrandStyles.ghostButton} self-center`}>
-                    Room settings
-                  </button>
-                )}
+                <RoomRoundEnd
+                  players={players}
+                  youId={you?.id ?? null}
+                  reveal={
+                    reveal && round
+                      ? {
+                          reveal,
+                          playerIds: round.turnOrder,
+                          category: round.category,
+                          guessMsLeft: ClockUtils.left(state.timers.guess, now),
+                        }
+                      : null
+                  }
+                  result={result}
+                  youAreBamboozler={youAreBamboozler}
+                  totals={RoomViewUtils.totals(room.players)}
+                  isHost={isHost}
+                  hostScreen={room.hostScreen}
+                  hostName={view.host?.name}
+                  onGuess={(guess) => send({ type: "guessWord", guess })}
+                  onNextRound={() => {
+                    spotlight.pin(null);
+                    startRound();
+                  }}
+                  onFinalScores={() => setPodiumFor(resultKey)}
+                  onSettings={onSettings}
+                />
               </div>
             )}
           </div>

@@ -6,10 +6,13 @@ import { BrandStyles } from "@/components/brand/_utils/brandStyles.utils";
 import { RoomConfetti } from "@/components/room/RoomConfetti.component";
 import type { RoomPlayer } from "@/components/room/_types/room.types";
 import { RoomViewUtils } from "@/components/room/_utils/roomView.utils";
+import type { RoundResult } from "@/protocol/generated/RoundResult";
 
 type RoomPodiumProps = {
   players: RoomPlayer[];
   totals: Record<number, number>;
+  /** This game's rounds as this device saw them: a fun line per player when it saw them all. */
+  history?: RoundResult[];
   youId?: number | null;
   /** Only the host starts a new game; leave out for everyone else. */
   onNewGame?: () => void;
@@ -38,6 +41,7 @@ const startLink = (startPage: string, start: "create" | "join") =>
 export function RoomPodium({
   players,
   totals,
+  history = [],
   youId = null,
   onNewGame,
   hostName,
@@ -50,6 +54,10 @@ export function RoomPodium({
     players.map((player) => player.id),
   );
   const playerOf = (id: number) => players.find((player) => player.id === id);
+  const lines = RoomViewUtils.highlights(
+    history,
+    players.map((player) => player.id),
+  );
   const headingId = useId();
 
   const winners = standings.filter((standing) => standing.place === 1).map((standing) => playerOf(standing.playerId));
@@ -86,6 +94,9 @@ export function RoomPodium({
               <span className="max-w-full truncate font-display text-lg">
                 {player.id === youId ? "You" : player.name}
               </span>
+              {lines[player.id] && (
+                <span className="text-center text-xs leading-tight text-white/75">{lines[player.id]}</span>
+              )}
               <span
                 className={`flex w-full flex-col items-center justify-start rounded-t-[14px_18px] pt-2 font-display ${steps[index]} ${stepColours[index]}`}
               >
@@ -107,7 +118,10 @@ export function RoomPodium({
               <li key={player.id} className="flex items-center gap-2 rounded-full bg-night-deep/70 py-1 pr-4 pl-1">
                 <span className="w-6 text-center font-display text-white/70">{standing.place}</span>
                 <AvatarDoodle strokes={player.avatar} backdrop={false} className="size-8" />
-                <span className="flex-1 truncate">{player.id === youId ? "You" : player.name}</span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate">{player.id === youId ? "You" : player.name}</span>
+                  {lines[player.id] && <span className="block truncate text-xs text-white/75">{lines[player.id]}</span>}
+                </span>
                 <span className="font-display">
                   {standing.total} {standing.total === 1 ? "pt" : "pts"}
                 </span>

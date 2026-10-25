@@ -314,6 +314,57 @@ describe("RoomViewUtils.roundLines", () => {
     ]);
   });
 
+  it("says what the reveal means for the points: fewer than half spotting them lets them slip through", () => {
+    const sam = { name: "Sam", you: false };
+    expect(RoomViewUtils.spotted(1, 3, sam)).toBe("1 of 3 spotted Sam, so Sam slips through (+1)");
+    expect(RoomViewUtils.spotted(2, 4, sam)).toBe("2 of 4 spotted Sam: caught! +1 each");
+    expect(RoomViewUtils.spotted(4, 4, sam)).toBe("Everyone spotted Sam! +1 each");
+    expect(RoomViewUtils.spotted(0, 4, sam)).toBe("Nobody spotted Sam! Sam +1");
+    const you = { name: "Juno", you: true };
+    expect(RoomViewUtils.spotted(1, 3, you)).toBe("1 of 3 spotted you, so you slip through (+1)");
+    expect(RoomViewUtils.spotted(0, 3, you)).toBe("Nobody spotted you! You +1");
+    expect(RoomViewUtils.spotted(3, 3, you)).toBe("Everyone spotted you! +1 each for them");
+  });
+
+  it("finds one fun line per player in a whole game", () => {
+    const round = (number: number, bamboozlerId: number, awards: RoundResult["awards"]): RoundResult => ({
+      ...result,
+      number,
+      gameOver: number === 3,
+      bamboozlerId,
+      awards,
+    });
+    const game = [
+      round(1, 3, [
+        { playerId: 1, reason: "caughtTheBamboozler", points: 1 },
+        { playerId: 3, reason: "guessedTheWord", points: 1 },
+      ]),
+      round(2, 4, [
+        { playerId: 1, reason: "caughtTheBamboozler", points: 1 },
+        { playerId: 4, reason: "stayedHidden", points: 1 },
+      ]),
+      round(3, 4, [{ playerId: 4, reason: "stayedHidden", points: 1 }]),
+    ];
+    expect(RoomViewUtils.highlights(game, [1, 2, 3, 4])).toEqual({
+      1: "spotted the bamboozler twice",
+      2: "never spotted the bamboozler",
+      3: "guessed the word once",
+      4: "slipped through twice",
+    });
+    expect(RoomViewUtils.highlights([game[0]!, game[1]!, round(3, 2, [])], [2])).toEqual({
+      2: "caught on every bluff",
+    });
+    const bluffed = round(3, 1, [{ playerId: 1, reason: "stayedHidden", points: 1 }]);
+    expect(RoomViewUtils.highlights([game[0]!, game[1]!, bluffed], [1])).toEqual({
+      1: "spotted the bamboozler twice, slipped through once",
+    });
+  });
+
+  it("finds no fun lines in a game it didn't see from the start", () => {
+    expect(RoomViewUtils.highlights([{ ...result, number: 3, gameOver: true }], [1, 2])).toEqual({});
+    expect(RoomViewUtils.highlights([{ ...result, number: 1, gameOver: false }], [1, 2])).toEqual({});
+  });
+
   it("says when the bamboozler slipped through and when someone didn't vote", () => {
     const hidden = {
       ...result,
