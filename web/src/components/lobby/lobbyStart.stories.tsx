@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { useState } from "react";
 import { expect, fn } from "storybook/test";
 import { LobbyStart } from "./LobbyStart.component";
 
@@ -148,6 +149,33 @@ export const SomethingElseAfterAProblem: Story = {
     await userEvent.click(canvas.getByRole("button", { name: "Join a room" }));
     await expect(canvas.getByLabelText("Room code")).toHaveFocus();
     await expect(canvas.queryByRole("alert")).toBeNull();
+  },
+};
+
+/** Moved on from a problem, then the next try fails the same way: it shows again. */
+export const SameProblemAgain: Story = {
+  render: function Render(args) {
+    const unreachable = "Couldn’t reach the game. Check your connection and try again.";
+    const [problem, setProblem] = useState<string | undefined>(unreachable);
+    return (
+      <LobbyStart
+        {...args}
+        problem={problem}
+        onCreate={() => {
+          // Like the start page: a new try clears the problem, then fails again.
+          setProblem(undefined);
+          setTimeout(() => setProblem(unreachable), 0);
+        }}
+      />
+    );
+  },
+  play: async ({ canvas, userEvent }) => {
+    await expect(canvas.getByRole("alert")).toBeVisible();
+    await userEvent.click(canvas.getByRole("button", { name: "Join a room" }));
+    await userEvent.click(canvas.getByRole("button", { name: "Back" }));
+    await expect(canvas.queryByRole("alert")).toBeNull();
+    await userEvent.click(canvas.getByRole("button", { name: "Create a room" }));
+    await expect(await canvas.findByRole("alert")).toHaveTextContent("Couldn’t reach the game.");
   },
 };
 

@@ -152,6 +152,24 @@ export const OnAPhone: Story = {
   },
 };
 
+/** A phone on its side is wide but the shortest screen of all: two columns, but just as lean. */
+export const OnAPhoneSideways: Story = {
+  parameters: {
+    viewport: {
+      options: { sideways: { name: "Phone on its side", styles: { width: "844px", height: "390px" }, type: "mobile" } },
+    },
+  },
+  globals: { viewport: { value: "sideways", isRotated: false } },
+  play: async ({ canvas }) => {
+    await expect(window.innerWidth).toBeGreaterThan(window.innerHeight);
+    await expect(canvas.getByText(/For 3 to 8 players/)).not.toBeVisible();
+    const rounds = canvas.getByRole("group", { name: "Rounds" });
+    const hint = within(rounds).getByText(/^One round is one word/);
+    await expect(hint.getBoundingClientRect().height).toBeLessThanOrEqual(1);
+    await expect(canvas.getByText(/^One stroke · 3 turns each/)).not.toBeVisible();
+  },
+};
+
 /** From the room between rounds, by the host: every change reaches the room at once. */
 export const InTheRoom: Story = {
   args: { roomCode: "BKZW", doneLabel: undefined, onBack: undefined },

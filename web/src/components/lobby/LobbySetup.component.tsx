@@ -84,7 +84,9 @@ export function LobbySetup({
               ) : (
                 <>
                   {/* A phone keeps to one line here; who it's for is in How to play. */}
-                  <span className="max-md:hidden">For {RoomViewUtils.playerCount}, each on their own device. </span>
+                  <span className="max-md:hidden sideways:hidden">
+                    For {RoomViewUtils.playerCount}, each on their own device.{" "}
+                  </span>
                   You can change all of this between rounds.
                 </>
               )}
@@ -159,7 +161,7 @@ export function LobbySetup({
           {/* At the end of the form, where you get after the last setting: no bar floating over the categories. On a
               phone one full-width main button with Back under it, like the forms; the picks are right above it. */}
           <div className="flex flex-col gap-2 border-t-2 border-white/10 pt-5 md:col-span-2 md:flex-row md:items-center md:gap-3">
-            <p className="text-sm text-white/70 max-md:hidden md:flex-1 md:text-right">
+            <p className="text-sm text-white/70 max-md:hidden md:flex-1 sideways:hidden md:text-right">
               {RoomViewUtils.settingsLine(settings)}
             </p>
             <button type="submit" disabled={!ready} className={`${BrandStyles.primaryButton} w-full md:w-auto`}>
@@ -203,12 +205,12 @@ function LobbyField({
   const hintId = useId();
   return (
     <fieldset aria-describedby={hintId} className="relative">
-      <legend className="pr-14 font-display text-xl max-md:mb-3">
+      <legend className="pr-14 font-display text-xl max-md:mb-3 sideways:mb-3">
         {legend}
         {unit && <span className="font-body text-base text-white/60"> ({unit})</span>}
       </legend>
       {/* On a phone the heading, the choices and the sketch say enough: the line is read out, not shown. */}
-      <p id={hintId} className="mb-3 pr-14 text-sm text-white/70 max-md:sr-only">
+      <p id={hintId} className="mb-3 pr-14 text-sm text-white/70 max-md:sr-only sideways:sr-only">
         {hint}
       </p>
       {sketch && <LobbySetupSketch sketch={sketch} className="absolute top-0 right-0 h-9 w-12" />}

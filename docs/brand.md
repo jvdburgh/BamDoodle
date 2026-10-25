@@ -116,7 +116,7 @@ Modern, a bit mysterious, colourful. It should feel like a hand-made little game
   background and gets the hand-drawn frame in sun and a doodled ✓; a picked category a lighter sun frame and the ✓.
   The frame traces round in one quick line when you pick, never on load. Unpicked categories show a +. Categories
   sit under small uppercase group names; nothing scrolls inside the page. Back and Next end the form (no floating
-  bar). On a phone the setup cuts the secondary text (the lines under the headings, who it's for, the picks line) so
+  bar). On a phone (upright or on its side) the setup cuts the secondary text (the lines under the headings, who it's for, the picks line) so
   the headings and choices lead, with one full-width Next and a quiet Back under it, as on the forms.
 - The forms (Join, your name) and the setup and face screens wear the small logo in the header, not the big one, so
   the main button stays above a phone's keyboard; once the room exists the header says "Room BKZW". Join and the

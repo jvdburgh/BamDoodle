@@ -133,14 +133,7 @@ export function LobbyStart({
   const backButton = (
     <button
       type="button"
-      onClick={
-        onBack
-          ? () => {
-              setProblemGone(true);
-              onBack();
-            }
-          : () => go("choose")
-      }
+      onClick={onBack ?? (() => go("choose"))}
       className={`${BrandStyles.ghostButton} col-span-full justify-self-center`}
     >
       Back

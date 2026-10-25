@@ -34,9 +34,11 @@ export const Waiting: Story = {
 
 /** In the flow after the pad and its controls, not pinned over them: a phone shows it all on one screen. */
 export const AfterTheControls: Story = {
+  globals: { viewport: { value: "mobile2", isRotated: false } },
   play: async ({ canvas }) => {
     const done = canvas.getByRole("button", { name: "Yep, that’s me!" });
     await expect(getComputedStyle(done).position).toBe("static");
+    await expect(done.getBoundingClientRect().bottom).toBeLessThanOrEqual(window.innerHeight);
     const clear = canvas.getByRole("button", { name: "Clear" });
     await expect(done.getBoundingClientRect().top).toBeGreaterThan(clear.getBoundingClientRect().bottom);
   },
