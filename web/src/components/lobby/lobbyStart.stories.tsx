@@ -15,7 +15,13 @@ type Story = StoryObj<typeof meta>;
 export const JoinFirst: Story = {
   play: async ({ canvas }) => {
     const buttons = canvas.getAllByRole("button");
-    await expect(buttons.map((button) => button.textContent)).toEqual(["Join a room", "Create a room"]);
+    await expect(buttons.map((button) => button.getAttribute("aria-label") ?? button.textContent)).toEqual([
+      "Music",
+      "Sound",
+      "Join a room",
+      "Create a room",
+    ]);
+    await expect(canvas.getByRole("heading", { name: "How to play" })).toBeInTheDocument();
   },
 };
 

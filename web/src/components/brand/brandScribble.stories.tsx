@@ -41,3 +41,15 @@ export const Note: Story = {
 export const NoteOff: Story = {
   args: { shape: "noteOff", className: "size-12 text-white" },
 };
+
+export const Door: Story = {
+  args: { shape: "door", className: "size-16 text-white" },
+};
+
+export const Pencil: Story = {
+  args: { shape: "pencil", className: "size-16 text-white" },
+};
+
+export const PencilPlus: Story = {
+  args: { shape: "pencilPlus", className: "size-16 text-white" },
+};

@@ -1,9 +1,12 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { BrandFooter } from "@/components/brand/BrandFooter.component";
 import { BrandLogo } from "@/components/brand/BrandLogo.component";
+import { BrandScribble } from "@/components/brand/BrandScribble.component";
 import { BrandSketchyFrame } from "@/components/brand/BrandSketchyFrame.component";
 import { BrandTagline } from "@/components/brand/BrandTagline.component";
 import { BrandStyles } from "@/components/brand/_utils/brandStyles.utils";
+import { LobbyHowToPlay } from "@/components/lobby/LobbyHowToPlay.component";
+import { SoundToggle } from "@/components/sound/SoundToggle.component";
 import { RoomCodeUtils } from "@/protocol/roomCode.utils";
 
 export type LobbyEntry = { name: string } & ({ kind: "create" } | { kind: "join"; code: string });
@@ -35,7 +38,10 @@ const NAME_MAX = 20;
 const field =
   "w-full rounded-[10px_14px_12px_9px] bg-night-deep px-4 py-3 text-lg text-white placeholder:text-white/40 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-sun";
 
-/** The first page: join a room (most people) or create one. Creating sets the room up first, then asks your name. */
+/**
+ * The first page: join a room (most people) or create one, then how to play below. Creating sets the room up first,
+ * then asks your name. The music and sound toggles are here already: the music plays from the first tap.
+ */
 export function LobbyStart({
   onEnter,
   onCreate,
@@ -104,7 +110,11 @@ export function LobbyStart({
 
   return (
     <div className="flex min-h-svh flex-col pb-16 md:pb-0">
-      <main className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-8 px-5 py-10">
+      <div className="flex justify-end gap-1.5 px-4 pt-3">
+        <SoundToggle channel="music" />
+        <SoundToggle />
+      </div>
+      <main className="mx-auto flex min-h-[calc(100svh-4rem)] w-full max-w-md flex-col items-center justify-center gap-8 px-5 pb-10">
         <div className="flex flex-col items-center gap-2 text-center">
           <BrandLogo swirlOnHover className="size-28" />
           <h2 className="font-display text-5xl">BamDoodle</h2>
@@ -117,8 +127,10 @@ export function LobbyStart({
               ref={joinButton}
               type="button"
               onClick={() => go("join")}
-              className={`${BrandStyles.primaryButton} w-full`}
+              className={`${BrandStyles.primaryButton} group relative w-full gap-3`}
             >
+              <BrandSketchyFrame rainbow />
+              <BrandScribble shape="door" className="size-7 motion-safe:group-hover:animate-wiggle" />
               Join a room
             </button>
             <button
@@ -126,8 +138,10 @@ export function LobbyStart({
               type="button"
               onClick={onCreate}
               disabled={busy}
-              className={`${BrandStyles.quietButton} w-full`}
+              className={`${BrandStyles.quietButton} group relative w-full gap-3`}
             >
+              <BrandSketchyFrame rainbow className="opacity-60" />
+              <BrandScribble shape="pencilPlus" className="size-7 text-sun motion-safe:group-hover:animate-wiggle" />
               {busy ? "Just a sec…" : "Create a room"}
             </button>
             {problem && (
@@ -185,6 +199,7 @@ export function LobbyStart({
           </form>
         )}
       </main>
+      {step === "choose" && <LobbyHowToPlay />}
       <BrandFooter />
     </div>
   );

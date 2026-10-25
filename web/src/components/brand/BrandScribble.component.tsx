@@ -2,7 +2,17 @@ import { useMemo } from "react";
 import { ScribbleUtils } from "@/components/brand/_utils/scribble.utils";
 import { CanvasUtils } from "@/components/canvas/_utils/canvas.utils";
 
-export type BrandScribbleShape = "ring" | "underline" | "magnifier" | "speaker" | "speakerOff" | "note" | "noteOff";
+export type BrandScribbleShape =
+  | "ring"
+  | "underline"
+  | "magnifier"
+  | "speaker"
+  | "speakerOff"
+  | "note"
+  | "noteOff"
+  | "door"
+  | "pencil"
+  | "pencilPlus";
 
 const speakerBody = [
   [8, 19, 0.5],
@@ -13,6 +23,17 @@ const speakerBody = [
   [8, 29, 0.5],
   [8, 19, 0.5],
 ];
+
+/** A pencil from its tip at the bottom left up to its end, drawn as an outline. */
+const pencil = (seed: number, weight: number) =>
+  [
+    ScribbleUtils.line(seed, 9, 27, 27, 9, -0.5),
+    ScribbleUtils.line(seed + 1, 15, 33, 33, 15, 0.5),
+    ScribbleUtils.line(seed + 2, 27, 9, 33, 15),
+    ScribbleUtils.line(seed + 3, 9, 27, 5, 37, 0.3),
+    ScribbleUtils.line(seed + 4, 5, 37, 15, 33, 0.3),
+    ScribbleUtils.line(seed + 5, 23, 13, 29, 19),
+  ].map((points) => CanvasUtils.freehandPath(points, 3.2 * weight));
 
 type BrandScribbleProps = {
   shape: BrandScribbleShape;
@@ -65,6 +86,33 @@ const shapes: Record<BrandScribbleShape, { viewBox: string; paths: (seed: number
       CanvasUtils.freehandPath(ScribbleUtils.line(seed + 1, 23, 35, 23, 9, 0.5), 3.5 * weight),
       CanvasUtils.freehandPath(ScribbleUtils.line(seed + 2, 23, 9, 34, 17, -2), 3.5 * weight),
       CanvasUtils.freehandPath(ScribbleUtils.line(seed + 3, 8, 8, 40, 40), 3.5 * weight),
+    ],
+  },
+  door: {
+    viewBox: "0 0 48 48",
+    paths: (seed, weight) => [
+      ...[
+        ScribbleUtils.line(seed, 22, 42, 22, 7, 0.4),
+        ScribbleUtils.line(seed + 1, 22, 7, 42, 7, -0.4),
+        ScribbleUtils.line(seed + 2, 42, 7, 42, 42, 0.4),
+        ScribbleUtils.line(seed + 3, 18, 42, 46, 42),
+        ScribbleUtils.line(seed + 4, 3, 25, 31, 25, -1),
+        ScribbleUtils.line(seed + 5, 24, 18, 31, 25),
+        ScribbleUtils.line(seed + 6, 24, 32, 31, 25),
+      ].map((points) => CanvasUtils.freehandPath(points, 3.5 * weight)),
+      CanvasUtils.freehandPath(
+        ScribbleUtils.loop(seed + 7, { cx: 37, cy: 30, rx: 1.4, ry: 1.4, turns: 1 }),
+        3 * weight,
+      ),
+    ],
+  },
+  pencil: { viewBox: "0 0 48 48", paths: pencil },
+  pencilPlus: {
+    viewBox: "0 0 48 48",
+    paths: (seed, weight) => [
+      ...pencil(seed, weight),
+      CanvasUtils.freehandPath(ScribbleUtils.line(seed + 6, 38, 28, 38, 46, 0.4), 3.8 * weight),
+      CanvasUtils.freehandPath(ScribbleUtils.line(seed + 7, 29, 37, 47, 37, -0.4), 3.8 * weight),
     ],
   },
   magnifier: {

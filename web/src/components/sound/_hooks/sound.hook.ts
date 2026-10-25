@@ -23,8 +23,5 @@ export function useMusicOn() {
 
 /** This screen has music: full in the lobby and between rounds, `ducked` while someone draws or votes. */
 export function useMusic(ducked: boolean, byDefault: boolean) {
-  useEffect(() => {
-    SoundPlayer.setMusic({ playing: true, ducked, byDefault });
-  }, [ducked, byDefault]);
-  useEffect(() => () => SoundPlayer.setMusic({ playing: false, ducked: false, byDefault: false }), []);
+  useEffect(() => SoundPlayer.claimMusic({ ducked, byDefault }), [ducked, byDefault]);
 }

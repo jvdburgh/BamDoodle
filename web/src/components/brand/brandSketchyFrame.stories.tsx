@@ -25,3 +25,13 @@ export const Default: Story = {
     await expect(document.getElementById("sketchy")).not.toBeNull();
   },
 };
+
+export const Rainbow: Story = {
+  args: { rainbow: true },
+  play: async ({ canvasElement }) => {
+    const frame = canvasElement.querySelector(".sketchy");
+    await expect(frame).toHaveAttribute("aria-hidden", "true");
+    const ring = frame?.querySelector(".frame-rainbow");
+    await expect(getComputedStyle(ring as Element).backgroundImage).toMatch(/conic-gradient/);
+  },
+};

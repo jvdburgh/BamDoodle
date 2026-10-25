@@ -211,6 +211,26 @@ describe("SoundPlayer music", () => {
     expect(audio.musicSources()[0]?.stop).not.toHaveBeenCalled();
   });
 
+  it("plays on from the start page into the room: the screen that closes hands the music back, no restart", async () => {
+    const player = await load();
+    tap();
+    const releaseStart = player.claimMusic({ ducked: false, byDefault: true });
+    await vi.advanceTimersByTimeAsync(10);
+    const full = musicLevel()!;
+    const releaseRoom = player.claimMusic({ ducked: true, byDefault: true });
+    expect(musicLevel()).toBeCloseTo(full * 0.35);
+
+    releaseRoom();
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(musicLevel()).toBe(full);
+    expect(audio.musicSources()).toHaveLength(1);
+    expect(audio.musicSources()[0]?.stop).not.toHaveBeenCalled();
+
+    releaseStart();
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(audio.musicSources()[0]?.stop).toHaveBeenCalled();
+  });
+
   it("stays silent on a phone until switched on", async () => {
     const player = await load();
     tap();

@@ -37,6 +37,20 @@
   --animate-confetti: confetti 2800ms ease-in both;
   /* The fedora lands on a head: the one you suspect, yourself as the bamboozler, the reveal. */
   --animate-hat-drop: hat-drop 650ms cubic-bezier(0.3, 0.9, 0.35, 1.25) both;
+  /* A doodled icon shakes itself awake when its button is hovered (the start page). */
+  --animate-wiggle: wiggle 500ms ease-in-out both;
+
+  @keyframes wiggle {
+    25% {
+      transform: rotate(-14deg) scale(1.1);
+    }
+    55% {
+      transform: rotate(10deg) scale(1.1);
+    }
+    80% {
+      transform: rotate(-4deg);
+    }
+  }
 
   @keyframes card-in {
     from {
@@ -166,6 +180,29 @@
     filter: url(#sketchy);
   }
 
+  /* The hat's colours as an outline (BrandSketchyFrame rainbow), slowly travelling round. Only the ring is shown. */
+  .frame-rainbow {
+    background: conic-gradient(
+      from var(--frame-turn),
+      var(--color-berry),
+      var(--color-sun),
+      var(--color-lime),
+      var(--color-lagoon),
+      var(--color-iris),
+      var(--color-violet),
+      var(--color-berry)
+    );
+    mask:
+      linear-gradient(black 0 0) content-box exclude,
+      linear-gradient(black 0 0);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .frame-rainbow {
+      animation: frame-turn 8s linear infinite;
+    }
+  }
+
   /* The bamboozler's own logo (BrandLogo sly), noticed by whoever holds the phone: the collar goes up, the hat's
      colours swirl while the face hides, then the collar comes down. Twice, then it rests, so it isn't a tell across
      the table all round long; re-key the logo to play it again. The hat's wedges turn inside its clip paths, around
@@ -217,5 +254,17 @@
     58% {
       transform: scaleY(1.22);
     }
+  }
+}
+
+@property --frame-turn {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes frame-turn {
+  to {
+    --frame-turn: 360deg;
   }
 }

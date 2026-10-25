@@ -231,6 +231,25 @@ function setMusic({ playing, ducked, byDefault }: { playing: boolean; ducked: bo
   updateMusic();
 }
 
+type MusicScreen = { ducked: boolean; byDefault: boolean };
+/** Screens with music, the latest last: the start page, then the room inside it. */
+const musicScreens: MusicScreen[] = [];
+
+/**
+ * This screen has music until the returned function is called. The latest screen sets it; when it goes, the one
+ * before it takes over without restarting the loop (the room hands back to the start page).
+ */
+function claimMusic(screen: MusicScreen): () => void {
+  const claim = { ...screen };
+  musicScreens.push(claim);
+  setMusic({ playing: true, ...claim });
+  return () => {
+    musicScreens.splice(musicScreens.indexOf(claim), 1);
+    const previous = musicScreens.at(-1);
+    setMusic(previous ? { playing: true, ...previous } : { playing: false, ducked: false, byDefault: false });
+  };
+}
+
 function setMusicOn(next: boolean) {
   musicChoice = next;
   try {
@@ -288,5 +307,6 @@ export const SoundPlayer = {
   setMusicOn,
   clearMusicChoice,
   setMusic,
+  claimMusic,
   subscribe,
 };

@@ -6,6 +6,7 @@ import { BrandStyles } from "@/components/brand/_utils/brandStyles.utils";
 import { LobbyCategoryPicker } from "@/components/lobby/LobbyCategoryPicker.component";
 import { LobbySetupSketch, type LobbySetupSketchKind } from "@/components/lobby/LobbySetupSketch.component";
 import { LobbySetupUtils } from "@/components/lobby/_utils/lobbySetup.utils";
+import { SoundToggle } from "@/components/sound/SoundToggle.component";
 import type { Language } from "@/protocol/generated/Language";
 import type { RoomSettings } from "@/protocol/generated/RoomSettings";
 import type { TurnMode } from "@/protocol/generated/TurnMode";
@@ -63,13 +64,17 @@ export function LobbySetup({
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-3 px-4 py-3 md:max-w-5xl md:gap-6 md:py-8">
         <header className="flex items-center justify-between gap-3">
           <BrandLogo named href={home} className="size-10" />
-          {roomCode && (
-            <p className="rounded-full bg-night-soft px-3 py-1 text-sm text-white/80">
-              <span className="sr-only">Room code </span>
-              <span aria-hidden="true">Room </span>
-              <span className="font-display tracking-widest">{roomCode}</span>
-            </p>
-          )}
+          <div className="flex items-center gap-1.5">
+            {roomCode && (
+              <p className="rounded-full bg-night-soft px-3 py-1 text-sm text-white/80">
+                <span className="sr-only">Room code </span>
+                <span aria-hidden="true">Room </span>
+                <span className="font-display tracking-widest">{roomCode}</span>
+              </p>
+            )}
+            <SoundToggle channel="music" />
+            <SoundToggle />
+          </div>
         </header>
 
         <div className="flex flex-1 flex-col justify-center">

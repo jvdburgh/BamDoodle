@@ -40,7 +40,8 @@ can change the number of rounds between rounds; when that's already been reached
 
 ## A round
 
-1. **Lobby.** The start page offers **Join a room** (most people) or **Create a room**. Joining asks for the four-letter
+1. **Lobby.** The start page offers **Join a room** (most people) or **Create a room**, with "How to play" below
+   (the steps, the points and a few questions). Joining asks for the four-letter
    room code (shown as "Join at bamdoodle.io with code …" on the host's screen) and a nickname, or skips the code when
    you open a shared link (`bamdoodle.io/BKZW`; the address bar shows it once you're in). Creating starts with setting up the
    room: mode, turns per player or turn length, rounds per game, the language and the word categories to play with
@@ -75,7 +76,8 @@ can change the number of rounds between rounds; when that's already been reached
 | **One stroke each** | one stroke (press, draw, release), with a 15 second limit | turns per player: 1 to 5 (default 3) |
 
 In the app these are named "One stroke each" and "Timed turns" ("Each player draws: once / 2 / 3 … times"); in code
-and on the wire they're `oneStroke` and `timed`. The categories are picked as small chips, every
+and on the wire they're `oneStroke` and `timed`. The categories are picked as small chips (a picked one is filled
+with a ✓, and the heading counts them: "Categories (12 of 30 selected)"), every
 non-18+ category of the room's language ticked by default, 18+ ones marked and only in play when ticked.
 
 The server enforces the turn: strokes from someone whose turn it isn't, or after the time limit, are dropped.

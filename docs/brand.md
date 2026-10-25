@@ -63,7 +63,7 @@ Quiet by default, silent until the first tap (browsers require it), and a mute t
 **Music:** one quirky detective loop (Pixabay, re-encoded to 96 kbps AAC in `web/public/sounds/`). It is under the
 Pixabay Content License, not the AGPL; `web/public/sounds/NOTICE` says so, for forks. It loops the track's audible span
 seamlessly (the silence before and the quiet tail after are left out) and keeps playing for as long as the room is
-open: softer while someone draws or votes, so the ticks and cues stay clear, and never stopped or restarted by a sound
+open, and from the start page on (the room picks it up without restarting): softer while someone draws or votes, so the ticks and cues stay clear, and never stopped or restarted by a sound
 effect. It has its own Music toggle next to the sound toggle, remembered per device: on by default on the host screen
 and on a laptop or desktop, off by default on phones and tablets, so a table full of phones doesn't play it
 out of step. Like every sound, it waits for the first tap (the track is already downloaded by then), starts at its
@@ -85,6 +85,10 @@ Modern, a bit mysterious, colourful. It should feel like a hand-made little game
   twice as each round starts, then rest. The logo is inlined from `/logo.svg` for that, never redrawn.
 - The fedora is a prop: it drops onto the face of whoever you suspect, sits on the bamboozler's own face on their
   screen, and lands on the bamboozler at the reveal. A spotlight gets a bold, wobbly frame on the sheet and the card.
+- The start page's Join and Create buttons wear a sketchy outline in the hat's colours that slowly travels round,
+  with doodled icons (a door, a pencil with a plus) that wiggle on hover. The music and sound toggles sit at the top
+  right of every screen, the start page included. Under the buttons, "How to play": three illustrated steps, the
+  points and a few questions, which is also what search engines read (with FAQ structured data in `index.html`).
 - Small, quick motion makes it feel alive: block buttons tilt and lift on hover and squish when pressed, player cards
   bounce in, "voted" and "suspected by" badges pop, hovering the start page's logo turns its hat's colours one round and back (the logo is inlined from
   `/logo.svg` for that too). Reduced motion turns it off.

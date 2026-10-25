@@ -32,6 +32,65 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="theme-color" content="#080357" />
     <meta name="color-scheme" content="dark" />
+    <!-- What the start page's "How to play" says, for search engines (HowToPlayUtils keeps the questions the same). -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "VideoGame",
+            "name": "BamDoodle",
+            "url": "https://bamdoodle.io/",
+            "description": "A free multiplayer drawing and bluffing party game for your phone. Draw the secret word together and catch the bamboozler who doesn't know it.",
+            "genre": ["Party game", "Drawing game"],
+            "gamePlatform": "Web browser",
+            "applicationCategory": "Game",
+            "operatingSystem": "Any",
+            "numberOfPlayers": {
+              "@type": "QuantitativeValue",
+              "minValue": 3,
+              "maxValue": 8
+            },
+            "inLanguage": ["en", "nl"],
+            "isAccessibleForFree": true,
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "EUR"
+            }
+          },
+          {
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "What do I need to play?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "3 to 8 players, each with a phone. No app and no accounts: create a room and share its link or four-letter code. A TV or laptop can show the drawing big as a host screen."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Is it free?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes, with no ads, no accounts and no cookies. BamDoodle is open source and hosted in the European Union."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Which languages can I play in?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "English and Dutch, with everyday categories and optional 18+ ones."
+                }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
     <!-- Night from the first frame, before the stylesheet arrives: no white flash on reload. -->
     <style>
       html {

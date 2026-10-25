@@ -7,6 +7,8 @@ import { LobbyStart, type LobbyEntry } from "@/components/lobby/LobbyStart.compo
 import { LobbyWaiting } from "@/components/lobby/LobbyWaiting.component";
 import { RoomPlayerView } from "@/components/room/RoomPlayerView.component";
 import { useRoomSounds } from "@/components/room/_hooks/roomSounds.hook";
+import { useMusic } from "@/components/sound/_hooks/sound.hook";
+import { MusicUtils } from "@/components/sound/_utils/music.utils";
 import type { RoomViewState } from "@/components/room/_types/room.types";
 import { RoomViewUtils } from "@/components/room/_utils/roomView.utils";
 import type { ClientMessage } from "@/protocol/generated/ClientMessage";
@@ -72,6 +74,8 @@ export function GameRoute({ joinCode }: { joinCode?: string }) {
   const [problem, setProblem] = useState<string>();
   /** Back from creating, or it couldn't start: Create a room gets the focus again. */
   const [backFromCreate, setBackFromCreate] = useState(false);
+  // From the start page on, so it's already playing in the room; the room's own music (ducking) takes over there.
+  useMusic(false, MusicUtils.onByDefault());
 
   const showSetup = useCallback((defaults: RoomDefaults | null) => {
     setLoading(false);
