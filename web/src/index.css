@@ -2,6 +2,9 @@
 @import "@fontsource-variable/work-sans";
 @import "@fontsource/love-ya-like-a-sister";
 
+/* A phone turned on its side: wide but short, so the room puts the drawing beside everything else. */
+@custom-variant sideways (@media (orientation: landscape) and (max-height: 32rem));
+
 /* Brand tokens, taken from brand/logo.svg. Fonts and their reasons: docs/brand.md. */
 @theme {
   --font-body: "Work Sans Variable", ui-sans-serif, system-ui, sans-serif;

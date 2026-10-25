@@ -58,3 +58,14 @@ export const Disabled: Story = {
     for (const radio of canvas.getAllByRole("radio")) await expect(radio).toBeDisabled();
   },
 };
+
+/** In a narrow spot like a phone's bottom bar: one row that scrolls sideways, every colour still there. */
+export const OneRowWhenNarrow: Story = {
+  args: { rowWhenNarrow: true },
+  play: async ({ canvas }) => {
+    const radios = canvas.getAllByRole("radio");
+    await expect(radios).toHaveLength(CanvasTools.colours.length);
+    const tops = new Set(radios.map((radio) => Math.round(radio.closest("label")!.getBoundingClientRect().top)));
+    await expect(tops.size).toBe(1);
+  },
+};

@@ -12,6 +12,7 @@ import { RoomGuess } from "@/components/room/RoomGuess.component";
 import { RoomJoinCard } from "@/components/room/RoomJoinCard.component";
 import { RoomPenTag } from "@/components/room/RoomPenTag.component";
 import { RoomPlayerList, type RoomPlayerAction } from "@/components/room/RoomPlayerList.component";
+import { RoomPlayerStrip } from "@/components/room/RoomPlayerStrip.component";
 import { RoomPodium } from "@/components/room/RoomPodium.component";
 import { RoomProgress } from "@/components/room/RoomProgress.component";
 import { RoomResults } from "@/components/room/RoomResults.component";
@@ -29,6 +30,7 @@ import { StrokeWireUtils } from "@/components/room/_utils/strokeWire.utils";
 import { SoundToggle } from "@/components/sound/SoundToggle.component";
 import { SoundPlayer } from "@/components/sound/_utils/soundPlayer.utils";
 import { VotePrompt } from "@/components/vote/VotePrompt.component";
+import { VoteSheet } from "@/components/vote/VoteSheet.component";
 import type { ClientMessage } from "@/protocol/generated/ClientMessage";
 import { RoomStateUtils } from "@/protocol/roomState.utils";
 
@@ -46,8 +48,8 @@ type RoomPlayerViewProps = {
 /**
  * What a player sees, phase by phase, from the server's state. On a laptop (a `room` container of 64rem or more)
  * everything fits on one screen: the player cards on the left, the canvas sized to the height that's left, the tools
- * under it. On a phone it's one column, ordered by the moment: your tools under the canvas on your turn, the cards
- * when you watch or vote.
+ * under it. On a phone it's one column: everyone as a strip of faces at the top, the canvas, and on your turn the
+ * tools pinned to the bottom. The final vote is a sheet over everything, with the drawing in it.
  */
 export function RoomPlayerView({ state, send, revealCode = false, onSettings, home = "/" }: RoomPlayerViewProps) {
   const view = useRoomView(state);
@@ -89,13 +91,14 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
   // Each phase swaps what's on screen. If that took keyboard focus with it (to the page, or into the hidden tools),
   // hand it to what replaced it: the tools while drawing, the cards in the vote, the panel after, or the podium.
   useLayoutEffect(() => {
-    if (phase === "lobby") return;
+    // The vote sheet takes the focus itself.
+    if (phase === "lobby" || (phase === "voting" && playing)) return;
     const focused = document.activeElement;
     const lost = !focused || focused === document.body || (!drawingPhase && !!toolsRef.current?.contains(focused));
     if (!lost) return;
     const target = showPodium ? podiumRef : phase === "drawing" ? toolsRef : phase === "voting" ? cardsRef : stageRef;
     target.current?.focus({ preventScroll: true });
-  }, [phase, showPodium, drawingPhase]);
+  }, [phase, showPodium, drawingPhase, playing]);
 
   const startRound = () => {
     send({ type: "startRound" });
@@ -135,6 +138,8 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
           : undefined;
 
   // On a laptop the canvas takes the height the header and whatever sits under it (tools, vote, results) leave over.
+  // On a phone: what the header, the strip and (on your turn) the tools bar leave over, when that's the narrower side.
+  const phoneCanvasMax = `${yourTurn ? "max-w-[calc((100svh-24rem)*4/3)]" : "max-w-[calc((100svh-17rem)*4/3)]"} sideways:max-w-none`;
   const canvasMax = drawingPhase
     ? "@5xl/room:max-w-[calc((100svh-16.5rem)*4/3)]"
     : phase === "voting"
@@ -157,17 +162,14 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
     />
   );
 
-  // Phone order: canvas first, then what you need right now.
-  const placeOnPhone = (section: "tools" | "cards" | "stage") => {
-    if (phase === "drawing" && yourTurn) return { tools: "order-2", cards: "order-3", stage: "order-4" }[section];
-    if (drawingPhase) return { tools: "order-3", cards: "order-2", stage: "order-4" }[section];
-    if (phase === "voting") return { tools: "order-4", cards: "order-3", stage: "order-4" }[section];
-    return { tools: "order-4", cards: "order-3", stage: "order-2" }[section];
-  };
+  /** On your turn on a phone the tools are pinned to the bottom: the page leaves room for them. */
+  const toolsPinned = phase === "drawing" && yourTurn;
 
   return (
     <div className="@container/room">
-      <div className="mx-auto flex max-w-[110rem] flex-col gap-3 p-3 pb-16 @5xl/room:h-svh @5xl/room:gap-4 @5xl/room:px-5 @5xl/room:py-4">
+      <div
+        className={`mx-auto flex max-w-[110rem] flex-col gap-3 p-3 @5xl/room:h-svh ${toolsPinned ? "pb-[calc(8rem+var(--browser-bar))] @5xl/room:pb-4" : "pb-16"} @5xl/room:gap-4 @5xl/room:px-5 @5xl/room:py-4`}
+      >
         <header className="grid grid-cols-[auto_1fr_auto] items-center gap-x-2 @5xl/room:grid-cols-[1fr_auto_1fr]">
           <BrandLogo
             key={view.roundNumber}
@@ -221,13 +223,30 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
             <BrandFooter support={false} />
           </div>
         ) : (
-          <div className="flex min-h-0 flex-1 flex-col gap-3 @5xl/room:grid @5xl/room:grid-cols-[17rem_minmax(0,1fr)] @5xl/room:grid-rows-[minmax(0,1fr)_auto] @5xl/room:gap-x-5 @5xl/room:gap-y-3">
+          // A phone on its side: the drawing on the left at the height there is, everything else beside it.
+          <div className="flex min-h-0 flex-1 flex-col gap-3 @5xl/room:grid @5xl/room:grid-cols-[17rem_minmax(0,1fr)] @5xl/room:grid-rows-[minmax(0,1fr)_auto] @5xl/room:gap-x-5 @5xl/room:gap-y-3 sideways:@max-5xl/room:grid sideways:@max-5xl/room:grid-cols-[auto_minmax(14rem,1fr)] sideways:@max-5xl/room:content-start sideways:@max-5xl/room:items-start sideways:@max-5xl/room:*:col-start-2">
             <div className="order-first @5xl/room:hidden">{progress}</div>
+            {phase !== "lobby" && (
+              <div className="order-first @5xl/room:hidden">
+                <RoomPlayerStrip
+                  players={players}
+                  youId={you?.id ?? null}
+                  activeId={active?.id ?? null}
+                  totals={RoomViewUtils.totals(room.players)}
+                  spotlightId={spotlight.pinned}
+                  onSpotlight={spotlight.pin}
+                  suspicion={suspicion}
+                  onSuspect={action?.kind === "suspect" ? action.onChoose : undefined}
+                  youWearTheHat={youAreBamboozler && !result}
+                  outcome={RoomViewUtils.outcome(reveal, result, room.players)}
+                />
+              </div>
+            )}
 
             {/* The canvas: full width on a phone, as big as the leftover height allows on a laptop. */}
-            <div className="order-1 flex min-h-0 justify-center @5xl/room:col-start-2 @5xl/room:row-start-1 @5xl/room:items-end">
+            <div className="order-1 flex min-h-0 justify-center @5xl/room:col-start-2 @5xl/room:row-start-1 @5xl/room:items-end sideways:@max-5xl/room:col-start-1! sideways:@max-5xl/room:row-span-6 sideways:@max-5xl/room:row-start-1 sideways:@max-5xl/room:w-[calc((100svh-5.5rem)*4/3)]">
               <div
-                className={`relative w-full rounded-[12px_16px_14px_11px] transition-shadow ${canvasMax} ${
+                className={`relative w-full rounded-[12px_16px_14px_11px] transition-shadow ${phoneCanvasMax} @5xl/room:max-w-none ${canvasMax} ${
                   yourTurn ? "shadow-[0_0_0_4px_var(--color-sun)]" : ""
                 }`}
               >
@@ -307,7 +326,7 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
               ref={cardsRef}
               tabIndex={-1}
               aria-label="Who drew what"
-              className={`flex min-h-0 flex-col gap-3 outline-none @5xl/room:col-start-1 @5xl/room:row-span-2 @5xl/room:row-start-1 @5xl/room:h-[calc(100svh-7.5rem)] ${placeOnPhone("cards")}`}
+              className={`order-2 flex min-h-0 flex-col gap-3 outline-none @5xl/room:col-start-1 @5xl/room:row-span-2 @5xl/room:row-start-1 @5xl/room:h-[calc(100svh-7.5rem)] ${phase === "lobby" ? "" : "@max-5xl/room:hidden"}`}
             >
               <div className="min-h-0 @5xl/room:flex-1 @5xl/room:overflow-y-auto @5xl/room:pr-1">
                 <RoomPlayerList
@@ -331,9 +350,9 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
               <div className="hidden @5xl/room:block">{progress}</div>
             </aside>
 
-            {/* The final call: under the canvas, next to the cards it refers to; above the cards on a phone. */}
+            {/* The final call: a sheet over everything, with the drawing and a big Vote button per player. */}
             {phase === "voting" && playing && round && (
-              <div className="order-2 @5xl/room:col-start-2 @5xl/room:row-start-2">
+              <VoteSheet>
                 <VotePrompt
                   players={players.filter((player) => round.turnOrder.includes(player.id))}
                   voted={players.find((player) => player.id === yourVoteId)}
@@ -341,19 +360,53 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
                   votedIds={round.voted}
                   msLeft={ClockUtils.left(state.timers.voting, now)}
                 />
-              </div>
+                <div className="mx-auto w-full max-w-xl">
+                  <CanvasBoard
+                    drawing={drawing}
+                    order={order}
+                    activePlayerId={null}
+                    color="transparent"
+                    brushSize={0}
+                    spotlightId={spotlight.shown}
+                    label="The finished drawing."
+                  />
+                </div>
+                <RoomPlayerList
+                  players={players}
+                  drawing={drawing}
+                  youId={you?.id ?? null}
+                  activeId={null}
+                  nextId={null}
+                  spotlightId={spotlight.pinned}
+                  onSpotlight={spotlight.pin}
+                  onPeek={spotlight.setPeek}
+                  action={action}
+                  yourVoteId={yourVoteId}
+                  votedIds={round.voted}
+                  youWearTheHat={youAreBamboozler}
+                  layout="sheet"
+                />
+              </VoteSheet>
             )}
 
-            {/* Pens and colours: right under the canvas, always in view while drawing (the canvas shrinks to make room). */}
+            {/*
+              Pens and colours while drawing: under the canvas on a laptop (the canvas shrinks to make room), pinned
+              to the bottom on a phone on your turn, so they're always in view.
+            */}
             <section
               ref={toolsRef}
-              hidden={!drawingPhase}
+              hidden={phase !== "drawing"}
               tabIndex={-1}
               aria-label="Drawing tools"
-              className={`${BrandStyles.panel} flex flex-col gap-4 outline-none @2xl/room:flex-row @2xl/room:items-center @5xl/room:col-start-2 @5xl/room:row-start-2 ${placeOnPhone("tools")}`}
+              className={`${BrandStyles.panel} order-3 flex items-center gap-3 outline-none @5xl/room:col-start-2 @5xl/room:row-start-2 @5xl/room:gap-4 @max-5xl/room:fixed @max-5xl/room:inset-x-0 @max-5xl/room:bottom-0 @max-5xl/room:z-20 @max-5xl/room:rounded-none @max-5xl/room:rounded-t-[18px] @max-5xl/room:bg-night-deep @max-5xl/room:px-3 @max-5xl/room:pt-3 @max-5xl/room:pb-[calc(0.75rem+var(--browser-bar))] @max-5xl/room:shadow-[0_-6px_18px_var(--color-night-deep)] sideways:@max-5xl/room:static sideways:@max-5xl/room:rounded-[14px_18px_16px_12px] sideways:@max-5xl/room:pb-3 sideways:@max-5xl/room:shadow-none ${yourTurn ? "" : "@max-5xl/room:hidden"}`}
             >
               <div className="min-w-0 flex-1">
-                <CanvasPalette colours={CanvasTools.colours} value={chosenColour} onChange={setChosenColour} />
+                <CanvasPalette
+                  colours={CanvasTools.colours}
+                  value={chosenColour}
+                  onChange={setChosenColour}
+                  rowWhenNarrow
+                />
               </div>
               <CanvasBrushPicker
                 brushes={CanvasTools.brushes}
@@ -368,7 +421,7 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
               <div
                 ref={stageRef}
                 tabIndex={-1}
-                className={`${BrandStyles.panel} flex flex-col gap-4 outline-none @5xl/room:col-start-2 @5xl/room:row-start-2 @5xl/room:max-h-[24rem] @5xl/room:overflow-y-auto ${placeOnPhone("stage")}`}
+                className={`${BrandStyles.panel} order-2 flex flex-col gap-4 outline-none @5xl/room:col-start-2 @5xl/room:row-start-2 @5xl/room:max-h-[24rem] @5xl/room:overflow-y-auto`}
               >
                 {reveal && (
                   <>

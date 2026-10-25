@@ -48,9 +48,9 @@ can change the number of rounds between rounds; when that's already been reached
    room code (shown as "Join at bamdoodle.io with code …" on the host's screen) and a nickname, or skips the code when
    you open a shared link (`bamdoodle.io/BKZW`; the address bar shows it once you're in). Creating starts with setting up the
    room: mode, turns per player or turn length, rounds per game, the language and the word categories to play with
-   (Efteling, Places, Very British, …, and 18+ ones if they want), in two columns on a wide screen ("Each round"
-   and "The game" on the left, the words on the right) and one on a phone, with a small sketch beside each
-   choice and as little text as possible. Then the host's nickname (after the setup, so it's clearly
+   (Efteling, Places, Very British, …, and 18+ ones if they want), in two columns on a wide screen (the round and
+   the game on the left, the words on the right) and one on a phone: each setting a heading with one line on what
+   it does and a small sketch of what's picked. Then the host's nickname (after the setup, so it's clearly
    theirs and not the room's), and only then is the room created, with those settings. The host can open the
    settings again between rounds; every change there reaches the room at once. Then everyone draws their avatar
    (an empty round pad with one pen and the colours that read on navy; Randomize for a doodle face to start from,
@@ -93,7 +93,9 @@ Everyone can use every colour: there is nothing to unlock, ever. To still see wh
 
 - **Live highlight:** the active drawer is clearly marked while they draw: a ring around their avatar in the turn
   order, their name in the turn bar, and a name tag that follows their pen tip on the canvas.
-- **Mini-maps:** next to each player's name, a small canvas shows only *their* strokes. Always visible, on phones too.
+- **Mini-maps:** next to each player's name on a laptop, a small canvas shows only *their* strokes. On a phone the
+  players are a strip of faces at the top (name, points, the ring on whoever draws, the hat on whoever you suspect);
+  a tap opens "See their lines" and "Mark as suspicious" right under it. The mini-maps are back in the final vote.
 - **Pen tag:** a small chip with the drawer's avatar and name rides on their pen tip on every screen.
 - **Magnifying glass (spotlight):** tap a player's mini-map to highlight their strokes on the main canvas while the
   rest fades back to grey; the sheet and their card get a bold, wobbly hand-drawn frame, and a "Noor's lines · Show
@@ -107,11 +109,13 @@ button under the name, or a tap on the face itself (hovering it shows the logo's
 their head; the button then says "Suspected ✓" and another tap takes it off. Marking or changing it is public table
 talk ("Noor thinks Jip is sketchy") and cards say who suspects that player. After the last turn the same button says
 "Vote" and the face is the vote too: a tap votes for them (the hat drops on, "Your vote ✓"), a tap on another changes
-it, next to a "Time's up! Who's sketchy?" prompt with a 30 s countdown that says whose
-suspicion counts if you don't vote; it shows who has voted, never for whom. On a laptop everything fits one screen (cards
-in one column on the left, the canvas sized to fit with pens and colours right under it, round and turn progress
-bottom-left); on a phone the cards
-or your tools follow the canvas depending on whose turn it is. Then the reveal on the cards themselves: the hat drops
+it. The final vote is a sheet over everything on every screen: "Time's up! Who's sketchy?" with a 30 s countdown that
+says whose suspicion counts if you don't vote, the finished drawing, and a card per player with their mini-map and a
+big Vote button; it shows who has voted, never for whom, and closes when the vote ends. On a laptop everything fits one
+screen (cards in one column on the left, the canvas sized to fit with pens and colours right under it, round and turn
+progress bottom-left). On a phone: the progress and the strip of faces at the top, the canvas, and on your turn pens
+and colours pinned to the bottom (colours in one row that scrolls); on its side, the drawing on the left and the rest
+beside it. Then the reveal on the cards themselves: the hat drops
 onto the bamboozler, each card says who that player voted for (right or wrong), and once the round is scored each card
 pops its points and total. Under the canvas only the headline: who the bamboozler was and their guess (the guess's 20
 seconds start at the reveal), then the word and the host's "Next round". After the last round
@@ -168,6 +172,6 @@ These are implemented in the server (`server/src/limits.rs`) and easy to change:
 
 ## Open questions
 
-- Does the host screen need its own controls (start the next round, kick a player), or is that the host's phone?
+- Should the host screen be able to kick a player?
 - Should timed turns also let the host pick the number of turns per player?
 - A computer-controlled bamboozler (the original pitch said "player or AI"): later, if ever.

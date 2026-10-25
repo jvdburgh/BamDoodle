@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { AvatarDoodle } from "@/components/avatar/AvatarDoodle.component";
 import { BrandScribble } from "@/components/brand/BrandScribble.component";
 import { BrandSketchyFrame } from "@/components/brand/BrandSketchyFrame.component";
@@ -46,9 +47,10 @@ type RoomPlayerListProps = {
   /**
    * "grid": two columns of cards on a phone (so names fit), three on a tablet, and one column of wide cards in a
    * laptop's `room` container;
-   * "row": everyone in one row (host screen).
+   * "row": everyone in one row (host screen);
+   * "sheet": two columns, three when there's room, whatever the screen (the vote sheet).
    */
-  layout?: "grid" | "row";
+  layout?: "grid" | "row" | "sheet";
 };
 
 /** Full class names, so Tailwind sees them. */
@@ -86,6 +88,8 @@ export function RoomPlayerList({
 }: RoomPlayerListProps) {
   /** The host screen is read from across the room: the results on its cards are bigger. */
   const big = layout === "row";
+  // Cards that go away under the mouse (the vote sheet closing) never hear it leave: end the peek with them.
+  useEffect(() => () => onPeek(null), [onPeek]);
   const nameOf = (id: number) => (id === youId ? "you" : (players.find((player) => player.id === id)?.name ?? "?"));
   /** "you", "you and Noor", "Noor, Jip and 2 more": you first, then in the order they marked them. */
   const names = (ids: number[]) => {
@@ -97,7 +101,13 @@ export function RoomPlayerList({
     <div className="@container/players">
       <ol
         aria-label="Players"
-        className={`grid gap-2 ${layout === "row" ? `grid-cols-3 ${rowColumns[players.length] ?? rowColumns[6]}` : "grid-cols-2 @lg/players:grid-cols-3 @5xl/room:grid-cols-1"}`}
+        className={`grid gap-2 ${
+          layout === "row"
+            ? `grid-cols-3 ${rowColumns[players.length] ?? rowColumns[6]}`
+            : layout === "sheet"
+              ? "grid-cols-2 @lg/players:grid-cols-3"
+              : "grid-cols-2 @lg/players:grid-cols-3 @5xl/room:grid-cols-1"
+        }`}
       >
         {players.map((player, index) => {
           const you = player.id === youId;
@@ -192,8 +202,16 @@ export function RoomPlayerList({
                     data-sound="own"
                     aria-pressed={chosen}
                     onClick={() => action.onChoose(action.kind === "suspect" && chosen ? null : player.id)}
-                    className={`mt-1.5 min-h-8 rounded-full px-3 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
-                      chosen ? "bg-berry text-night" : "bg-night text-white hover:bg-night-soft"
+                    className={`mt-1.5 rounded-full transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+                      action.kind === "vote"
+                        ? "min-h-11 w-full px-4 font-display text-lg"
+                        : "min-h-8 px-3 text-xs font-semibold"
+                    } ${
+                      chosen
+                        ? "bg-berry text-night"
+                        : action.kind === "vote"
+                          ? "bg-sun text-night hover:bg-amber"
+                          : "bg-night text-white hover:bg-night-soft"
                     }`}
                   >
                     {action.kind === "vote" ? (chosen ? "Your vote" : "Vote") : chosen ? "Suspected" : "Suspect"}

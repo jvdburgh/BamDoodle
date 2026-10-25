@@ -92,6 +92,28 @@ export const PeekOnHover: Story = {
   },
 };
 
+/** Cards that go away under the mouse (the vote sheet closing) take their peek with them. */
+export const PeekEndsWhenTheCardsGo: Story = {
+  render: function Render(args) {
+    const [shown, setShown] = useState(true);
+    return (
+      <>
+        <button type="button" onClick={() => setShown(false)}>
+          Close
+        </button>
+        {shown && <RoomPlayerList {...args} />}
+      </>
+    );
+  },
+  play: async ({ args, canvas, userEvent }) => {
+    await userEvent.hover(canvas.getByRole("button", { name: /Spotlight Mo/ }));
+    await expect(args.onPeek).toHaveBeenLastCalledWith(3);
+    canvas.getByRole("button", { name: "Close" }).focus();
+    await userEvent.keyboard("{Enter}");
+    await expect(args.onPeek).toHaveBeenLastCalledWith(null);
+  },
+};
+
 /** Who suspects whom, by name; your own card stands out and isn't a button. */
 export const WhoSuspectsWhom: Story = {
   args: { activeId: null, nextId: null, suspectedBy: { 3: [1, 2], 4: [1, 3, 5, 6] } },

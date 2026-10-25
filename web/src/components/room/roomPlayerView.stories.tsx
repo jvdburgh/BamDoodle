@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
-import { expect, fn, waitFor } from "storybook/test";
+import { expect, fn, waitFor, within } from "storybook/test";
 import { RoomPlayerView } from "./RoomPlayerView.component";
 import { resultFixture, roomStateFixture, roundFixture, strokeViewsFixture } from "./_fixtures/roomState.fixture";
 import type { ClientMessage } from "@/protocol/generated/ClientMessage";
@@ -81,10 +81,12 @@ export const Watching: Story = {
     await expect(wornHats(canvas.getByRole("list", { name: "Players" }))).toHaveLength(0);
     await expect(canvas.getByText("Giraffe")).toBeVisible();
     await expect(canvas.getByRole("img", { name: "Shared drawing. Pip is drawing." })).toBeVisible();
-    await expect(canvas.getAllByRole("listitem")).toHaveLength(6);
-    await expect(canvas.getAllByRole("radio", { name: /Black|Berry|Lagoon/ })).toHaveLength(3);
+    // On a phone: everyone in the strip at the top, no tools while someone else draws.
+    await expect(within(canvas.getByRole("list", { name: "Players" })).getAllByRole("listitem")).toHaveLength(6);
+    await expect(canvas.queryAllByRole("radio", { name: /Black|Berry|Lagoon/ })).toHaveLength(0);
 
-    await userEvent.click(canvas.getByRole("button", { name: "Mark Mo as suspicious" }));
+    await userEvent.click(canvas.getByRole("button", { name: /^Mo\b/ }));
+    await userEvent.click(canvas.getByRole("button", { name: "Mark as suspicious" }));
     await expect(args.send).toHaveBeenCalledWith({ type: "suspect", suspectId: 3 });
   },
 };
@@ -116,6 +118,15 @@ export const YourTurn: Story = {
       ([message]) => message.type === "extendStroke",
     );
     await expect(extended.flatMap(([message]) => message.points).at(-1)).toEqual([0.7, 0.3, 0.5]);
+
+    // On a phone the tools are pinned to the bottom on your turn: always in view, the colours in one row.
+    const tools = canvas.getByRole("region", { name: "Drawing tools" });
+    await expect(getComputedStyle(tools).position).toBe("fixed");
+    await expect(tools.getBoundingClientRect().bottom).toBeLessThanOrEqual(window.innerHeight + 1);
+    const swatchTops = canvas
+      .getAllByRole("radio", { name: /Black|Berry|Lagoon/ })
+      .map((radio) => Math.round(radio.closest("label")!.getBoundingClientRect().top));
+    await expect(new Set(swatchTops).size).toBe(1);
   },
 };
 
@@ -127,7 +138,7 @@ export const Bamboozler: Story = {
     // Only on their own screen, only on their own face.
     const players = canvas.getByRole("list", { name: "Players" });
     await waitFor(() => expect(wornHats(players)).toHaveLength(1));
-    await expect(wornHats(canvas.getByText("you").closest("li")!)).toHaveLength(1);
+    await expect(wornHats(within(players).getByRole("button", { name: /You/ }))).toHaveLength(1);
   },
 };
 
@@ -185,6 +196,12 @@ export const FinalVote: Story = {
     },
   },
   play: async ({ args, canvas, userEvent }) => {
+    // A sheet over everything, with the drawing in it and a big Vote button per player.
+    const sheet = within(canvas.getByRole("dialog", { name: "Who’s sketchy?" }));
+    await expect(sheet.getByRole("img", { name: "The finished drawing." })).toBeVisible();
+    await expect(sheet.getByRole("button", { name: "Vote Mo" }).getBoundingClientRect().height).toBeGreaterThanOrEqual(
+      44,
+    );
     await expect(canvas.getByText(/your suspicion of/)).toHaveTextContent("your suspicion of Kiki counts");
     // A suspicion from the drawing isn't a vote: nothing says "Your vote" until you tap.
     await expect(canvas.getByRole("button", { name: "Vote for Kiki" })).toHaveAttribute("aria-pressed", "false");
