@@ -11,7 +11,6 @@ type RoomPodiumProps = {
   players: RoomPlayer[];
   totals: Record<number, number>;
   youId?: number | null;
-  colours?: Record<number, string>;
   /** Only the host starts a new game; leave out for everyone else. */
   onNewGame?: () => void;
   /** Who can start a new game here, for everyone else's "waiting" line. */
@@ -40,7 +39,6 @@ export function RoomPodium({
   players,
   totals,
   youId = null,
-  colours,
   onNewGame,
   hostName,
   startPage,
@@ -84,12 +82,7 @@ export function RoomPodium({
               className="flex w-24 animate-podium-rise flex-col items-center gap-1 motion-reduce:animate-none"
               style={{ animationDelay: `${rises[index]}ms` }}
             >
-              <AvatarDoodle
-                strokes={player.avatar}
-                color={colours?.[player.id]}
-                backdrop={false}
-                className={index === 0 ? "size-20" : "size-14"}
-              />
+              <AvatarDoodle strokes={player.avatar} backdrop={false} className={index === 0 ? "size-20" : "size-14"} />
               <span className="max-w-full truncate font-display text-lg">
                 {player.id === youId ? "You" : player.name}
               </span>
@@ -113,12 +106,7 @@ export function RoomPodium({
             return (
               <li key={player.id} className="flex items-center gap-2 rounded-full bg-night-deep/70 py-1 pr-4 pl-1">
                 <span className="w-6 text-center font-display text-white/70">{standing.place}</span>
-                <AvatarDoodle
-                  strokes={player.avatar}
-                  color={colours?.[player.id]}
-                  backdrop={false}
-                  className="size-8"
-                />
+                <AvatarDoodle strokes={player.avatar} backdrop={false} className="size-8" />
                 <span className="flex-1 truncate">{player.id === youId ? "You" : player.name}</span>
                 <span className="font-display">
                   {standing.total} {standing.total === 1 ? "pt" : "pts"}

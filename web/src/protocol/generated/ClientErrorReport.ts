@@ -10,6 +10,6 @@ export type ClientErrorReport = { message: string, stack: string | null,
  */
 version: string, 
 /**
- * Which screen: start, join, watch, lab or other.
+ * Which screen: start, join, watch or other.
  */
 page: string, };

@@ -13,7 +13,7 @@ Thanks for helping make BamDoodle better. Words, bug reports, ideas and code are
 
 ```bash
 just setup   # once
-just dev     # server on :8080, web app on http://localhost:5173 (the lab at /lab)
+just dev     # server on :8080, web app on http://localhost:5173
 ```
 
 You need [mise](https://mise.jdx.dev); it installs the rest (Rust, Node, pnpm, just, lefthook).

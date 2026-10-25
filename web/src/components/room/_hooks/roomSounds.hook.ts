@@ -10,7 +10,7 @@ import { RoomStateUtils } from "@/protocol/roomState.utils";
 
 /**
  * The room's sounds on this device: turns, ticks, time's up, the reveal, the final fanfare, and the music, softer while
- * someone draws or votes (`musicByDefault`: on a laptop unless switched off, always for the host screen and the lab).
+ * someone draws or votes (`musicByDefault`: on a laptop unless switched off, always for the host screen).
  * Mount once per room.
  */
 export function useRoomSounds(state: RoomViewState, { musicByDefault = MusicUtils.onByDefault() } = {}) {

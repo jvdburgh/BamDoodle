@@ -7,13 +7,12 @@ type RoomRevealProps = {
   /** Final votes: voter → suspect. */
   votes: Record<number, number>;
   youId?: number | null;
-  colours?: Record<number, string>;
   /** Bigger for the host screen. */
   big?: boolean;
 };
 
 /** The moment of truth: who the bamboozler was, popping in, and how many caught them. Who voted for whom is on the cards. */
-export function RoomReveal({ players, bamboozlerId, votes, youId = null, colours, big = false }: RoomRevealProps) {
+export function RoomReveal({ players, bamboozlerId, votes, youId = null, big = false }: RoomRevealProps) {
   const bamboozler = players.find((player) => player.id === bamboozlerId);
   const artists = players.filter((player) => player.id !== bamboozlerId);
   const caught = artists.filter((player) => votes[player.id] === bamboozlerId).length;
@@ -28,7 +27,6 @@ export function RoomReveal({ players, bamboozlerId, votes, youId = null, colours
       >
         <AvatarDoodle
           strokes={bamboozler.avatar}
-          color={colours?.[bamboozler.id]}
           backdrop={false}
           hat="worn"
           hatDelayMs={1200}

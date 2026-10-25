@@ -169,8 +169,7 @@ weight without helping freehand strokes. tldraw is out: its licence isn't open s
 
 ### Screens and routes
 
-- `/` is the start page; `/BKZW` opens it on joining that room (`RouteUtils.route`; an old `/join/BKZW` link shows
-  `/BKZW` instead). A device holds one `RoomConnection`
+- `/` is the start page; `/BKZW` opens it on joining that room (`RouteUtils.route`). A device holds one `RoomConnection`
   (`useRoomConnection`) and, once the room is there, renders `RoomPlayerView` from its `RoomState` and sends intents
   through `send` (`src/app/GameRoute.tsx`). Creating a room starts with `LobbySetup` before the room exists, from
   `GET /api/room-defaults` (the default settings and every category, `RoomDefaultsUtils`), then your name, then
@@ -188,15 +187,7 @@ weight without helping freehand strokes. tldraw is out: its licence isn't open s
 - Countdowns come from `state.timers`: a deadline on this device's clock and how long it ran, so bars need no copy of
   the server's timings.
 
-### The lab (`/lab`)
-
-The game on one device with simulated players, for working on the screens without a server: `useLabRoom`
-(`components/lab/_hooks/labRoom.hook.ts`) plays the rounds with copies of the round flow and scoring
-(`components/lab/_utils/`) and hands the same views the same `RoomState` the server would, for your phone and for a
-host screen; your `send` is answered as the server would. The lab also has what isn't on the wire yet: own colours per
-player. A "Lab" panel (bottom right on a laptop, `?panel` on a phone) switches screen,
-view (phone, host screen, both), role and player count; settings persist per viewer and in the URL. To try anything on
-a phone on the same Wi-Fi: `pnpm --dir web dev --host`.
+To try anything on a phone on the same Wi-Fi: `pnpm --dir web dev --host`.
 
 ### Code layout
 
@@ -248,12 +239,12 @@ Scaleway Cockpit. No cookies, no third-party script, nothing that points at a pe
   sends uncaught errors and rejected promises to `POST /api/client-error`: each different one once, at most five per
   visit, only the stack frames from our own site (none: not sent), room codes in addresses as `CODE`. The server
   cuts them to size, takes 10 a minute in total and logs them as `bamdoodle::client_error` with the release, the
-  screen (`start`, `join`, `watch`, `lab`) and the user agent, never the IP address or room code.
+  screen (`start`, `join`, `watch`) and the user agent, never the IP address or room code.
 - **Cockpit:** logs kept a year, alerts by email for server errors, a container in error and bursts of browser
   errors, and a usage dashboard. The setup is in [infra/README.md](../infra/README.md) ("Usage, errors and alerts").
 
 ## Not now (follow-ups)
 
 - PWA install, a native Android app (the server doesn't care what the client is).
-- Own colours per player on the wire (only in the lab so far), a limit on rooms per IP address.
+- A limit on rooms per IP address.
 - A database, only when there's something worth keeping (stats, custom word packs).

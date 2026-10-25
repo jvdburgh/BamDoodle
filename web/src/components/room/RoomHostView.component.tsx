@@ -17,7 +17,7 @@ import { RoomTurnCall } from "@/components/room/RoomTurnCall.component";
 import { RoomWordCard } from "@/components/room/RoomWordCard.component";
 import { useRoomView } from "@/components/room/_hooks/roomView.hook";
 import { useSpotlight } from "@/components/room/_hooks/spotlight.hook";
-import type { Attribution, RoomViewState } from "@/components/room/_types/room.types";
+import type { RoomViewState } from "@/components/room/_types/room.types";
 import { ClockUtils } from "@/components/room/_utils/clock.utils";
 import { RoomViewUtils } from "@/components/room/_utils/roomView.utils";
 import { SoundToggle } from "@/components/sound/SoundToggle.component";
@@ -29,8 +29,6 @@ type RoomHostViewProps = {
   state: RoomViewState;
   /** Play the room-created reveal on the join card. */
   revealCode?: boolean;
-  /** Free colours, or a shade family per player (the lab only, until the server has the setting). */
-  colours?: Attribution;
   /** Where the logo leads. */
   home?: string;
 };
@@ -39,9 +37,9 @@ type RoomHostViewProps = {
  * The optional big screen (TV, beamer, laptop): the canvas large, everyone's mini-maps, the table talk, the vote,
  * the reveal and the scores. It never gets the word and nobody draws on it.
  */
-export function RoomHostView({ state, revealCode = false, colours = "free", home = "/" }: RoomHostViewProps) {
-  const view = useRoomView(state, colours);
-  const { room, phase, round, reveal, result, now, players, identities, drawing, active, next, order } = view;
+export function RoomHostView({ state, revealCode = false, home = "/" }: RoomHostViewProps) {
+  const view = useRoomView(state);
+  const { room, phase, round, reveal, result, now, players, drawing, active, next, order } = view;
   const roomCode = room.code;
   const spotlight = useSpotlight();
   /** After the last round, the results first, then the podium. */
@@ -111,7 +109,7 @@ export function RoomHostView({ state, revealCode = false, colours = "free", home
 
         {showPodium ? (
           <div ref={podiumRef} tabIndex={-1} className="outline-none">
-            <RoomPodium players={players} totals={RoomViewUtils.totals(room.players)} colours={identities} big />
+            <RoomPodium players={players} totals={RoomViewUtils.totals(room.players)} big />
           </div>
         ) : (
           <div className="flex flex-col gap-4 @4xl/room:gap-6">
@@ -125,7 +123,6 @@ export function RoomHostView({ state, revealCode = false, colours = "free", home
                 spotlightId={spotlight.pinned}
                 onSpotlight={spotlight.pin}
                 onPeek={spotlight.setPeek}
-                colours={identities}
                 suspectedBy={phase === "drawing" ? RoomViewUtils.suspectedBy(round) : {}}
                 votedIds={phase === "voting" ? (round?.voted ?? []) : []}
                 outcome={RoomViewUtils.outcome(reveal, result, room.players)}
@@ -144,7 +141,7 @@ export function RoomHostView({ state, revealCode = false, colours = "free", home
                   brushSize={0}
                   spotlightId={spotlight.shown}
                   label={active ? `Shared drawing. ${active.name} is drawing.` : "Shared drawing."}
-                  penTag={active && <RoomPenTag player={active} color={identities?.[active.id]} />}
+                  penTag={active && <RoomPenTag player={active} />}
                 >
                   {spotlit && (
                     <BrandSketchyFrame bold className="animate-pop-in text-night motion-reduce:animate-none" />
@@ -210,7 +207,6 @@ export function RoomHostView({ state, revealCode = false, colours = "free", home
                     players={players}
                     bamboozlerId={reveal.bamboozlerId}
                     votes={RoomViewUtils.votes(reveal.votes)}
-                    colours={identities}
                     big
                   />
                   <p className="font-display text-4xl">

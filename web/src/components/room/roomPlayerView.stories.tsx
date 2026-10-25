@@ -3,7 +3,6 @@ import { useState } from "react";
 import { expect, fn, waitFor } from "storybook/test";
 import { RoomPlayerView } from "./RoomPlayerView.component";
 import { resultFixture, roomStateFixture, roundFixture, strokeViewsFixture } from "./_fixtures/roomState.fixture";
-import type { Attribution } from "./_types/room.types";
 import type { ClientMessage } from "@/protocol/generated/ClientMessage";
 import type { PhaseView } from "@/protocol/generated/PhaseView";
 import type { RejectReason } from "@/protocol/generated/RejectReason";
@@ -12,7 +11,6 @@ type Props = {
   phase: PhaseView;
   you: number;
   hostId: number;
-  colours: Attribution;
   width: string;
   rejection?: RejectReason;
   /** A vote you sent that the server hasn't confirmed yet. */
@@ -28,7 +26,6 @@ function PlayerFromState({
   phase,
   you,
   hostId,
-  colours,
   width,
   rejection,
   pendingVote,
@@ -47,7 +44,7 @@ function PlayerFromState({
   });
   return (
     <div style={{ width }}>
-      <RoomPlayerView state={state} send={send} colours={colours} onSettings={onSettings} />
+      <RoomPlayerView state={state} send={send} onSettings={onSettings} />
     </div>
   );
 }
@@ -67,7 +64,6 @@ const meta = {
     phase: { phase: "drawing", round: roundFixture() },
     you: 2,
     hostId: 2,
-    colours: "free",
     width: "390px",
     send: fn(),
   },
@@ -251,16 +247,6 @@ export const GameOver: Story = {
     await userEvent.click(canvas.getByRole("button", { name: "See the final scores" }));
     await expect(canvas.getByRole("list", { name: "Podium" })).toBeVisible();
     await expect(canvas.queryByRole("button", { name: "New game" })).toBeNull();
-  },
-};
-
-export const ShadesPerPlayer: Story = {
-  args: { colours: "shades" },
-  play: async ({ canvas }) => {
-    // Juno is the second seat, so Juno draws in the second family's shades.
-    const swatches = canvas.getByRole("group", { name: "Colour" }).querySelectorAll("input[type=radio]");
-    await expect(swatches).toHaveLength(5);
-    await expect(canvas.getByRole("radio", { name: "Lagoon 3" })).toBeChecked();
   },
 };
 

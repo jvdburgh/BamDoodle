@@ -145,15 +145,6 @@ describe("RoomViewUtils results", () => {
   });
 });
 
-describe("RoomViewUtils.families", () => {
-  it("gives each seat its own shade family only with own colours", () => {
-    expect(RoomViewUtils.families(players, "free")).toBeNull();
-    const families = RoomViewUtils.families(players, "shades");
-    expect(families?.[2]?.[2]?.name).toBe("Lagoon 3");
-    expect(RoomViewUtils.identities(families ?? null)?.[2]).toBe(families?.[2]?.[2]?.value);
-  });
-});
-
 describe("RoomViewUtils.stillOnTheirFace", () => {
   const seat = (id: number, name: string, ready: boolean) => ({
     ...RoomViewUtils.players({

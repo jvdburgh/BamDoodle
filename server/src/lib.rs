@@ -88,7 +88,7 @@ async fn client_error(reports: Arc<Mutex<RateLimiter>>, headers: HeaderMap, repo
     }
     let cut = |text: &str, max: usize| text.chars().take(max).collect::<String>();
     let page = match report.page.as_str() {
-        page @ ("start" | "join" | "watch" | "lab") => page,
+        page @ ("start" | "join" | "watch") => page,
         _ => "other",
     };
     let browser = headers
@@ -115,7 +115,7 @@ async fn websocket(upgrade: WebSocketUpgrade, State(registry): State<Arc<Registr
         .on_upgrade(move |socket| connection::handle(socket, registry))
 }
 
-/// Paths that aren't files are the web app's own routes (`/join/BKTZ`, `/watch/BKTZ`, `/lab`): serve the app and let
+/// Paths that aren't files are the web app's own routes (`/BKTZ`, `/watch/BKTZ`): serve the app and let
 /// it route. A path that looks like a file, or an unknown `/api/` path, is a real 404.
 async fn app_route(State(index): State<Arc<PathBuf>>, request: Request) -> Response {
     let path = request.uri().path();
@@ -199,7 +199,7 @@ mod tests {
     #[tokio::test]
     async fn app_routes_get_the_app_and_missing_files_get_a_404() {
         let (router, dir) = site();
-        for path in ["/", "/BKTZ", "/join/BKTZ", "/watch/BKTZ", "/lab"] {
+        for path in ["/", "/BKTZ", "/watch/BKTZ"] {
             let (status, _, body) = get(&router, path).await;
             assert_eq!(
                 (status, body.as_str()),

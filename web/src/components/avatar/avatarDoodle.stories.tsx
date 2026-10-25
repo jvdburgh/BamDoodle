@@ -45,18 +45,6 @@ export const Empty: Story = {
   },
 };
 
-export const IdentityRing: Story = {
-  args: { strokes: drawnAvatarFixture, color: "#2da8c3", label: "Kiki" },
-  play: async ({ canvas }) => {
-    const [background, ring] = canvas.getByRole("img", { name: "Kiki" }).querySelectorAll("circle");
-    // A Lagoon player who draws in Lagoon still sees their lines: the colour goes around the face, not behind it.
-    await expect(background).not.toHaveAttribute("style");
-    await expect(getComputedStyle(background as Element).fill).not.toBe("rgb(45, 168, 195)");
-    await expect(ring).toHaveAttribute("stroke", "#2da8c3");
-    await expect(ring).toHaveAttribute("fill", "none");
-  },
-};
-
 export const Small: Story = {
   render: (args) => (
     <div className="flex items-end gap-3">

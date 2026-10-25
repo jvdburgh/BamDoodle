@@ -7,13 +7,10 @@ describe("RouteUtils.route", () => {
     expect(RouteUtils.route("/bkzw")).toEqual({ kind: "play", code: "BKZW" });
   });
 
-  it("sends old /join links to the short address", () => {
-    expect(RouteUtils.route("/join/BKZW")).toEqual({ kind: "redirect", to: "/BKZW", code: "BKZW" });
-  });
-
-  it("keeps the host screen and the lab, and the start page for anything else", () => {
+  it("keeps the host screen, and the start page for anything else", () => {
     expect(RouteUtils.route("/watch/BKZW")).toEqual({ kind: "watch", code: "BKZW" });
-    expect(RouteUtils.route("/lab")).toEqual({ kind: "lab" });
+    expect(RouteUtils.route("/join/BKZW")).toEqual({ kind: "play", code: undefined });
+    expect(RouteUtils.route("/lab")).toEqual({ kind: "play", code: undefined });
     expect(RouteUtils.route("/")).toEqual({ kind: "play", code: undefined });
     expect(RouteUtils.route("/ABCD")).toEqual({ kind: "play", code: undefined });
     expect(RouteUtils.route("/BKZWX")).toEqual({ kind: "play", code: undefined });

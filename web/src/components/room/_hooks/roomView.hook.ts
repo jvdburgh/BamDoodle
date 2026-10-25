@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useRoomDrawing } from "@/components/room/_hooks/roomDrawing.hook";
 import { useRoomFeed } from "@/components/room/_hooks/roomFeed.hook";
 import { useTicker } from "@/components/room/_hooks/ticker.hook";
-import type { Attribution, RoomViewState } from "@/components/room/_types/room.types";
+import type { RoomViewState } from "@/components/room/_types/room.types";
 import { RoomViewUtils } from "@/components/room/_utils/roomView.utils";
 import { RoomStateUtils } from "@/protocol/roomState.utils";
 
@@ -10,7 +10,7 @@ import { RoomStateUtils } from "@/protocol/roomState.utils";
 const PROBLEM_MS = 5_000;
 
 /** Everything a room screen reads off the server's state, plus the clock, the shared picture and the table talk. */
-export function useRoomView(state: RoomViewState, colours: Attribution) {
+export function useRoomView(state: RoomViewState) {
   const { room } = state;
   const phase = room.phase.phase;
   const round = RoomStateUtils.round(state);
@@ -23,8 +23,6 @@ export function useRoomView(state: RoomViewState, colours: Attribution) {
 
   const { code, players: seats } = room;
   const players = useMemo(() => RoomViewUtils.players({ code, players: seats }), [code, seats]);
-  const families = useMemo(() => RoomViewUtils.families(players, colours), [players, colours]);
-  const identities = useMemo(() => RoomViewUtils.identities(families), [families]);
   const finishedStrokes = room.phase.phase === "finished" ? room.phase.strokes : undefined;
   const drawing = useRoomDrawing(round?.number ?? result?.number ?? null, round?.strokes ?? finishedStrokes);
   const feed = useRoomFeed(round, now);
@@ -39,8 +37,6 @@ export function useRoomView(state: RoomViewState, colours: Attribution) {
     /** What the server last turned down, for a few seconds. */
     problem,
     players,
-    families,
-    identities,
     drawing,
     feed,
     host: players.find((player) => player.id === room.hostId),

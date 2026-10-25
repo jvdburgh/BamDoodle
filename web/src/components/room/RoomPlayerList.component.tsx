@@ -33,8 +33,6 @@ type RoomPlayerListProps = {
   action?: RoomPlayerAction;
   /** Your final vote, shown as a badge. */
   yourVoteId?: number | null;
-  /** Identity colour per player, when players have one (shade families). */
-  colours?: Record<number, string>;
   /** On the bamboozler's own screen, their face wears the fedora. */
   youWearTheHat?: boolean;
   /** Who suspects each player right now (public while drawing): suspect → the players who marked them. */
@@ -79,7 +77,6 @@ export function RoomPlayerList({
   onPeek,
   action,
   yourVoteId = null,
-  colours,
   suspectedBy = {},
   votedIds = [],
   youWearTheHat = false,
@@ -108,7 +105,6 @@ export function RoomPlayerList({
           const spotlit = player.id === spotlightId;
           const chosen = action?.chosenId === player.id;
           const status = active ? "Drawing now" : player.id === nextId ? "Up next" : null;
-          const colour = colours?.[player.id];
           const suspects = suspectedBy[player.id] ?? [];
           const isBamboozler = outcome?.bamboozlerId === player.id;
           const votedFor = outcome?.votes[player.id];
@@ -154,7 +150,6 @@ export function RoomPlayerList({
                     <RoomSuspectButton
                       name={player.name}
                       avatar={player.avatar}
-                      color={colour}
                       kind={action.kind}
                       suspected={chosen}
                       onToggle={() => action.onChoose(action.kind === "suspect" && chosen ? null : player.id)}
@@ -165,7 +160,6 @@ export function RoomPlayerList({
                     <span className="peer relative size-12 shrink-0">
                       <AvatarDoodle
                         strokes={player.avatar}
-                        color={colour}
                         backdrop={false}
                         hat={(you && youWearTheHat) || isBamboozler ? "worn" : undefined}
                         hatDelayMs={isBamboozler ? 600 : 0}

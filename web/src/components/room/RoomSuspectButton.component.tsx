@@ -5,8 +5,6 @@ import type { AvatarStroke } from "@/components/avatar/_types/avatar.types";
 type RoomSuspectButtonProps = {
   name: string;
   avatar: AvatarStroke[];
-  /** Identity colour, when players have one (shade families). */
-  color?: string;
   /** Wears the hat: marked as suspicious, or your vote. */
   suspected: boolean;
   onToggle: () => void;
@@ -26,7 +24,6 @@ type RoomSuspectButtonProps = {
 export function RoomSuspectButton({
   name,
   avatar,
-  color,
   suspected,
   onToggle,
   kind = "suspect",
@@ -46,7 +43,6 @@ export function RoomSuspectButton({
       >
         <AvatarDoodle
           strokes={avatar}
-          color={color}
           hat={suspected ? "worn" : "preview"}
           backdrop={false}
           className="size-full transition-transform motion-safe:group-hover:-rotate-6 motion-safe:group-active:scale-90"

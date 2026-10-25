@@ -22,7 +22,7 @@ import { RoomWordCard } from "@/components/room/RoomWordCard.component";
 import { useRoomView } from "@/components/room/_hooks/roomView.hook";
 import { useSpotlight } from "@/components/room/_hooks/spotlight.hook";
 import { useStrokeSender } from "@/components/room/_hooks/strokeSender.hook";
-import type { Attribution, RoomPlayer, RoomViewState } from "@/components/room/_types/room.types";
+import type { RoomPlayer, RoomViewState } from "@/components/room/_types/room.types";
 import { ClockUtils } from "@/components/room/_utils/clock.utils";
 import { RoomViewUtils } from "@/components/room/_utils/roomView.utils";
 import { StrokeWireUtils } from "@/components/room/_utils/strokeWire.utils";
@@ -37,8 +37,6 @@ type RoomPlayerViewProps = {
   send: (message: ClientMessage) => void;
   /** Play the room-created reveal on the join card. */
   revealCode?: boolean;
-  /** Free colours, or a shade family per player (the lab only, until the server has the setting). */
-  colours?: Attribution;
   /** The host's way back to the room settings, between rounds. */
   onSettings?: () => void;
   /** Where the logo leads. */
@@ -51,16 +49,9 @@ type RoomPlayerViewProps = {
  * under it. On a phone it's one column, ordered by the moment: your tools under the canvas on your turn, the cards
  * when you watch or vote.
  */
-export function RoomPlayerView({
-  state,
-  send,
-  revealCode = false,
-  colours = "free",
-  onSettings,
-  home = "/",
-}: RoomPlayerViewProps) {
-  const view = useRoomView(state, colours);
-  const { room, phase, round, reveal, result, now, players, families, identities, drawing, active, next, order } = view;
+export function RoomPlayerView({ state, send, revealCode = false, onSettings, home = "/" }: RoomPlayerViewProps) {
+  const view = useRoomView(state);
+  const { room, phase, round, reveal, result, now, players, drawing, active, next, order } = view;
   const sender = useStrokeSender(send);
   const [chosenColour, setChosenColour] = useState(CanvasTools.colours[0]?.value ?? "#000000");
   const [brushSize, setBrushSize] = useState(CanvasTools.brushes[1]?.size ?? 0.014);
@@ -85,10 +76,6 @@ export function RoomPlayerView({
     turnStrokes.count >= StrokeWireUtils.limits.strokesPerTimedTurn;
   const youAreBamboozler = round?.role === "bamboozler";
   const bamboozler = players.find((player) => player.id === view.bamboozlerId);
-  const palette = (families && you ? families[you.id] : undefined) ?? CanvasTools.colours;
-  const colour = palette.some((swatch) => swatch.value === chosenColour)
-    ? chosenColour
-    : (palette[2]?.value ?? chosenColour);
   const spotlit = players.find((player) => player.id === spotlight.shown);
   const drawingPhase = phase === "lobby" || phase === "drawing";
   const suspicion = you ? RoomStateUtils.suspicionOf(state, you.id) : null;
@@ -227,7 +214,6 @@ export function RoomPlayerView({
               players={players}
               totals={RoomViewUtils.totals(room.players)}
               youId={you?.id}
-              colours={identities}
               onNewGame={isHost ? startRound : undefined}
               hostName={view.host?.name}
               startPage={home}
@@ -249,7 +235,7 @@ export function RoomPlayerView({
                   drawing={drawing}
                   order={order}
                   activePlayerId={yourTurn && you && !strokesUsedUp ? you.id : null}
-                  color={colour}
+                  color={chosenColour}
                   brushSize={brushSize}
                   spotlightId={spotlight.shown}
                   label={canvasLabel}
@@ -262,7 +248,7 @@ export function RoomPlayerView({
                     SoundPlayer.play("scribble");
                     sender.end();
                   }}
-                  penTag={active && <RoomPenTag player={active} color={identities?.[active.id]} />}
+                  penTag={active && <RoomPenTag player={active} />}
                 >
                   {spotlit && (
                     <BrandSketchyFrame bold className="animate-pop-in text-night motion-reduce:animate-none" />
@@ -341,7 +327,6 @@ export function RoomPlayerView({
                   onPeek={spotlight.setPeek}
                   action={action}
                   yourVoteId={yourVoteId}
-                  colours={identities}
                   suspectedBy={phase === "drawing" ? RoomViewUtils.suspectedBy(round) : {}}
                   votedIds={phase === "voting" ? (round?.voted ?? []) : []}
                   youWearTheHat={youAreBamboozler && !result}
@@ -361,7 +346,6 @@ export function RoomPlayerView({
                   suspected={players.find((player) => player.id === suspicion)}
                   votedIds={round.voted}
                   msLeft={ClockUtils.left(state.timers.voting, now)}
-                  colours={identities}
                 />
               </div>
             )}
@@ -376,8 +360,8 @@ export function RoomPlayerView({
             >
               <div className="min-w-0 flex-1">
                 <CanvasPalette
-                  colours={palette}
-                  value={colour}
+                  colours={CanvasTools.colours}
+                  value={chosenColour}
                   onChange={(value) => {
                     setChosenColour(value);
                     SoundPlayer.play("pick");
@@ -391,7 +375,7 @@ export function RoomPlayerView({
                   setBrushSize(size);
                   SoundPlayer.play("pick");
                 }}
-                color={colour}
+                color={chosenColour}
               />
             </section>
 
@@ -409,7 +393,6 @@ export function RoomPlayerView({
                       bamboozlerId={reveal.bamboozlerId}
                       votes={RoomViewUtils.votes(reveal.votes)}
                       youId={you?.id}
-                      colours={identities}
                     />
                     <RoomGuess
                       bamboozlerName={bamboozler?.name ?? "The bamboozler"}

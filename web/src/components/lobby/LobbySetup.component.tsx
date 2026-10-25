@@ -6,7 +6,6 @@ import { BrandStyles } from "@/components/brand/_utils/brandStyles.utils";
 import { LobbyCategoryPicker } from "@/components/lobby/LobbyCategoryPicker.component";
 import { LobbySetupSketch, type LobbySetupSketchKind } from "@/components/lobby/LobbySetupSketch.component";
 import { LobbySetupUtils } from "@/components/lobby/_utils/lobbySetup.utils";
-import type { Attribution } from "@/components/room/_types/room.types";
 import type { Language } from "@/protocol/generated/Language";
 import type { RoomSettings } from "@/protocol/generated/RoomSettings";
 import type { TurnMode } from "@/protocol/generated/TurnMode";
@@ -25,9 +24,6 @@ type LobbySetupProps = {
   onBack?: () => void;
   /** Where the logo goes: the start page. */
   home?: string;
-  /** Any colour or Own colours: only where it can be tried (the lab), until the server has the setting. */
-  attribution?: Attribution;
-  onAttribution?: (attribution: Attribution) => void;
 };
 
 type Option<T> = { value: T; title: string; detail: string; sketch: LobbySetupSketchKind };
@@ -35,15 +31,6 @@ type Option<T> = { value: T; title: string; detail: string; sketch: LobbySetupSk
 const turnOptions: Option<TurnMode>[] = [
   { value: "timed", title: "Timed turns", detail: "A few seconds to draw freely", sketch: { kind: "timed" } },
   { value: "oneStroke", title: "One stroke each", detail: "Draw one line, pass it on", sketch: { kind: "oneStroke" } },
-];
-const colourOptions: Option<Attribution>[] = [
-  { value: "free", title: "Any colour", detail: "Everyone uses every colour", sketch: { kind: "anyColour" } },
-  {
-    value: "shades",
-    title: "Own colours",
-    detail: "Each player gets a family of shades",
-    sketch: { kind: "ownColours" },
-  },
 ];
 
 /** The host's room setup: turns, rounds, words. First before the room is created, later from the room itself. */
@@ -56,8 +43,6 @@ export function LobbySetup({
   doneLabel = "Go to the room",
   onBack,
   home = "/",
-  attribution,
-  onAttribution,
 }: LobbySetupProps) {
   const first = useRef<HTMLInputElement>(null);
   const wordsHeading = useId();
@@ -130,15 +115,6 @@ export function LobbySetup({
                     }))}
                     value={settings.turnSeconds}
                     onChange={(turnSeconds) => change({ turnSeconds })}
-                  />
-                )}
-                {attribution && onAttribution && (
-                  <LobbyChoice
-                    legend="Colours"
-                    name="lobby-colours"
-                    options={colourOptions}
-                    value={attribution}
-                    onChange={onAttribution}
                   />
                 )}
               </section>

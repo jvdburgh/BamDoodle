@@ -6,8 +6,6 @@ type AvatarDoodleProps = {
   strokes: AvatarStroke[];
   /** Leave out when the name is already next to the avatar; it is then decorative. */
   label?: string;
-  /** Identity colour as a ring around the face, when players have one (shade families). The circle stays navy. */
-  color?: string;
   /**
    * The logo's fedora on the head: "worn" drops it on (the one you suspect, yourself as the bamboozler, the reveal),
    * "preview" shows it faintly on hover or focus of the surrounding `group` (the suspect button).
@@ -29,7 +27,6 @@ const HAT_SRC = "/hat.svg";
 export function AvatarDoodle({
   strokes,
   label,
-  color,
   hat,
   backdrop = true,
   crop = false,
@@ -58,7 +55,6 @@ export function AvatarDoodle({
       {...a11y}
     >
       {backdrop && <circle cx="50" cy="50" r="50" className="fill-night-soft" />}
-      {color && <circle cx="50" cy="50" r="46" fill="none" stroke={color} strokeWidth="8" />}
       {paths.map(({ d, fill }, index) => (
         <path key={index} d={d} fill={fill} />
       ))}

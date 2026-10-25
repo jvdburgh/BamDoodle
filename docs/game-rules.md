@@ -96,10 +96,6 @@ Everyone can use every colour: there is nothing to unlock, ever. To still see wh
 - **Your own card** stands out (an iris outline and a "you" badge), and your face says "That's you" instead of being a
   button. Cards say who suspects whom by name ("suspected by you and Noor"), in berry when you're one of them.
 
-**In the lab only** (`/lab`, not a server setting yet): the room's creator picks **Any colour** (everyone uses every
-colour, the default) or **Own colours** (each player gets a family of five shades, and their avatar wears it), so
-playtests can compare both. Real rooms use any colour until the setting is on the wire.
-
 **Suspecting and voting on screen:** on every player card (avatar, name, mini-map of their strokes) a "Suspect"
 button under the name, or a tap on the face itself (hovering it shows the logo's fedora faintly), drops the hat onto
 their head; the button then says "Suspected ✓" and another tap takes it off. Marking or changing it is public table

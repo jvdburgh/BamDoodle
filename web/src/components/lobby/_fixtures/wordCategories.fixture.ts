@@ -1,6 +1,35 @@
-import { wordCategoriesFixture as wordPacks } from "@/components/lab/_fixtures/words.fixture";
-import { WordsUtils } from "@/components/lab/_utils/words.utils";
 import type { WordCategory } from "@/protocol/generated/WordCategory";
 
-/** Every category as the server's room snapshot lists them (`wordCategories`), from the lab's copy of words/. */
-export const wordCategoriesFixture: WordCategory[] = WordsUtils.catalogue(wordPacks);
+/** Categories as the server's room snapshot lists them (`wordCategories`): a sample of words/, with word counts. */
+export const wordCategoriesFixture: WordCategory[] = [
+  { language: "en", name: "Animals", adult: false, words: 12 },
+  { language: "en", name: "Food", adult: false, words: 12 },
+  { language: "en", name: "Around the house", adult: false, words: 12 },
+  { language: "en", name: "Places", adult: false, words: 12 },
+  { language: "en", name: "On the move", adult: false, words: 10 },
+  { language: "en", name: "Actions", adult: false, words: 10 },
+  { language: "en", name: "Nature", adult: false, words: 11 },
+  { language: "en", name: "Things people wear", adult: false, words: 10 },
+  { language: "en", name: "Very British", adult: false, words: 19 },
+  { language: "en", name: "Christmas", adult: false, words: 15 },
+  { language: "en", name: "Fairy tales", adult: false, words: 17 },
+  { language: "en", name: "Landmarks", adult: false, words: 16 },
+  { language: "en", name: "Logos", adult: false, words: 55 },
+  { language: "en", name: "After dark", adult: true, words: 10 },
+  { language: "en", name: "Bodily matters", adult: true, words: 10 },
+  { language: "nl", name: "Dieren", adult: false, words: 12 },
+  { language: "nl", name: "Eten", adult: false, words: 12 },
+  { language: "nl", name: "In huis", adult: false, words: 12 },
+  { language: "nl", name: "Plekken", adult: false, words: 12 },
+  { language: "nl", name: "Vervoer", adult: false, words: 10 },
+  { language: "nl", name: "Doen", adult: false, words: 10 },
+  { language: "nl", name: "Natuur", adult: false, words: 11 },
+  { language: "nl", name: "Kleding", adult: false, words: 10 },
+  { language: "nl", name: "Logo's", adult: false, words: 55 },
+  { language: "nl", name: "Efteling", adult: false, words: 63 },
+  { language: "nl", name: "Sinterklaas", adult: false, words: 16 },
+  { language: "nl", name: "Typisch Nederlands", adult: false, words: 18 },
+  { language: "nl", name: "Lekker Nederlands", adult: false, words: 18 },
+  { language: "nl", name: "Na middernacht", adult: true, words: 10 },
+  { language: "nl", name: "Lichamelijk", adult: true, words: 10 },
+];

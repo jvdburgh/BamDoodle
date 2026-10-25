@@ -15,14 +15,14 @@ type Target = Pick<EventTarget, "addEventListener" | "removeEventListener">;
 function page(pathname: string): ClientErrorReport["page"] {
   const route = RouteUtils.route(pathname);
   if (route.kind === "play") return route.code ? "join" : pathname === "/" ? "start" : "other";
-  return route.kind === "redirect" ? "join" : route.kind;
+  return route.kind;
 }
 
 /** Any host's `/BKZW` path, in any case. */
 const CODE_PATH = new RegExp(`/[${RoomCodeUtils.LETTERS}]{${RoomCodeUtils.LENGTH}}\\b`, "gi");
 
-/** A room code in an address becomes CODE: `/BKZW` is `/CODE`, `/join/BKZW` is `/join/CODE`. */
-const scrub = (text: string) => text.replace(/\/(join|watch)\/[A-Za-z]{4}\b/g, "/$1/CODE").replace(CODE_PATH, "/CODE");
+/** A room code in an address becomes CODE: `/BKZW` is `/CODE`, `/watch/BKZW` is `/watch/CODE`. */
+const scrub = (text: string) => text.replace(CODE_PATH, "/CODE");
 
 /**
  * The report for an error, or null when it isn't ours to fix: a stack with no frame from this site (an extension's

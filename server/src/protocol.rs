@@ -589,6 +589,6 @@ pub struct ClientErrorReport {
     pub stack: Option<String>,
     /// The web app's release, e.g. v0.1.5.
     pub version: String,
-    /// Which screen: start, join, watch, lab or other.
+    /// Which screen: start, join, watch or other.
     pub page: String,
 }

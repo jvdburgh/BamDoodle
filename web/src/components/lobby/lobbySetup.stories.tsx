@@ -85,11 +85,3 @@ export const BeforeTheRoomExists: Story = {
     await expect(args.onBack).toHaveBeenCalled();
   },
 };
-
-export const WithColoursInTheLab: Story = {
-  args: { attribution: "free", onAttribution: fn() },
-  play: async ({ args, canvas, userEvent }) => {
-    await userEvent.click(canvas.getByText("Own colours"));
-    await expect(args.onAttribution).toHaveBeenCalledWith("shades");
-  },
-};

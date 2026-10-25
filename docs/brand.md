@@ -64,8 +64,8 @@ Quiet by default, silent until the first tap (browsers require it), and a mute t
 Pixabay Content License, not the AGPL; `web/public/sounds/NOTICE` says so, for forks. It loops the track's audible span
 seamlessly (the silence before and the quiet tail after are left out) and keeps playing for as long as the room is
 open: softer while someone draws or votes, so the ticks and cues stay clear, and never stopped or restarted by a sound
-effect. It has its own Music toggle next to the sound toggle, remembered per device: on by default on the host screen,
-in the lab and on a laptop or desktop, off by default on phones and tablets, so a table full of phones doesn't play it
+effect. It has its own Music toggle next to the sound toggle, remembered per device: on by default on the host screen
+and on a laptop or desktop, off by default on phones and tablets, so a table full of phones doesn't play it
 out of step. Like every sound, it waits for the first tap (the track is already downloaded by then), starts at its
 volume at once rather than fading in, and picks up again after the browser suspends audio (a locked phone, a call).
 

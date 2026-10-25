@@ -13,14 +13,13 @@ type VotePromptProps = {
   /** Who has voted (not for whom). */
   votedIds: number[];
   msLeft: number;
-  colours?: Record<number, string>;
 };
 
 /**
  * The final call after the last turn: "Time's up! Who's sketchy?" and the countdown. A tap on a face is the vote,
  * changeable until the time runs out or everyone has voted; who has voted shows, not for whom.
  */
-export function VotePrompt({ players, voted, suspected, votedIds, msLeft, colours }: VotePromptProps) {
+export function VotePrompt({ players, voted, suspected, votedIds, msLeft }: VotePromptProps) {
   const headingId = useId();
 
   return (
@@ -66,7 +65,6 @@ export function VotePrompt({ players, voted, suspected, votedIds, msLeft, colour
             <AvatarDoodle
               key={player.id}
               strokes={player.avatar}
-              color={colours?.[player.id]}
               backdrop={false}
               label={`${player.name} has voted`}
               className="size-7"

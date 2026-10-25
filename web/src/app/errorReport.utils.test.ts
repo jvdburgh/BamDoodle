@@ -10,7 +10,6 @@ const withStack = (message: string, stack: string) => Object.assign(new TypeErro
 describe("ErrorReportUtils", () => {
   it("names the screen, never the room code", () => {
     expect(ErrorReportUtils.page("/")).toBe("start");
-    expect(ErrorReportUtils.page("/join/BKZW")).toBe("join");
     expect(ErrorReportUtils.page("/BKZW")).toBe("join");
     const shortLink = withStack("opening bamdoodle.io/BKZW failed", `TypeError\n    at f (${ORIGIN}/assets/a.js:1:2)`);
     expect(ErrorReportUtils.toReport(shortLink, "/BKZW", ORIGIN)?.message).toBe(
@@ -25,15 +24,14 @@ describe("ErrorReportUtils", () => {
       expect(ErrorReportUtils.toReport(anyHost, "/", ORIGIN)?.message).not.toMatch(/bkzw/i);
     }
     expect(ErrorReportUtils.page("/watch/BKZW")).toBe("watch");
-    expect(ErrorReportUtils.page("/lab")).toBe("lab");
     expect(ErrorReportUtils.page("/something")).toBe("other");
     const report = ErrorReportUtils.toReport(
-      withStack("loading /join/BKZW failed", `TypeError\n    at load (${ORIGIN}/assets/index.js:1:2) /join/BKZW`),
-      "/join/BKZW",
+      withStack("loading /watch/BKZW failed", `TypeError\n    at load (${ORIGIN}/assets/index.js:1:2) /watch/BKZW`),
+      "/watch/BKZW",
       ORIGIN,
     );
     expect(JSON.stringify(report)).not.toContain("BKZW");
-    expect(report?.message).toBe("TypeError: loading /join/CODE failed");
+    expect(report?.message).toBe("TypeError: loading /watch/CODE failed");
   });
 
   it("keeps only our own frames, and skips errors with none (an extension's)", () => {
@@ -57,7 +55,7 @@ describe("ErrorReportUtils", () => {
   it("reports uncaught errors and rejections, each once, at most five", () => {
     const target = new EventTarget();
     const send = vi.fn();
-    const stop = ErrorReportUtils.install(target, here("/join/BKZW"), send);
+    const stop = ErrorReportUtils.install(target, here("/BKZW"), send);
 
     const ours = () => withStack("x is undefined", `TypeError\n    at f (${ORIGIN}/assets/index.js:1:2)`);
     target.dispatchEvent(error(ours()));

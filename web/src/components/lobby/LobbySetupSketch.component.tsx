@@ -8,8 +8,6 @@ export type LobbySetupSketchKind =
   | { kind: "turns"; count: number }
   | { kind: "seconds"; seconds: number }
   | { kind: "rounds"; count: number }
-  | { kind: "anyColour" }
-  | { kind: "ownColours" }
   | { kind: "words" };
 
 type Mark = { points: number[][]; size: number; fill: string };
@@ -73,21 +71,6 @@ function marks(sketch: LobbySetupSketchKind): Mark[] {
         return { points: edges.flat(), size: 2.5, fill: front ? "fill-sun" : ink };
       });
     }
-    case "anyColour":
-      return [
-        { points: loop(50, { cx: 32, cy: 25, rx: 22, ry: 16, wobble: 0.1 }), size: 3, fill: ink },
-        ...["fill-berry", "fill-sun", "fill-lime", "fill-lagoon", "fill-iris"].map((fill, index) => ({
-          points: loop(51 + index, { cx: 18 + index * 7, cy: 25 + (index % 2 ? -4 : 4), rx: 2.6, ry: 2.6, wobble: 0 }),
-          size: 4.5,
-          fill,
-        })),
-      ];
-    case "ownColours":
-      return ["fill-iris/30", "fill-iris/50", "fill-iris/70", "fill-iris", "fill-denim"].map((fill, index) => ({
-        points: loop(60 + index, { cx: 10 + index * 11, cy: 25, rx: 2.6, ry: 2.6, wobble: 0 }),
-        size: 4,
-        fill,
-      }));
     case "words":
       return [
         { points: loop(70, { cx: 32, cy: 22, rx: 22, ry: 14, wobble: 0.08 }), size: 3, fill: ink },

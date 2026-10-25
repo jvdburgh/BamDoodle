@@ -5,8 +5,6 @@ User-agent: LinkedInBot
 Allow: /
 
 User-agent: *
-Disallow: /join/
 Disallow: /watch/
-Disallow: /lab
 
 Sitemap: https://bamdoodle.io/sitemap.xml

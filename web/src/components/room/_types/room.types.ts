@@ -16,12 +16,6 @@ export type RoomPlayer = {
   ready: boolean;
 };
 
-/**
- * Free colours for everyone, or one shade family per player: the attribution question the lab compares. Real rooms
- * are free until the server has the setting.
- */
-export type Attribution = "free" | "shades";
-
 /** The server's phase: lobby → drawing → voting → guessing (the reveal and the bamboozler's guess) → finished. */
 export type RoomPhase = PhaseView["phase"];
 

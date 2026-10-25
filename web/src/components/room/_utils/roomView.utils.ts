@@ -1,12 +1,5 @@
 import { AvatarUtils } from "@/components/avatar/_utils/avatar.utils";
-import { CanvasTools, type CanvasColour } from "@/components/canvas/_utils/canvasTools.utils";
-import type {
-  Attribution,
-  RoomOutcome,
-  RoomPlayer,
-  RoomViewState,
-  RoundScore,
-} from "@/components/room/_types/room.types";
+import type { RoomOutcome, RoomPlayer, RoomViewState, RoundScore } from "@/components/room/_types/room.types";
 import type { PlayerSummary } from "@/protocol/generated/PlayerSummary";
 import type { RejectReason } from "@/protocol/generated/RejectReason";
 import type { RoomSnapshot } from "@/protocol/generated/RoomSnapshot";
@@ -140,22 +133,6 @@ function standings(totals: Record<number, number>, playerIds: number[]): Standin
   }));
 }
 
-/** Each player's shade family by seat, with own colours; null with free colours. */
-function families(players: RoomPlayer[], attribution: Attribution): Record<number, CanvasColour[]> | null {
-  if (attribution !== "shades") return null;
-  const byPlayer: Record<number, CanvasColour[]> = {};
-  players.forEach((player, index) => {
-    byPlayer[player.id] = CanvasTools.shadeFamilies[index % CanvasTools.shadeFamilies.length] ?? [];
-  });
-  return byPlayer;
-}
-
-/** One colour per player for avatars and pen tags, only when players have shade families. */
-function identities(families: Record<number, CanvasColour[]> | null): Record<number, string> | undefined {
-  if (!families) return undefined;
-  return Object.fromEntries(Object.entries(families).map(([id, family]) => [id, family[2]?.value ?? ""]));
-}
-
 const problems: Record<RejectReason, string> = {
   roomNotFound: "There’s no room with that code. Check the code and try again.",
   roomClosed: "This room was closed after 30 minutes without play. Start a new one from the start page.",
@@ -194,6 +171,4 @@ export const RoomViewUtils = {
   totals,
   outcome,
   standings,
-  families,
-  identities,
 };

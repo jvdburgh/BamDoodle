@@ -67,8 +67,7 @@ just check   # everything CI runs: formatting, lints, types, tests
 ```
 
 To try it on your phone, run the server (`cd server && cargo run`) and, next to it, `pnpm --dir web dev --host`
-instead of `just dev`, then open the address Vite prints on the same Wi-Fi. No friends at hand? [localhost:5173/lab](http://localhost:5173/lab) plays the whole game on one screen with simulated
-players.
+instead of `just dev`, then open the address Vite prints on the same Wi-Fi.
 
 ### How it's built
 

@@ -9,8 +9,6 @@ const all: LobbySetupSketchKind[] = [
   { kind: "turns", count: 5 },
   { kind: "seconds", seconds: 20 },
   { kind: "rounds", count: 5 },
-  { kind: "anyColour" },
-  { kind: "ownColours" },
   { kind: "words" },
 ];
 
