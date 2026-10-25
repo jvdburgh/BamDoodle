@@ -91,7 +91,7 @@ can change the number of rounds between rounds; when that's already been reached
    switched off with "2 more players needed to start (up to 8 can play)" while fewer than 3 are here. Under the card
    everyone reads what's picked ("Timed · 20 s · 2 turns each · 4 rounds · English · 12 categories"), with Room
    settings for the host. Under the players, how it goes in three lines: everyone gets the same word, except the
-   bamboozler; take turns drawing it on one canvas; vote who didn't know it.
+   bamboozler; take turns drawing it on one canvas; vote who was sketchy.
 2. **Secret.** The server picks a word from the chosen categories and tells each player their role.
 3. **Drawing.** Players take turns on the shared canvas in a shuffled order shown on screen; each player
    gets the same number of turns. The player whose turn it is is highlighted, and their strokes appear live for everyone.

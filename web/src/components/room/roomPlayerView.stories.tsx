@@ -260,7 +260,7 @@ export const HostInTheLobby: Story = {
     await expect(canvas.getByRole("button", { name: "Share link" })).toBeVisible();
     const primer = within(canvas.getByRole("list", { name: "How it goes" }));
     await expect(primer.getAllByRole("listitem")).toHaveLength(3);
-    await expect(primer.getByText("Vote who didn’t know it.")).toBeVisible();
+    await expect(primer.getByText("Vote who was sketchy.")).toBeVisible();
     await expect(canvas.queryByRole("link", { name: /TV/ })).toBeNull();
     await userEvent.click(canvas.getByRole("button", { name: "Room settings" }));
     await expect(args.onSettings).toHaveBeenCalled();
