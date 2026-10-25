@@ -25,7 +25,7 @@ export function LobbyWaiting({ name, roomCode, avatar, onAvatarChange, onStart, 
   useEffect(() => heading.current?.focus(), []);
 
   return (
-    <main className="mx-auto flex min-h-svh max-w-md flex-col gap-5 px-4 py-4 pb-16 md:py-8 sideways:max-w-3xl sideways:gap-3 sideways:py-3 sideways:pb-3">
+    <main className="mx-auto flex min-h-svh max-w-md flex-col gap-5 px-4 py-4 md:py-8 sideways:max-w-3xl sideways:gap-3 sideways:py-3 sideways:pb-3">
       <LobbyHeader roomCode={roomCode} home={home} />
 
       <section
@@ -42,13 +42,8 @@ export function LobbyWaiting({ name, roomCode, avatar, onAvatarChange, onStart, 
           Hi {name}! Draw your face
         </h2>
         <AvatarEditor value={avatar} onChange={onAvatarChange}>
-          {/* Pinned above a phone browser's bottom bar, never under the fold; on its side it sits under the colours. */}
-          <button
-            type="button"
-            onClick={onStart}
-            className={`${BrandStyles.primaryButton} sticky bottom-[calc(0.75rem_+_var(--browser-bar))] z-10 w-full shadow-[0_6px_18px_var(--color-night-deep)] md:bottom-3 sideways:static sideways:max-w-64`}
-          >
-            Go to the room
+          <button type="button" onClick={onStart} className={`${BrandStyles.primaryButton} w-full sideways:max-w-64`}>
+            Yep, that’s me!
           </button>
         </AvatarEditor>
       </section>

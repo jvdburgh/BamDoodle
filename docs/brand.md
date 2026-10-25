@@ -110,20 +110,27 @@ Modern, a bit mysterious, colourful. It should feel like a hand-made little game
   "Free, on any device", a column on a phone and a grid on a laptop, which is also what search engines read (with FAQ structured data in `index.html`).
   A phone on its side puts the logo and tagline on the left and the buttons on the right, so both fit the first
   screen.
-- Disabled buttons are all one look (`BrandStyles`): a quiet navy button with a dashed sun outline and the same label,
-  never a faded sun one (that reads as muddy brown on navy).
+- Disabled buttons are all one look (`BrandStyles`): a quiet navy button with a faint, neutral dashed outline (white
+  at 30%) and the same label, never a faded sun one (that reads as muddy brown on navy) and never a sun outline (that
+  reads as an accent, not as "not yet").
+- Buttons and choices (category chips, number pills, colour swatches) never select their text when tapped or dragged
+  (a base style in `index.css`).
 - The setup has no boxes: every setting has its own heading (the unit in it, numbers on the choices) with a line on
   what it does under it, and a sketch of what's picked beside it. A picked mode or number keeps the same navy
   background and gets the hand-drawn frame in sun and a doodled ✓; a picked category a lighter sun frame and the ✓.
   The frame traces round in one quick line when you pick, never on load. Unpicked categories show a +. Categories
   sit under small uppercase group names; nothing scrolls inside the page. Back and Next end the form (no floating
-  bar).
+  bar). On a phone (upright or on its side) the setup cuts the secondary text (the lines under the headings, who it's for, the picks line) so
+  the headings and choices lead, with one full-width Next and a quiet Back under it, as on the forms.
 - The forms (Join, your name) and the setup and face screens wear the small logo in the header, not the big one, so
   the main button stays above a phone's keyboard; once the room exists the header says "Room BKZW". Join and the
   name step share one layout: a centered heading, the fields, the main button full width, Back under it; on a phone
   on its side the code, name and Join sit in one row. After the setup the main button is "Play on this phone"
   ("laptop" on a wide screen with a mouse) and "Host on this screen" the quieter choice under an "or"; on a laptop
   they're two equal cards side by side, on a phone on its side name and Play on the left and hosting on the right.
+  The name step's heading asks for the name, so the field has no visible label of its own. Both buttons wait for a
+  name in the disabled look, the screen icon greyed with them. The face screen's "Yep, that's me!" follows the pad
+  and its controls in the flow, full width on a phone.
 - Small, quick motion makes it feel alive: block buttons tilt and lift on hover and squish when pressed, player cards
   bounce in, "voted" and "suspected by" badges pop, hovering the start page's logo turns its hat's colours one round and back (the logo is inlined from
   `/logo.svg` for that too). Reduced motion turns it off.
@@ -132,4 +139,6 @@ Modern, a bit mysterious, colourful. It should feel like a hand-made little game
   BamDoodle? Help out on GitHub, and consider donating to Ukrainian citizens"), and on "The End" screen after the
   last round one small card: "Did you enjoy the game?", that it's free with no ads or accounts, a "Donate through
   United24" link (Ukraine's official fundraising platform) and "help out on GitHub", with the footer under it
-  (without its own ask, so it isn't said twice). No banner, nothing during a game.
+  (without its own ask, so it isn't said twice). No banner, nothing during a game. The footer stays small and quiet
+  but not plain: a doodled divider over it, a wobbly line either side of three little stars in berry, sun and
+  lagoon.

@@ -79,9 +79,17 @@ export function LobbySetup({
           <div className="md:col-span-2">
             <h2 className="font-display text-2xl md:text-3xl">{inRoom ? "Room settings" : "Set up your room"}</h2>
             <p className="text-white/70">
-              {inRoom
-                ? "Changes reach everyone right away."
-                : `For ${RoomViewUtils.playerCount}, each on their own device. You can change all of this between rounds.`}
+              {inRoom ? (
+                "Changes reach everyone right away."
+              ) : (
+                <>
+                  {/* A phone keeps to one line here; who it's for is in How to play. */}
+                  <span className="max-md:hidden sideways:hidden">
+                    For {RoomViewUtils.playerCount}, each on their own device.{" "}
+                  </span>
+                  You can change all of this between rounds.
+                </>
+              )}
             </p>
           </div>
           <div className="grid content-start gap-7 md:gap-8">
@@ -150,19 +158,24 @@ export function LobbySetup({
             />
           </div>
 
-          {/* At the end of the form, where you get after the last setting: no bar floating over the categories. */}
-          <div className="flex flex-wrap items-center gap-3 border-t-2 border-white/10 pt-5 md:col-span-2 md:flex-nowrap">
+          {/* At the end of the form, where you get after the last setting: no bar floating over the categories. On a
+              phone one full-width main button with Back under it, like the forms; the picks are right above it. */}
+          <div className="flex flex-col gap-2 border-t-2 border-white/10 pt-5 md:col-span-2 md:flex-row md:items-center md:gap-3">
+            <p className="text-sm text-white/70 max-md:hidden md:flex-1 sideways:hidden md:text-right">
+              {RoomViewUtils.settingsLine(settings)}
+            </p>
+            <button type="submit" disabled={!ready} className={`${BrandStyles.primaryButton} w-full md:w-auto`}>
+              {doneLabel}
+            </button>
             {onBack && (
-              <button type="button" onClick={onBack} className={BrandStyles.quietButton}>
+              <button
+                type="button"
+                onClick={onBack}
+                className={`${BrandStyles.ghostButton} self-center md:order-first md:self-auto`}
+              >
                 Back
               </button>
             )}
-            <p className="order-first w-full text-sm text-white/70 md:order-none md:w-auto md:flex-1 md:text-right">
-              {RoomViewUtils.settingsLine(settings)}
-            </p>
-            <button type="submit" disabled={!ready} className={`${BrandStyles.primaryButton} ml-auto`}>
-              {doneLabel}
-            </button>
           </div>
         </form>
       </main>
@@ -192,11 +205,12 @@ function LobbyField({
   const hintId = useId();
   return (
     <fieldset aria-describedby={hintId} className="relative">
-      <legend className="pr-14 font-display text-xl">
+      <legend className="pr-14 font-display text-xl max-md:mb-3 sideways:mb-3">
         {legend}
         {unit && <span className="font-body text-base text-white/60"> ({unit})</span>}
       </legend>
-      <p id={hintId} className="mb-3 pr-14 text-sm text-white/70">
+      {/* On a phone the heading, the choices and the sketch say enough: the line is read out, not shown. */}
+      <p id={hintId} className="mb-3 pr-14 text-sm text-white/70 max-md:sr-only sideways:sr-only">
         {hint}
       </p>
       {sketch && <LobbySetupSketch sketch={sketch} className="absolute top-0 right-0 h-9 w-12" />}

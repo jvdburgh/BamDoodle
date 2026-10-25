@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { useState } from "react";
 import { expect, fn } from "storybook/test";
 import { LobbyStart } from "./LobbyStart.component";
 
@@ -21,6 +22,8 @@ export const JoinFirst: Story = {
       "Join a room",
       "Create a room",
     ]);
+    // A tap or a drag on a button never selects its label.
+    for (const button of buttons) await expect(getComputedStyle(button).userSelect).toBe("none");
     await expect(canvas.getByRole("heading", { name: "How to play" })).toBeInTheDocument();
   },
 };
@@ -38,7 +41,7 @@ export const GettingTheRoomReady: Story = {
   play: async ({ canvas }) => {
     const button = canvas.getByRole("button", { name: "Just a sec…" });
     await expect(button).toBeDisabled();
-    // Disabled reads as a quiet navy button with a dashed sun outline, not a faded (muddy) sun one.
+    // Disabled reads as a quiet navy button with a faint dashed outline, not a faded (muddy) sun one.
     const style = getComputedStyle(button);
     await expect(style.opacity).toBe("1");
     await expect(style.outlineStyle).toBe("dashed");
@@ -84,17 +87,13 @@ export const NameYourself: Story = {
 export const HostOnThisScreen: Story = {
   args: { step: "create" },
   play: async ({ args, canvas, userEvent }) => {
-    // Hosting needs a name too: the players read "Joris starts the round", not just "the host". Without one, the
-    // button says so instead of being disabled.
+    // Hosting needs a name too: the players read "Joris starts the round", not just "the host". Like Play, the
+    // button waits for it.
     const host = canvas.getByRole("button", { name: "Host on this screen" });
+    await expect(host).toBeDisabled();
+    await expect(canvas.getByText(/Show the game on a TV or laptop/)).toBeVisible();
+    await userEvent.type(canvas.getByLabelText("Your name"), "Joris");
     await expect(host).toBeEnabled();
-    await userEvent.click(host);
-    await expect(args.onEnter).not.toHaveBeenCalled();
-    const name = canvas.getByLabelText("Your name");
-    await expect(canvas.getByRole("alert")).toHaveTextContent("Type your name first");
-    await expect(name).toHaveFocus();
-    await expect(name).toHaveAccessibleDescription("Type your name first");
-    await userEvent.type(name, "Joris");
     await expect(canvas.queryByRole("alert")).toBeNull();
     await userEvent.click(host);
     await expect(args.onEnter).toHaveBeenCalledWith({ kind: "host", name: "Joris" });
@@ -129,6 +128,54 @@ export const TurnedAway: Story = {
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("alert")).toHaveTextContent("That room is full.");
     await expect(canvas.getByRole("button", { name: "Join" })).toBeEnabled();
+  },
+};
+
+/** The problem belongs to the try that failed: Back to the start page, or starting something else, clears it. */
+export const BackFromAProblem: Story = {
+  args: { defaultCode: "BKZW", defaultName: "Pip", problem: "There’s no room with that code." },
+  play: async ({ canvas, userEvent }) => {
+    await expect(canvas.getByRole("alert")).toHaveTextContent("There’s no room with that code.");
+    await userEvent.click(canvas.getByRole("button", { name: "Back" }));
+    await expect(canvas.getByRole("button", { name: "Join a room" })).toBeVisible();
+    await expect(canvas.queryByRole("alert")).toBeNull();
+  },
+};
+
+export const SomethingElseAfterAProblem: Story = {
+  args: { problem: "Couldn’t reach the game. Check your connection and try again." },
+  play: async ({ canvas, userEvent }) => {
+    await expect(canvas.getByRole("alert")).toBeVisible();
+    await userEvent.click(canvas.getByRole("button", { name: "Join a room" }));
+    await expect(canvas.getByLabelText("Room code")).toHaveFocus();
+    await expect(canvas.queryByRole("alert")).toBeNull();
+  },
+};
+
+/** Moved on from a problem, then the next try fails the same way: it shows again. */
+export const SameProblemAgain: Story = {
+  render: function Render(args) {
+    const unreachable = "Couldn’t reach the game. Check your connection and try again.";
+    const [problem, setProblem] = useState<string | undefined>(unreachable);
+    return (
+      <LobbyStart
+        {...args}
+        problem={problem}
+        onCreate={() => {
+          // Like the start page: a new try clears the problem, then fails again.
+          setProblem(undefined);
+          setTimeout(() => setProblem(unreachable), 0);
+        }}
+      />
+    );
+  },
+  play: async ({ canvas, userEvent }) => {
+    await expect(canvas.getByRole("alert")).toBeVisible();
+    await userEvent.click(canvas.getByRole("button", { name: "Join a room" }));
+    await userEvent.click(canvas.getByRole("button", { name: "Back" }));
+    await expect(canvas.queryByRole("alert")).toBeNull();
+    await userEvent.click(canvas.getByRole("button", { name: "Create a room" }));
+    await expect(await canvas.findByRole("alert")).toHaveTextContent("Couldn’t reach the game.");
   },
 };
 

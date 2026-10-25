@@ -47,6 +47,9 @@ export const PickAndClear: Story = {
       );
     await expect(frameOpacity("Dieren")).toBe(1);
     await expect(frameOpacity("Efteling")).toBe(0);
+    // A tap or a drag on a chip never selects its name.
+    const chip = canvas.getByRole("checkbox", { name: "Efteling" }).closest("label")!;
+    await expect(getComputedStyle(chip).userSelect).toBe("none");
     await expect(canvas.getByRole("checkbox", { name: "Na middernacht (18+)" })).not.toBeChecked();
 
     await userEvent.click(canvas.getByText("Efteling"));
@@ -59,6 +62,24 @@ export const PickAndClear: Story = {
     await userEvent.click(canvas.getByRole("button", { name: "Select all" }));
     await expect(canvas.getByRole("checkbox", { name: /Lekker Nederlands/ })).toBeChecked();
     await expect(canvas.getByRole("checkbox", { name: /Lichamelijk/ })).not.toBeChecked();
+  },
+};
+
+/** Only the chip you just picked traces its frame; the ones already picked stay put, also when you unpick one. */
+export const OnlyTheTouchedChipTraces: Story = {
+  play: async ({ canvas, userEvent }) => {
+    const animation = (name: string) =>
+      getComputedStyle(canvas.getByRole("checkbox", { name }).closest("label")!.querySelector(".sketchy")!)
+        .animationName;
+    await expect(animation("Eten")).toBe("none");
+
+    await userEvent.click(canvas.getByText("Dieren"));
+    await expect(canvas.getByRole("checkbox", { name: "Dieren" })).not.toBeChecked();
+    await expect(animation("Eten")).toBe("none");
+
+    await userEvent.click(canvas.getByText("Efteling"));
+    await expect(animation("Efteling")).toBe("trace");
+    await expect(animation("Eten")).toBe("none");
   },
 };
 

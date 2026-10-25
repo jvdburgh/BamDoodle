@@ -187,6 +187,13 @@
   [role="button"]:not(:disabled) {
     cursor: pointer;
   }
+
+  /* Taps and drags on a button or a choice (chips, pills, swatches) never select its text. */
+  button,
+  [role="button"],
+  label:has(input:is([type="checkbox"], [type="radio"])) {
+    @apply select-none;
+  }
 }
 
 @layer utilities {

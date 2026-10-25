@@ -94,7 +94,9 @@ export const SetUpTheRoom: Story = {
     await userEvent.click(radio(rounds, "10"));
     await expect(args.onChange).toHaveBeenLastCalledWith({ ...settings, mode: "timed", turnSeconds: 30, rounds: 10 });
     await expect(within(rounds).getByText("About 1 hour with 5 players")).toBeVisible();
-    await expect(canvas.getByText("Timed · 30 s · 2 turns each · 10 rounds · English · 2 categories")).toBeVisible();
+    await expect(
+      canvas.getByText("Timed · 30 s · 2 turns each · 10 rounds · English · 2 categories"),
+    ).toBeInTheDocument();
 
     await userEvent.click(canvas.getByText("Nederlands"));
     await expect(canvas.getByRole("checkbox", { name: /Dieren/ })).toBeChecked();
@@ -120,6 +122,51 @@ export const DoneAtTheEnd: Story = {
     await expect(getComputedStyle(next.parentElement!).position).toBe("static");
     const categories = canvas.getByRole("group", { name: /Categories/ });
     await expect(categories.compareDocumentPosition(next) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  },
+};
+
+/**
+ * On a phone (the test browser's viewport): headings and choices, without the lines under them (still read out), one
+ * full-width Next with Back under it, and the picks not repeated above it.
+ */
+export const OnAPhone: Story = {
+  globals: { viewport: { value: "mobile2", isRotated: false } },
+  play: async ({ canvas }) => {
+    await expect(window.innerWidth).toBeLessThan(768);
+    await expect(canvas.getByText(/You can change all of this between rounds\./)).toBeVisible();
+    await expect(canvas.getByText(/For 3 to 8 players/)).not.toBeVisible();
+    const rounds = canvas.getByRole("group", { name: "Rounds" });
+    await expect(rounds).toHaveAccessibleDescription(
+      "One round is one word, one drawing and one vote, with a new bamboozler each time.",
+    );
+    const hint = within(rounds).getByText(/^One round is one word/);
+    await expect(hint.getBoundingClientRect().height).toBeLessThanOrEqual(1);
+    await expect(within(rounds).getByText("About 13 minutes with 5 players")).toBeVisible();
+    await expect(canvas.getByText(/^One stroke · 3 turns each/)).not.toBeVisible();
+
+    const next = canvas.getByRole("button", { name: "Next" });
+    const back = canvas.getByRole("button", { name: "Back" });
+    const form = next.closest("form")!.getBoundingClientRect();
+    await expect(next.getBoundingClientRect().width).toBeGreaterThan(form.width * 0.8);
+    await expect(back.getBoundingClientRect().top).toBeGreaterThan(next.getBoundingClientRect().bottom);
+  },
+};
+
+/** A phone on its side is wide but the shortest screen of all: two columns, but just as lean. */
+export const OnAPhoneSideways: Story = {
+  parameters: {
+    viewport: {
+      options: { sideways: { name: "Phone on its side", styles: { width: "844px", height: "390px" }, type: "mobile" } },
+    },
+  },
+  globals: { viewport: { value: "sideways", isRotated: false } },
+  play: async ({ canvas }) => {
+    await expect(window.innerWidth).toBeGreaterThan(window.innerHeight);
+    await expect(canvas.getByText(/For 3 to 8 players/)).not.toBeVisible();
+    const rounds = canvas.getByRole("group", { name: "Rounds" });
+    const hint = within(rounds).getByText(/^One round is one word/);
+    await expect(hint.getBoundingClientRect().height).toBeLessThanOrEqual(1);
+    await expect(canvas.getByText(/^One stroke · 3 turns each/)).not.toBeVisible();
   },
 };
 

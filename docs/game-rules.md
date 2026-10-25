@@ -16,8 +16,10 @@ same way and get a roomier layout.
 
 **Optional host screen.** Like a quiz night, whoever creates the room can host it on a TV, beamer or laptop instead
 of playing: after the setup, your name and then **Host on this screen** (or **Play on this phone**, "laptop" on a
-wide screen with a mouse); the name is needed either way, so the players read who hosts (tapping Host without one
-says "Type your name first"). The start page keeps its first screen to Join and Create; who it's for (3 to 8
+wide screen with a mouse); the name is needed either way, so the players read who hosts (both buttons wait for it,
+in the disabled look). Hosting says what it means in one plain line: "Show the game on a TV or laptop (or cast this
+screen to one). You run it and watch along, but don't play." A problem that sent you back to the start page ("There's
+no room with that code", couldn't reach the game) shows until you go Back or start something else. The start page keeps its first screen to Join and Create; who it's for (3 to 8
 players, any device, a big screen to host) is in How to play below. The host screen is read from the couch and always fits one screen (a laptop at
 1280×800 up to a 1080p TV), with big type throughout. In the lobby it shows the code first, big, beside a QR code of
 the room's address ("Scan or go to bamdoodle.io and type BKZW"), the room's settings in one line under Start round,
@@ -75,13 +77,16 @@ can change the number of rounds between rounds; when that's already been reached
    numbers on the choices and a small sketch of what's picked. Under the rounds, a rough length: "About 17 minutes
    with 5 players" (5 players' turns, a line taking about 6 seconds, plus a minute per round for the vote, the guess
    and the results). Back and Next end the form, with the picks in one line beside Next ("Timed · 20 s · 2 turns
-   each · 4 rounds · English · 33 categories"). Who it's for (3 to 8 players, any device) is in How to play. Then the host's nickname (after the setup, so it's clearly
+   each · 4 rounds · English · 33 categories"). A phone keeps it lean: the headings, the choices and the length
+   under the rounds, without the lines under the headings (still read out by a screen reader), who it's for or the
+   picks line, and one full-width Next with Back under it. Who it's for (3 to 8 players, any device) is in How to play. Then the host's nickname (after the setup, so it's clearly
    theirs and not the room's), and only then is the room created, with those settings. The host (a player or the
    host screen) can open the settings again between rounds as "Room settings" ("Changes reach everyone right
    away."), back with "Back to the room"; every change there reaches the room at once. Then everyone draws their avatar
    (an empty round pad with one pen and the colours that read on navy; Randomize for a doodle face to start from,
    Clear to start over; left empty, they get a random doodle face; on a phone on its side the pad is on the left and
-   the colours and "Go to the room" beside it) and goes to the room. Everyone in the room sees
+   the colours beside it) and taps "Yep, that's me!" (after the pad and its controls, not pinned over them; a phone
+   shows it all on one screen) to go to the room. Everyone in the room sees
    each other's faces, also a face finished
    just after a round started. Until a player goes to the room their card says "drawing their face", and the host
    sees "Mo is still drawing their face" next to Start round (they can still start). In the room's lobby, on a phone
