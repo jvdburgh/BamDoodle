@@ -18,7 +18,8 @@ export const TheSecretWord: Story = {
     const card = canvas.getByTestId("secret-reveal");
     await expect(card).toHaveTextContent("The secret word is");
     await waitFor(() => expect(canvas.getByText("giraffe")).toBeVisible());
-    await expect(card).toHaveTextContent("Everyone knows it, except the bamboozler");
+    await expect(card).toHaveTextContent("Everyone has this same word, except the bamboozler");
+    await expect(card).toHaveTextContent("not so clearly they can copy you!");
   },
 };
 
@@ -28,7 +29,7 @@ export const YoureTheBamboozler: Story = {
   play: async ({ canvas }) => {
     const card = canvas.getByTestId("secret-reveal");
     await expect(card).toHaveTextContent("You’re the bamboozler!");
-    await expect(card).toHaveTextContent("Animals");
+    await expect(card).toHaveTextContent("You only know it’s Animals. Draw along and don’t get caught!");
     await expect(card).not.toHaveTextContent("giraffe");
   },
 };

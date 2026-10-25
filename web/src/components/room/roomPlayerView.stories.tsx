@@ -19,6 +19,8 @@ type Props = {
   pendingVote?: number;
   /** Players still drawing their face (not `ready`). */
   drawingFaces?: number[];
+  /** How many are in the room (6 by default). */
+  players?: number;
   send: (message: ClientMessage) => void;
   onSettings?: () => void;
 };
@@ -33,11 +35,18 @@ function PlayerFromState({
   rejection,
   pendingVote,
   drawingFaces = [],
+  players,
   send,
   onSettings,
 }: Props) {
   const [state] = useState(() => {
-    const base = roomStateFixture({ phase, you, hostScreen: hostScreen ?? null, hostId: hostScreen ? null : hostId });
+    const base = roomStateFixture({
+      phase,
+      you,
+      hostScreen: hostScreen ?? null,
+      hostId: hostScreen ? null : hostId,
+      players,
+    });
     const room = base.room && {
       ...base.room,
       players: base.room.players.map((player) => ({ ...player, ready: !drawingFaces.includes(player.id) })),
@@ -79,23 +88,35 @@ export const Watching: Story = {
   play: async ({ args, canvas, userEvent }) => {
     await settle();
     await expect(wornHats(canvas.getByRole("list", { name: "Players" }))).toHaveLength(0);
-    // In the header, and right in your face as the round starts.
+    // In the round banner, and right in your face as the round starts.
     await expect(canvas.getAllByText("Giraffe")).toHaveLength(2);
     await expect(canvas.getByTestId("secret-reveal")).toHaveTextContent("The secret word is");
+    const banner = canvas.getByRole("status", { name: "Round progress" });
+    await expect(banner).toHaveTextContent("everyone’s word");
+    await expect(banner).toHaveTextContent("Pip’s turn (1 of 3 each)");
+    await expect(banner).toHaveTextContent("Word 1 of 5");
+    // The header is the logo, the "?" and the sound: the room code is behind the "?".
+    await expect(canvas.queryByText("Room code")).toBeNull();
     await expect(canvas.getByRole("img", { name: "Shared drawing. Pip is drawing." })).toBeVisible();
-    // On a phone: everyone in the strip at the top, no tools while someone else draws.
+    // On a phone: everyone in the strip at the top, no tools while someone else draws, but what to look for.
     await expect(within(canvas.getByRole("list", { name: "Players" })).getAllByRole("listitem")).toHaveLength(6);
     await expect(canvas.queryAllByRole("radio", { name: /Black|Berry|Lagoon/ })).toHaveLength(0);
+    await expect(canvas.getByText("Tap a face to suspect them. Everyone sees it.")).toBeVisible();
+    await expect(canvas.getByText(/^Watch closely: who’s drawing vaguely\?/)).toBeVisible();
 
     await userEvent.click(canvas.getByRole("button", { name: /^Mo\b/ }));
-    await userEvent.click(canvas.getByRole("button", { name: "Mark as suspicious" }));
+    await userEvent.click(canvas.getByRole("button", { name: "Suspect" }));
     await expect(args.send).toHaveBeenCalledWith({ type: "suspect", suspectId: 3 });
   },
 };
 
+/** One stroke each: the banner says it's one line, and after you lift the pen that the turn is passing on. */
 export const YourTurn: Story = {
   args: { phase: { phase: "drawing", round: roundFixture({ activePlayerId: 2, strokes: [] }) } },
   play: async ({ args, canvas }) => {
+    const banner = canvas.getByRole("status", { name: "Round progress" });
+    await expect(banner).toHaveTextContent("Your turn: one line!");
+    await expect(canvas.queryByText(/^Watch closely/)).toBeNull();
     const board = canvas.getByRole("img", { name: "Shared drawing. Your turn to draw." }) as HTMLCanvasElement;
     const box = board.getBoundingClientRect();
     const at = (x: number, y: number): PointerEventInit => ({
@@ -120,8 +141,12 @@ export const YourTurn: Story = {
       ([message]) => message.type === "extendStroke",
     );
     await expect(extended.flatMap(([message]) => message.points).at(-1)).toEqual([0.7, 0.3, 0.5]);
+    await expect(banner).toHaveTextContent("Line done, passing on…");
+    // The pen is up until the server passes the turn on.
+    await expect(canvas.getByRole("img", { name: "Shared drawing. Your turn to draw." })).toHaveClass("cursor-default");
 
-    // On a phone the tools are pinned to the bottom on your turn: always in view, the colours in one row.
+    // On a phone the tools are pinned to the bottom on your turn: always in view, the pen sizes on the left and the
+    // colours in one row beside them.
     const tools = canvas.getByRole("region", { name: "Drawing tools" });
     await expect(getComputedStyle(tools).position).toBe("fixed");
     await expect(tools.getBoundingClientRect().bottom).toBeLessThanOrEqual(window.innerHeight + 1);
@@ -129,15 +154,18 @@ export const YourTurn: Story = {
       .getAllByRole("radio", { name: /Black|Berry|Lagoon/ })
       .map((radio) => Math.round(radio.closest("label")!.getBoundingClientRect().top));
     await expect(new Set(swatchTops).size).toBe(1);
+    const pens = canvas.getByRole("radio", { name: "Bold" }).getBoundingClientRect();
+    await expect(pens.right).toBeLessThan(canvas.getByRole("radio", { name: "Black" }).getBoundingClientRect().left);
   },
 };
 
 export const Bamboozler: Story = {
   args: { phase: { phase: "drawing", round: roundFixture({ word: null, role: "bamboozler" }) } },
   play: async ({ canvas }) => {
-    // Right in their face as the round starts, then just in the header.
+    // Right in their face as the round starts, then in the banner, in the word's place and size.
     await expect(canvas.getByText("You’re the bamboozler!")).toBeInTheDocument();
     await expect(canvas.getByText("You’re the bamboozler")).toBeVisible();
+    await expect(canvas.getByText("???")).toBeVisible();
     await expect(canvas.queryByText("Giraffe")).toBeNull();
     // Only on their own screen, only on their own face.
     const players = canvas.getByRole("list", { name: "Players" });
@@ -152,6 +180,7 @@ export const HowToPlay: Story = {
     await userEvent.click(canvas.getByRole("button", { name: "How to play" }));
     const sheet = within(canvas.getByRole("dialog", { name: "How to play" }));
     await expect(sheet.getByRole("heading", { name: "This room" })).toBeVisible();
+    await expect(sheet.getByText(/^Room code/)).toHaveTextContent("Room code BKZW");
     await expect(sheet.getByText(/rounds, each with a new secret word/)).toBeVisible();
     await expect(sheet.getByRole("heading", { name: "Spot the bamboozler" })).toBeVisible();
     await userEvent.click(sheet.getByRole("button", { name: "Close" }));
@@ -164,15 +193,29 @@ export const HowToPlay: Story = {
 export const InARoomWithAHostScreen: Story = {
   args: { phase: { phase: "lobby" }, hostScreen: "Joris" },
   play: async ({ canvas }) => {
-    await expect(canvas.getByText("Joris starts the round from the big screen…")).toBeVisible();
+    await expect(canvas.getByText("5 rounds · Joris starts it from the big screen")).toBeVisible();
     await expect(canvas.queryByRole("button", { name: "Start round" })).toBeNull();
+    await expect(canvas.queryByRole("button", { name: "Room settings" })).toBeNull();
   },
 };
 
+/**
+ * The host's lobby: the code once (on the join card, no paper behind it), Start round, a link to send around, what's
+ * picked with Room settings, and how the game goes under the players.
+ */
 export const HostInTheLobby: Story = {
   args: { phase: { phase: "lobby" }, onSettings: fn() },
   play: async ({ args, canvas, userEvent }) => {
     await expect(canvas.getByText("6 players in the room")).toBeVisible();
+    await expect(canvas.getByText("5 rounds · you start when everyone’s in")).toBeVisible();
+    await expect(canvas.queryByText("Room code")).toBeNull();
+    await expect(canvas.queryByRole("status", { name: "Round progress" })).toBeNull();
+    await expect(canvas.queryByRole("img", { name: /Shared drawing/ })).toBeNull();
+    await expect(canvas.getByText("One stroke · 3 turns each · 5 rounds · English · 2 categories")).toBeVisible();
+    await expect(canvas.getByRole("button", { name: "Share link" })).toBeVisible();
+    const primer = within(canvas.getByRole("list", { name: "How it goes" }));
+    await expect(primer.getAllByRole("listitem")).toHaveLength(3);
+    await expect(primer.getByText("Vote who didn’t know it.")).toBeVisible();
     await expect(canvas.queryByRole("link", { name: /TV/ })).toBeNull();
     await userEvent.click(canvas.getByRole("button", { name: "Room settings" }));
     await expect(args.onSettings).toHaveBeenCalled();
@@ -191,11 +234,27 @@ export const HostWaitsForFaces: Story = {
   },
 };
 
+/** Everyone sees what's picked and can send the link around; only the host starts or changes settings. */
 export const GuestInTheLobby: Story = {
   args: { phase: { phase: "lobby" }, you: 3 },
   play: async ({ canvas }) => {
-    await expect(canvas.getByText("Waiting for Juno to start…")).toBeVisible();
+    await expect(canvas.getByText("5 rounds · waiting for Juno to start")).toBeVisible();
+    await expect(canvas.getByText("One stroke · 3 turns each · 5 rounds · English · 2 categories")).toBeVisible();
+    await expect(canvas.getByRole("button", { name: "Share link" })).toBeVisible();
     await expect(canvas.queryByRole("button", { name: "Start round" })).toBeNull();
+    await expect(canvas.queryByRole("button", { name: "Room settings" })).toBeNull();
+  },
+};
+
+/** Too few to start: Start round is there but off, and says why. */
+export const HostNeedsMorePlayers: Story = {
+  args: { phase: { phase: "lobby" }, players: 2, onSettings: fn() },
+  play: async ({ args, canvas, userEvent }) => {
+    const start = canvas.getByRole("button", { name: "Start round" });
+    await expect(start).toBeDisabled();
+    await expect(start).toHaveAccessibleDescription("1 more player needed to start (up to 8 can play)");
+    await userEvent.click(start);
+    await expect(args.send).not.toHaveBeenCalled();
   },
 };
 

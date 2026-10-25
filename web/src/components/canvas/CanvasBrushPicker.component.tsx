@@ -10,10 +10,14 @@ type CanvasBrushPickerProps = {
   disabled?: boolean;
 };
 
+/** The pen sizes as one small segmented group, the current colour in each preview dot. */
 export function CanvasBrushPicker({ brushes, value, onChange, color, disabled = false }: CanvasBrushPickerProps) {
   const largest = Math.max(...brushes.map((brush) => brush.size));
   return (
-    <fieldset disabled={disabled} className="flex items-center gap-1 disabled:opacity-40">
+    <fieldset
+      disabled={disabled}
+      className="flex shrink-0 items-center rounded-[14px_18px_16px_12px] bg-night p-0.5 ring-1 ring-white/15 disabled:opacity-40"
+    >
       <legend className="sr-only">Brush size</legend>
       {brushes.map((brush, index) => (
         <label key={brush.name} className="relative grid size-11 cursor-pointer place-items-center">
@@ -26,7 +30,7 @@ export function CanvasBrushPicker({ brushes, value, onChange, color, disabled = 
             aria-label={brush.name}
             className="peer sr-only"
           />
-          <span className="grid size-9 place-items-center rounded-full bg-paper peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-white">
+          <span className="grid size-8 place-items-center rounded-full bg-paper peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-white">
             <span
               style={{ backgroundColor: color, width: `${(brush.size / largest) * 75}%` }}
               className="aspect-square rounded-full ring-1 ring-night/15"

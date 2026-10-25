@@ -29,19 +29,25 @@ goal for now.
 
 - **Artists** see the category and the secret word.
 - **The bamboozler** sees only the category. They draw along, trying to look like they know the word.
-- **Right in your face** as each round starts, a card says it for a few seconds (shorter for whoever draws first,
-  and it lets taps through since their clock is running): "The secret word is
-  GIRAFFE. Everyone knows it, except the bamboozler", or "You're the bamboozler!" with the category. Clarity wins over
-  a glance across the table. After that the header keeps it: the word, or a small "You're the bamboozler"; the
-  bamboozler's own face wears the fedora (on their screen only), and the logo in the corner raises its collar and
-  swirls its hat twice (a quiet static badge with reduced motion).
-- **"?"** in the room's header opens this room's rules (mode, turns, rounds, words) and how to play, any time.
+- **Right in your face** as each round starts, a card says it for a few seconds (a second and a half for whoever
+  draws first, and it lets taps through since their clock is running; no extra pause before the first turn): "The
+  secret word is GIRAFFE. Everyone has this same word, except the bamboozler. Draw it, but not so clearly they can
+  copy you!", or "You're the bamboozler! Everyone else has the word. You only know it's Animals. Draw along and don't
+  get caught!". Clarity wins over a glance across the table. On a phone on its side the card sits over the column
+  beside the drawing, not over the drawing. After that the round banner keeps it: the category and the word with
+  "everyone's word", or for the bamboozler "???" with "You're the bamboozler" in berry, in the same place and size, so
+  the banner's shape doesn't give the role away across the table. The bamboozler's own face wears the fedora (on
+  their screen only), and the logo in the corner raises its collar and swirls its hat twice (a quiet static badge with
+  reduced motion).
+- **"?"** in the room's header opens this room's code and rules (mode, turns, rounds, words) and how to play, any
+  time.
 - Exactly one bamboozler per round, picked at random by the server. Nobody but the server knows who it is
   until the reveal.
 
 ## A game
 
-A game is a few rounds (the host picks how many, default 4). Every round has a new word and a new bamboozler. After
+A game is a few rounds (the host picks how many, default 4). Every round has a new word and a new bamboozler, so a
+player's screen counts them as words ("Word 2 of 4"). After
 the last round comes the final scoreboard, with confetti for the winner; the host can start a new game from there. The host
 can change the number of rounds between rounds; when that's already been reached, the next start begins a new game.
 
@@ -63,8 +69,15 @@ can change the number of rounds between rounds; when that's already been reached
    Clear to start over; left empty, they get a random doodle face) and goes to the room. Everyone in the room sees
    each other's faces, also a face finished
    just after a round started. Until a player goes to the room their card says "drawing their face", and the host
-   sees "Mo is still drawing their face" next to Start round (they can still start). The others wait on the join card
-   until the host starts ("Joris starts the round from the big screen" in a room hosted by a screen).
+   sees "Mo is still drawing their face" next to Start round (they can still start). In the room's lobby, on a phone
+   and a laptop alike, the header says how many are in the room and "4 rounds · waiting for Juno to start" ("you
+   start when everyone's in" for the host, "Joris starts it from the big screen" in a room hosted by a screen). The
+   join card sits on the room's navy and is the one place with the code, with **Share link** for everyone (the
+   phone's own share sheet, or `bamdoodle.io/CODE` copied with "Link copied"); the host's Start round is on it too,
+   switched off with "2 more players needed to start (up to 8 can play)" while fewer than 3 are here. Under the card
+   everyone reads what's picked ("Timed · 20 s · 2 turns each · 4 rounds · English · 12 categories"), with Room
+   settings for the host. Under the players, how it goes in three lines: everyone gets the same word, except the
+   bamboozler; take turns drawing it on one canvas; vote who didn't know it.
 2. **Secret.** The server picks a word from the chosen categories and tells each player their role.
 3. **Drawing.** Players take turns on the shared canvas in a shuffled order shown on screen; each player
    gets the same number of turns. The player whose turn it is is highlighted, and their strokes appear live for everyone.
@@ -90,6 +103,9 @@ and on the wire they're `oneStroke` and `timed`. The categories are picked as sm
 and a ✓, an unpicked one a +, and the heading counts them: "Categories (12 of 30 selected)"), every
 non-18+ category of the room's language ticked by default, 18+ ones marked and only in play when ticked.
 
+In one-stroke mode your turn says "Your turn: one line!" (the call-out over the canvas and the banner), and once you
+lift the pen the banner says "Line done, passing on…" and the pen stays up until the next turn starts.
+
 The server enforces the turn: strokes from someone whose turn it isn't, or after the time limit, are dropped.
 Simultaneous drawing is parked: it is hard to follow who draws what and much heavier to sync.
 
@@ -101,8 +117,11 @@ Everyone can use every colour: there is nothing to unlock, ever. To still see wh
   order, their name in the turn bar, and a name tag that follows their pen tip on the canvas.
 - **Mini-maps:** next to each player's name on a laptop, a small canvas shows only *their* strokes. On a phone the
   players are a strip of faces at the top (name, points, the ring on whoever draws, the hat on whoever you suspect, a
-  "voted" tag in the vote); a tap opens "See their lines" and "Mark as suspicious" right under it, with who suspects
-  them and, after the reveal, who they voted for and their points. The mini-maps are back in the final vote.
+  "voted" tag in the vote); a tap opens "See their lines" and "Suspect" ("Suspected ✓" once you do) right under it,
+  with who suspects them and, after the reveal, who they voted for and their points. While you can suspect, the faces
+  look like something to tap: each but yours shows the fedora faintly (on hover, and always on a touch screen) and
+  squishes when pressed, and during the first word, until you suspect someone, a line under the strip says "Tap a face
+  to suspect them. Everyone sees it." The mini-maps are back in the final vote.
 - **Pen tag:** a small chip with the drawer's avatar and name rides on their pen tip on every screen.
 - **Magnifying glass (spotlight):** tap a player's mini-map to highlight their strokes on the main canvas while the
   rest fades back to grey; the sheet and their card get a bold, wobbly hand-drawn frame, and a "Noor's lines · Show
@@ -118,11 +137,17 @@ talk ("Noor thinks Jip is sketchy") and cards say who suspects that player. Afte
 "Vote" and the face is the vote too: a tap votes for them (the hat drops on, "Your vote ✓"), a tap on another changes
 it. The final vote is a sheet over everything on every screen: "Time's up! Who's sketchy?" with a 30 s countdown that
 says whose suspicion counts if you don't vote, the finished drawing, and a card per player with their mini-map and a
-big Vote button; it shows who has voted, never for whom, and closes when the vote ends. On a laptop everything fits one
-screen (cards in one column on the left, the canvas sized to fit with pens and colours right under it, round and turn
-progress bottom-left). On a phone: the progress and the strip of faces at the top, the canvas, and on your turn pens
-and colours pinned to the bottom (colours in one row that scrolls); on its side, the drawing on the left and the rest
-beside it. Then the reveal on the cards themselves: the hat drops
+big Vote button; it shows who has voted, never for whom, and closes when the vote ends. The room's header is just the
+logo, the "?" (with the room code in it during play) and the sound. The round banner says where the round is: the
+category and the word (or the bamboozler's "???") on top, then "Noor's turn (1 of 2 each) · 15s", "Word 1 of 4" at the
+right and the countdown as a bar across. Rounds are words there, so "Round" never sits next to "Turn". On a laptop
+everything fits one screen (the banner in the middle of the header, cards in one column on the left, the canvas
+sized to fit with pens and colours right under it). On a phone: the banner full width under the header, the strip of
+faces, the canvas, and while someone else draws "Watch closely: who's drawing vaguely? Tap their face to suspect."
+under it; on your turn pens and colours are pinned to the bottom, the pen sizes as a small group on the left and the
+colours in one row beside them that scrolls and fades out at the right edge. On its side the room fits the screen
+without scrolling: the drawing (or, in the lobby, the join card) on the left at the full height, the header, banner,
+strip and tools beside it. Then the reveal on the cards themselves: the hat drops
 onto the bamboozler, each card says who that player voted for (right or wrong), and once the round is scored each card
 pops its points and total. Under the canvas only the headline: who the bamboozler was and their guess (the guess's 20
 seconds start at the reveal), then the word and the host's "Next round". After the last round

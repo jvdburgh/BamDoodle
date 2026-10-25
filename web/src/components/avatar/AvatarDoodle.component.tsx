@@ -8,7 +8,8 @@ type AvatarDoodleProps = {
   label?: string;
   /**
    * The logo's fedora on the head: "worn" drops it on (the one you suspect, yourself as the bamboozler, the reveal),
-   * "preview" shows it faintly on hover or focus of the surrounding `group` (the suspect button).
+   * "preview" shows it faintly on hover or focus of the surrounding `group` (the suspect button), and always on a
+   * touch screen, where there's no hover to find it with.
    */
   hat?: "worn" | "preview";
   /** False draws the lines alone, without the navy circle behind: on a navy surface (the player cards) it adds nothing. */
@@ -71,7 +72,7 @@ export function AvatarDoodle({
         className={`pointer-events-none absolute -top-[14%] left-1/2 w-[92%] max-w-none -translate-x-1/2 -rotate-6 ${
           hat === "worn"
             ? "animate-hat-drop motion-reduce:animate-none"
-            : "opacity-0 transition-opacity group-hover:opacity-60 group-focus-visible:opacity-60"
+            : "opacity-0 transition-opacity group-hover:opacity-60 group-focus-visible:opacity-60 pointer-coarse:opacity-30"
         }`}
       />
     </span>

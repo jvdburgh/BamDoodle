@@ -59,7 +59,7 @@ export const Disabled: Story = {
   },
 };
 
-/** In a narrow spot like a phone's bottom bar: one row that scrolls sideways, every colour still there. */
+/** In a narrow spot like a phone's bottom bar: one row that scrolls sideways and fades out on the right. */
 export const OneRowWhenNarrow: Story = {
   args: { rowWhenNarrow: true },
   play: async ({ canvas }) => {
@@ -67,5 +67,8 @@ export const OneRowWhenNarrow: Story = {
     await expect(radios).toHaveLength(CanvasTools.colours.length);
     const tops = new Set(radios.map((radio) => Math.round(radio.closest("label")!.getBoundingClientRect().top)));
     await expect(tops.size).toBe(1);
+    const row = radios[0]!.closest("label")!.parentElement!;
+    await expect(row.scrollWidth).toBeGreaterThan(row.clientWidth);
+    await expect(getComputedStyle(row).maskImage).toContain("linear-gradient");
   },
 };

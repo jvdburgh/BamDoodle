@@ -6,7 +6,10 @@ type CanvasPaletteProps = {
   value: string;
   onChange: (value: string) => void;
   disabled?: boolean;
-  /** In a narrow spot (under 32rem, like a phone's bottom bar), one row that scrolls sideways; wrapping with room. */
+  /**
+   * In a narrow spot (under 32rem, like a phone's bottom bar), one row that scrolls sideways and fades out at the
+   * right edge, so it reads as more to come; wrapping with room.
+   */
   rowWhenNarrow?: boolean;
 };
 
@@ -26,7 +29,7 @@ export function CanvasPalette({
       <div
         className={`grid gap-1 ${
           rowWhenNarrow
-            ? "@max-lg/palette:-mx-1 @max-lg/palette:snap-x @max-lg/palette:auto-cols-[2.75rem] @max-lg/palette:grid-flow-col @max-lg/palette:overflow-x-auto @max-lg/palette:overscroll-x-contain @max-lg/palette:px-1 @max-lg/palette:py-0.5 @max-lg/palette:[scrollbar-width:none] @lg/palette:grid-cols-[repeat(auto-fill,minmax(2.5rem,1fr))]"
+            ? "@max-lg/palette:-mx-1 @max-lg/palette:snap-x @max-lg/palette:auto-cols-[2.75rem] @max-lg/palette:grid-flow-col @max-lg/palette:overflow-x-auto @max-lg/palette:overscroll-x-contain @max-lg/palette:py-0.5 @max-lg/palette:pr-8 @max-lg/palette:pl-1 @max-lg/palette:[mask-image:linear-gradient(to_right,black_calc(100%-2.5rem),transparent)] @max-lg/palette:[scrollbar-width:none] @lg/palette:grid-cols-[repeat(auto-fill,minmax(2.5rem,1fr))]"
             : `grid-cols-[repeat(auto-fill,minmax(2.5rem,1fr))] ${colours.length <= 5 ? "max-w-72" : ""}`
         }`}
       >
