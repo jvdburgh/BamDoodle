@@ -51,3 +51,20 @@ describe("FeedUtils.between", () => {
     ]);
   });
 });
+
+describe("FeedUtils.shown", () => {
+  const lines = [
+    { id: 1, at: 0, voterId: 1, kind: "suspect" as const, suspectId: 3, beforeId: null },
+    { id: 2, at: 5_000, voterId: 2, kind: "voted" as const },
+  ];
+
+  it("keeps a line for six seconds while drawing and voting", () => {
+    expect(FeedUtils.shown(lines, "drawing", 1_000)).toEqual(lines);
+    expect(FeedUtils.shown(lines, "voting", 7_000)).toEqual([lines[1]]);
+  });
+
+  it("clears the table talk off the drawing once the vote is over", () => {
+    expect(FeedUtils.shown(lines, "guessing", 5_100)).toEqual([]);
+    expect(FeedUtils.shown(lines, "finished", 5_100)).toEqual([]);
+  });
+});

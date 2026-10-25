@@ -1,4 +1,4 @@
-import type { FeedLine } from "@/components/room/_types/room.types";
+import type { FeedLine, RoomPhase } from "@/components/room/_types/room.types";
 import type { RoundView } from "@/protocol/generated/RoundView";
 
 /** The public, playful lines shown on every screen when someone changes who they suspect or votes. */
@@ -34,4 +34,13 @@ function between(before: RoundView, after: RoundView, at: number, firstId: numbe
   return lines;
 }
 
-export const FeedUtils = { suspicion, voted, between };
+/** How long a line stays up. */
+const FEED_MS = 6_000;
+
+/** The lines still up: table talk is for the drawing and the vote, so the reveal clears it off the drawing. */
+function shown(lines: FeedLine[], phase: RoomPhase, now: number): FeedLine[] {
+  if (phase !== "drawing" && phase !== "voting") return [];
+  return lines.filter((line) => now - line.at < FEED_MS);
+}
+
+export const FeedUtils = { suspicion, voted, between, shown };
