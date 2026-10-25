@@ -213,7 +213,8 @@ function GameRoom({ state, connection, createdHere }: GameRoomProps) {
   /** What the host is picking; only complete settings go to the server, which sends them back to everyone. */
   const [draft, setDraft] = useState<RoomSettings | null>(null);
   const playing = room.phase.phase === "drawing" || room.phase.phase === "voting" || room.phase.phase === "guessing";
-  useRoomSounds(state);
+  // Hosting, music plays unless switched off, on a phone too; everyone else gets the device's default.
+  useRoomSounds(state, { musicByDefault: isHost || MusicUtils.onByDefault() });
 
   // Past the face screen (or skipped it, joining mid-round): the host no longer waits for your face.
   useEffect(() => {

@@ -225,19 +225,24 @@ function scratch(audio: AudioContext, output: AudioNode, delay: number) {
  * Background music: one source looping the track's audible span natively (no timers, so no gap and no stop when a
  * hidden tab throttles them). It plays while a screen with music is open and it's switched on, steps back while
  * someone draws or votes, and never stops for a sound effect: effects play through their own nodes. Off by default on
- * a player's phone, so a table of phones doesn't play it out of step; on by default on the host screen. The choice is
- * remembered per device.
+ * a player's phone, so a table of phones doesn't play it out of step; on by default on the host screen and the host's
+ * own device. The choice is remembered per device. The track is fetched as soon as a screen has music and decoded at
+ * the first tap, on or off, so switching it on starts it that very moment.
  */
 let musicByDefault = false;
 let musicScreen = false;
 let musicDucked = false;
+type MusicTrack = { buffer: AudioBuffer; start: number; end: number };
 let musicBytes: Promise<ArrayBuffer> | null = null;
-let musicTrack: Promise<{ buffer: AudioBuffer; start: number; end: number } | null> | null = null;
-let music: { output: GainNode; source: AudioBufferSourceNode; stopTimer: number } | null = null;
+let musicTrack: Promise<MusicTrack | null> | null = null;
+/** The decoded track, once it is: switching the music on then starts it in that same moment. */
+let musicReady: MusicTrack | null = null;
+/** `level` is where its volume is heading: 0 while it fades out after being switched off. */
+let music: { output: GainNode; source: AudioBufferSourceNode; stopTimer: number; level: number } | null = null;
 
 const musicOn = () => musicChoice ?? musicByDefault;
 
-/** The track's bytes, fetched as soon as a screen has music: the first tap then only decodes, no wait to hear it. */
+/** The track's bytes, fetched as soon as a screen has music, also while it's off: the first tap only decodes it. */
 function fetchMusic() {
   musicBytes ??= fetch(MUSIC_SRC).then((response) => response.arrayBuffer());
   return musicBytes;
@@ -246,7 +251,10 @@ function fetchMusic() {
 function loadMusic(audio: AudioContext) {
   musicTrack ??= fetchMusic()
     .then((data) => audio.decodeAudioData(data))
-    .then((buffer) => ({ buffer, ...MusicUtils.loopBounds(buffer.getChannelData(0), buffer.sampleRate) }))
+    .then((buffer) => {
+      musicReady = { buffer, ...MusicUtils.loopBounds(buffer.getChannelData(0), buffer.sampleRate) };
+      return musicReady;
+    })
     .catch(() => {
       musicBytes = null;
       musicTrack = null;
@@ -263,32 +271,51 @@ function stopMusic() {
   music = null;
 }
 
+const musicLevel = () => (musicOn() && musicScreen ? MUSIC_GAIN * (musicDucked ? MUSIC_DUCKED : 1) : 0);
+
+/** From its first sound, right now and at its volume: a fade-in from silence sounds like the switch didn't work. */
+function startMusic(audio: AudioContext, track: MusicTrack) {
+  const level = musicLevel();
+  const output = audio.createGain();
+  output.gain.value = level;
+  output.connect(audio.destination);
+  const source = audio.createBufferSource();
+  source.buffer = track.buffer;
+  source.loop = true;
+  source.loopStart = track.start;
+  source.loopEnd = track.end;
+  source.connect(output);
+  source.start(0, track.start);
+  music = { output, source, stopTimer: 0, level };
+}
+
 function updateMusic() {
   const audio = context;
-  if (!audio || audio.state !== "running") return;
-  const level = musicOn() && musicScreen ? MUSIC_GAIN * (musicDucked ? MUSIC_DUCKED : 1) : 0;
+  if (!audio) return;
+  // Decoded ahead, also while it's off, so switching it on has nothing left to wait for.
+  if (musicScreen) void loadMusic(audio);
+  if (audio.state !== "running") return;
+  const level = musicLevel();
   if (music) {
     window.clearTimeout(music.stopTimer);
-    music.output.gain.setTargetAtTime(level, audio.currentTime, level > 0 ? 0.6 : 0.4);
+    const gain = music.output.gain;
+    if (level > 0 && music.level === 0) {
+      // Switched on again while it fades out: at its volume at once, like a fresh start.
+      gain.cancelScheduledValues(audio.currentTime);
+      gain.setValueAtTime(level, audio.currentTime);
+    } else gain.setTargetAtTime(level, audio.currentTime, level > 0 ? 0.6 : 0.4);
+    music.level = level;
     if (level === 0) music.stopTimer = window.setTimeout(stopMusic, 3000);
     return;
   }
   if (level === 0) return;
+  if (musicReady) {
+    startMusic(audio, musicReady);
+    return;
+  }
   void loadMusic(audio).then((track) => {
-    if (!track || music || !musicOn() || !musicScreen) return;
-    const output = audio.createGain();
-    // At its volume straight away: a fade-in from silence sounds like the switch didn't work.
-    output.gain.value = musicDucked ? MUSIC_GAIN * MUSIC_DUCKED : MUSIC_GAIN;
-    output.connect(audio.destination);
-    const source = audio.createBufferSource();
-    source.buffer = track.buffer;
-    source.loop = true;
-    source.loopStart = track.start;
-    source.loopEnd = track.end;
-    source.connect(output);
-    source.start(audio.currentTime + 0.05, track.start);
-    music = { output, source, stopTimer: 0 };
-    updateMusic();
+    if (!track || music || musicLevel() === 0) return;
+    startMusic(audio, track);
   });
 }
 
@@ -299,7 +326,7 @@ function setMusic({ playing, ducked, byDefault }: { playing: boolean; ducked: bo
   musicDucked = ducked;
   musicByDefault = byDefault;
   if (changedDefault) for (const listener of listeners) listener();
-  if (playing && musicOn()) void fetchMusic().catch(() => (musicBytes = null));
+  if (playing) void fetchMusic().catch(() => (musicBytes = null));
   updateMusic();
 }
 
