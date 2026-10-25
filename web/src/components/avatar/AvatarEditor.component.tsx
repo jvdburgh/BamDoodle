@@ -1,8 +1,8 @@
-import { useRef, useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { AvatarDoodle } from "@/components/avatar/AvatarDoodle.component";
 import type { AvatarEdit, AvatarStroke } from "@/components/avatar/_types/avatar.types";
 import { AvatarUtils } from "@/components/avatar/_utils/avatar.utils";
-import { BrandScribble } from "@/components/brand/BrandScribble.component";
+import { ScribbleUtils } from "@/components/brand/_utils/scribble.utils";
 import { BrandStyles } from "@/components/brand/_utils/brandStyles.utils";
 import { CanvasPalette } from "@/components/canvas/CanvasPalette.component";
 import { useFrame } from "@/components/canvas/_hooks/frame.hook";
@@ -13,12 +13,20 @@ import { CanvasUtils } from "@/components/canvas/_utils/canvas.utils";
 type AvatarEditorProps = {
   value: AvatarStroke[];
   onChange: (strokes: AvatarStroke[]) => void;
+  /** The screen's next step, under the colours and buttons (beside the pad on a phone on its side). */
+  children?: ReactNode;
 };
 
-const control = `${BrandStyles.quietButton} px-3 aria-disabled:cursor-default aria-disabled:opacity-40`;
+const control = `${BrandStyles.quietButton} px-3`;
+
+/** A doodled ring just outside the pad's edge (radius 50 of 100), centred on it: barely any wobble, a small overlap. */
+const RING = CanvasUtils.freehandPath(
+  ScribbleUtils.loop(5, { cx: 50, cy: 50, rx: 53, ry: 53, turns: 1.04, wobble: 0.008, start: -Math.PI / 3 }),
+  2.2,
+);
 
 /** Draw on a round pad, starting empty: randomize for a doodle face to start from, or clear and start over. */
-export function AvatarEditor({ value, onChange }: AvatarEditorProps) {
+export function AvatarEditor({ value, onChange, children }: AvatarEditorProps) {
   const [colour, setColour] = useState(AvatarUtils.white);
   const [full, setFull] = useState(false);
   const liveRef = useRef<SVGPathElement>(null);
@@ -58,8 +66,8 @@ export function AvatarEditor({ value, onChange }: AvatarEditorProps) {
   });
 
   return (
-    <div className="grid w-full justify-items-center gap-4">
-      <div className="relative my-3 aspect-square w-full max-w-[min(14rem,34svh)]">
+    <div className="grid w-full justify-items-center gap-4 sideways:grid-cols-[auto_minmax(0,1fr)] sideways:items-center sideways:gap-x-8 sideways:gap-y-2">
+      <div className="relative my-3 aspect-square w-full max-w-[min(14rem,34svh)] sideways:row-span-4 sideways:my-0 sideways:w-[min(14rem,calc(100svh-7rem))] sideways:max-w-none">
         <AvatarDoodle strokes={value} className="absolute inset-0 size-full" />
         <svg
           viewBox="0 0 100 100"
@@ -70,12 +78,14 @@ export function AvatarEditor({ value, onChange }: AvatarEditorProps) {
         >
           <path ref={liveRef} fill={colour} />
         </svg>
-        <BrandScribble
-          shape="ring"
-          seed={5}
-          weight={0.8}
-          className="pointer-events-none absolute -inset-5 size-[calc(100%+2.5rem)] text-white/30"
-        />
+        <svg
+          viewBox="0 0 100 100"
+          aria-hidden="true"
+          focusable="false"
+          className="pointer-events-none absolute inset-0 size-full overflow-visible text-white/30"
+        >
+          <path d={RING} fill="currentColor" />
+        </svg>
       </div>
 
       <div className="w-full max-w-64">
@@ -99,13 +109,14 @@ export function AvatarEditor({ value, onChange }: AvatarEditorProps) {
           Clear
         </button>
       </div>
-      <p aria-live="polite" className="-mt-2 min-h-5 text-center text-sm text-white/70">
+      <p aria-live="polite" className="-mt-2 min-h-5 text-center text-sm text-white/70 sideways:mt-0 sideways:min-h-0">
         {full
           ? "Your face is full: clear it to draw more."
           : value.length === 0
             ? "Draw your face, or leave it empty for a random one."
             : ""}
       </p>
+      {children}
     </div>
   );
 }

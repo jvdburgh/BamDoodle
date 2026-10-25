@@ -36,12 +36,15 @@ Avoid: Brysbaert concreteness norms (no open licence; fine to consult privately,
 
 ## Format
 
-One TOML file per language and pack, loaded by the server at startup. Players see and pick **categories**; a file
-just groups categories for us. A category with the same name in two files of one language is merged.
+One TOML file per language and pack, loaded by the server at startup. Players see and pick **categories**; the
+setup lists them under their file's `group` (everyday, culture, dutch, world, media, trivia, tech, logos, adults,
+named Everyday, Culture, Dutch, World, Film & TV, Trivia, Tech, Logos and 18+ in the app). A category with the same
+name in two files of one language is merged, and must have the same group there.
 
 ```toml
 # words/nl/nederland.toml
 language = "nl"
+group = "dutch"
 # adult = true  marks every category in the file as 18+
 
 [categories]

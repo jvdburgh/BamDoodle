@@ -1,6 +1,7 @@
 # Themed pack, curated for BamDoodle. CC BY-SA 4.0, see words/NOTICE.
 # Everyday things are one word; names (people, characters, places, landmarks) keep their real, multi-word names.
 language = "en"
+group = "culture"
 
 [categories]
 "Very British" = ["bagpipes", "bearskin", "Beatles", "Beefeater", "biscuit", "bobby", "bowler", "brolly", "bulldog", "butler", "chippy", "corgi", "cricket", "crisps", "crumpet", "cuppa", "double-decker", "fry-up", "haggis", "kilt", "maypole", "Nessie", "Oxford", "Paddington", "pint", "postbox", "pub", "queue", "roundabout", "scone", "Shakespeare", "Sherlock", "Stonehenge", "teapot", "trifle", "Tube", "wellies", "Wembley", "Wimbledon", "Windsor"]

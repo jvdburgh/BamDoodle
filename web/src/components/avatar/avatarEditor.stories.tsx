@@ -62,6 +62,24 @@ export const DrawOnTheFace: Story = {
   },
 };
 
+/** The doodled ring hugs the round pad: same centre, just outside its edge. */
+export const RingAroundThePad: Story = {
+  play: async ({ canvas }) => {
+    const pad = canvas.getByRole("img", { name: "Avatar drawing pad" }).getBoundingClientRect();
+    const ring = canvas
+      .getByRole("img", { name: "Avatar drawing pad" })
+      .parentElement!.lastElementChild!.querySelector("path")!
+      .getBoundingClientRect();
+    const centre = (box: DOMRect) => [box.left + box.width / 2, box.top + box.height / 2] as const;
+    const [padX, padY] = centre(pad);
+    const [ringX, ringY] = centre(ring);
+    await expect(Math.abs(ringX - padX)).toBeLessThan(1);
+    await expect(Math.abs(ringY - padY)).toBeLessThan(1);
+    await expect(ring.width / pad.width).toBeGreaterThan(1);
+    await expect(ring.width / pad.width).toBeLessThan(1.12);
+  },
+};
+
 export const PickAColour: Story = {
   play: async ({ args, canvas, userEvent }) => {
     await userEvent.click(canvas.getByRole("radio", { name: "Berry" }));
@@ -77,6 +95,9 @@ export const RandomizeAndClear: Story = {
     await expect(canvas.getByText("Draw your face, or leave it empty for a random one.")).toBeVisible();
     const clear = canvas.getByRole("button", { name: "Clear" });
     await expect(clear).toHaveAttribute("aria-disabled", "true");
+    // The same disabled look as every other button, though it keeps its focus.
+    await expect(getComputedStyle(clear).opacity).toBe("1");
+    await expect(getComputedStyle(clear).outlineStyle).toBe("dashed");
 
     const randomize = canvas.getByRole("button", { name: "Randomize" });
     randomize.focus();

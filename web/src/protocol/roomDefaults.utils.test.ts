@@ -11,7 +11,7 @@ const defaults: RoomDefaults = {
     language: "en",
     categories: ["Animals"],
   },
-  wordCategories: [{ name: "Animals", language: "en", adult: false, words: 120 }],
+  wordCategories: [{ name: "Animals", language: "en", group: "everyday", adult: false, words: 120 }],
 };
 
 describe("RoomDefaultsUtils.fetch", () => {

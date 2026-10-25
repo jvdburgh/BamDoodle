@@ -15,8 +15,10 @@ everything you need (the canvas, players and mini-maps, timers, your secret, you
 same way and get a roomier layout.
 
 **Optional host screen.** Like a quiz night, whoever creates the room can host it on a TV, beamer or laptop instead
-of playing: after the setup, your name and then **Host on this screen** (or **Play**); the name is needed either way,
-so the players read who hosts. The host screen shows the code and
+of playing: after the setup, your name and then **Host on this screen** (or **Play on this phone**, "laptop" on a
+wide screen with a mouse); the name is needed either way, so the players read who hosts (tapping Host without one
+says "Type your name first"). On a laptop the start page says so under its buttons: "On a TV or laptop? Create a
+room and host it on this screen." The host screen shows the code and
 `bamdoodle.io` first, big, then who's in; it starts the rounds and has the room settings, and shows the shared canvas
 big during the round. It never shows the secret word and doesn't draw or vote. While it's there, no player hosts; a
 host screen that reloads takes the role back (its token is on that device), and one gone for 15 seconds hands the
@@ -57,16 +59,22 @@ can change the number of rounds between rounds; when that's already been reached
    (the steps, the points and a few questions). Joining asks for the four-letter
    room code (shown as "Join at bamdoodle.io with code …" on the host's screen) and a nickname, or skips the code when
    you open a shared link (`bamdoodle.io/BKZW`; the address bar shows it once you're in). Creating starts with setting up the
-   room: mode, turns per player or turn length, rounds per game, the language and the word categories to play with
+   room ("You can change all of this between rounds."): mode ("How a turn works."), turns each or time per turn,
+   rounds per game, the language and the word categories to play with
    (Efteling, Places, Very British, …, and 18+ ones if they want), in two columns on a wide screen (the round and
    the game on the left, the words on the right) and one on a phone: each setting a heading (Mode, Time per turn
-   or Lines per player, Rounds, Language, Categories with how many are picked) with one line on what it does where
-   that helps, and a small sketch of what's picked; Back and Next float in a bar at the bottom. The start page and
+   (seconds) or Turns each, Rounds, Language, Categories with how many are picked) with one line on what it does,
+   numbers on the choices and a small sketch of what's picked. Under the rounds, a rough length: "About 17 minutes
+   with 5 players" (5 players' turns, a line taking about 6 seconds, plus a minute per round for the vote, the guess
+   and the results). Back and Next end the form, with the picks in one line beside Next ("Timed · 20 s · 2 turns
+   each · 4 rounds · English · 33 categories"). The start page and
    the setup both say who it's for: 3 to 8 players. Then the host's nickname (after the setup, so it's clearly
-   theirs and not the room's), and only then is the room created, with those settings. The host can open the
-   settings again between rounds; every change there reaches the room at once. Then everyone draws their avatar
+   theirs and not the room's), and only then is the room created, with those settings. The host (a player or the
+   host screen) can open the settings again between rounds as "Room settings" ("Changes reach everyone right
+   away."), back with "Back to the room"; every change there reaches the room at once. Then everyone draws their avatar
    (an empty round pad with one pen and the colours that read on navy; Randomize for a doodle face to start from,
-   Clear to start over; left empty, they get a random doodle face) and goes to the room. Everyone in the room sees
+   Clear to start over; left empty, they get a random doodle face; on a phone on its side the pad is on the left and
+   the colours and "Go to the room" beside it) and goes to the room. Everyone in the room sees
    each other's faces, also a face finished
    just after a round started. Until a player goes to the room their card says "drawing their face", and the host
    sees "Mo is still drawing their face" next to Start round (they can still start). In the room's lobby, on a phone
@@ -98,10 +106,14 @@ can change the number of rounds between rounds; when that's already been reached
 | **Timed turns** (default) | free drawing, any number of strokes | seconds per turn: 10, 20 (default), 30 or 60; 2 turns each |
 | **One stroke each** | one stroke (press, draw, release), with a 15 second limit | turns per player: 1 to 5 (default 3) |
 
-In the app these are named "One stroke each" and "Timed turns" ("Each player draws: once / 2 / 3 … times"); in code
-and on the wire they're `oneStroke` and `timed`. The categories are picked as small chips (a picked one gets the hand-drawn sun frame
-and a ✓, an unpicked one a +, and the heading counts them: "Categories (12 of 30 selected)"), every
-non-18+ category of the room's language ticked by default, 18+ ones marked and only in play when ticked.
+Two words only: a **round** is one word, one drawing, one bamboozler and one vote; a **turn** is your go with the
+pen. In the app the modes are named "Timed turns" ("Draw freely until the timer runs out") and "One stroke each"
+("Draw one line, pass it on", with "Turns each: 1 2 3 4 5"); in code and on the wire they're `timed` and
+`oneStroke`. The categories are picked as small chips under their word pack's name (Everyday, Culture, Dutch,
+World, Film & TV, Trivia, Tech, Logos, 18+), each group with its own Select all or Clear, and Select all (which
+leaves 18+ alone) and Clear for everything: a picked one gets a ✓ and a light sun outline, an unpicked one a +, and the
+heading counts them: "Categories (12 of 30 selected)". Every non-18+ category of the room's language is ticked by
+default, 18+ ones are marked and only in play when ticked.
 
 In one-stroke mode your turn says "Your turn: one line!" (the call-out over the canvas and the banner), and once you
 lift the pen the banner says "Line done, passing on…" and the pen stays up until the next turn starts.

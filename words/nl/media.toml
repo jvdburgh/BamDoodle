@@ -2,6 +2,7 @@
 # en met de hand gekozen voor BamDoodle; zie scripts/words/wikidata-candidates.mjs. CC BY-SA 4.0, zie words/NOTICE.
 # Titels zijn hier alleen woorden om te tekenen of uit te beelden.
 language = "nl"
+group = "media"
 
 [categories]
 Films = ["Aladdin", "Amadeus", "Amsterdamned", "Amélie", "Annie", "Armageddon", "Avatar", "Avengers", "Babe", "Bambi", "Barbie", "Beetlejuice", "Ben-Hur", "Binnenstebuiten", "Bolt", "Braveheart", "Cars", "Casablanca", "Cleopatra", "Coco", "Coraline", "Daens", "Dombo", "Dune", "Dunkirk", "E.T.", "Encanto", "Fantasia", "Flashdance", "Flodder", "Frozen", "Gandhi", "Ghost", "Ghostbusters", "Gladiator", "Godzilla", "Goodfellas", "Gravity", "Grease", "Gremlins", "Hairspray", "Hercules", "Highlander", "Hook", "Inception", "Interstellar", "Jaws", "Joker", "Jumanji", "Karakter", "Kruimeltje", "Labyrinth", "Loft", "Luca", "Madagascar", "Matilda", "Matrix", "Minions", "Minoes", "Mulan", "Oppenheimer", "Paddington", "Parasite", "Platoon", "Pocahontas", "Predator", "Psycho", "Rambo", "Ratatouille", "RoboCop", "Rocky", "Scarface", "Scream", "Shrek", "Sing", "Skyfall", "Soul", "Spartacus", "Speed", "Taken", "Tarzan", "Terminator", "Titanic", "Transformers", "Trolls", "Tron", "Twilight", "Twister", "Up", "Vaiana", "WALL-E", "Wicked", "Wonka", "Zootropolis", "Zwartboek"]

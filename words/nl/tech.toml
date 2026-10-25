@@ -1,6 +1,7 @@
 # Techpakket, samengesteld voor BamDoodle. CC BY-SA 4.0, zie words/NOTICE.
 # Eén woord per begrip (een koppelteken mag): apparaten, schermen en wat we ermee doen. Techwoorden staan alleen hier.
 language = "nl"
+group = "tech"
 
 [categories]
 Technologie = ["3D-printer", "afstandsbediening", "antenne", "app", "batterij", "beamer", "beeldscherm", "cassettebandje", "cd", "chatbot", "computer", "computermuis", "computervirus", "controller", "cursor", "cyborg", "diskette", "download", "drone", "e-mail", "e-reader", "fax", "fototoestel", "gamer", "gps", "hacker", "hashtag", "hologram", "joystick", "kabel", "kopieerapparaat", "koptelefoon", "laadpaal", "laptop", "laser", "livestream", "luidspreker", "microchip", "muismat", "oortjes", "oplader", "pinautomaat", "pixel", "podcast", "powerbank", "printer", "printplaat", "programmeur", "QR-code", "radar", "radio", "robot", "router", "satelliet", "scanner", "screenshot", "selfie", "simkaart", "smartphone", "smartwatch", "smiley", "spam", "spelcomputer", "statief", "stekker", "stopcontact", "streepjescode", "tablet", "telefoon", "televisie", "thermostaat", "toetsenbord", "touchscreen", "typemachine", "USB-stick", "vlogger", "VR-bril", "walkietalkie", "webcam", "website", "wifi", "windturbine", "zonnepaneel"]

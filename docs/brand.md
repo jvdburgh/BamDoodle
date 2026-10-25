@@ -101,13 +101,22 @@ Modern, a bit mysterious, colourful. It should feel like a hand-made little game
   right of every screen, the start page included. The top takes two thirds of the screen, so "How to play" always peeks
   out below: doodled cards of about the same length for the three steps (with the points they earn), who wins and
   "Free, on any device", a column on a phone and a grid on a laptop, which is also what search engines read (with FAQ structured data in `index.html`).
-- The setup has no groups: every setting has its own heading with a line on what it does under it, and a sketch of
-  what's picked beside it. A picked choice (a mode, a number, a category) keeps the same navy background and gets the
-  hand-drawn frame in sun and a doodled ✓; the frame traces round in one quick line when you pick, never on load.
-  Unpicked categories show a +.
-- The name step after the setup and the Join form share one layout: a centered heading, the fields, the main button
-  full width, Back under it. After the setup that main button is Play; "Host on this screen" is the quieter choice
-  under an "or".
+  A phone on its side puts the logo and tagline on the left and the buttons on the right, so both fit the first
+  screen.
+- Disabled buttons are all one look (`BrandStyles`): a quiet navy button with a dashed sun outline and the same label,
+  never a faded sun one (that reads as muddy brown on navy).
+- The setup has no boxes: every setting has its own heading (the unit in it, numbers on the choices) with a line on
+  what it does under it, and a sketch of what's picked beside it. A picked mode or number keeps the same navy
+  background and gets the hand-drawn frame in sun and a doodled ✓; a picked category a lighter sun frame and the ✓.
+  The frame traces round in one quick line when you pick, never on load. Unpicked categories show a +. Categories
+  sit under small uppercase group names; nothing scrolls inside the page. Back and Next end the form (no floating
+  bar).
+- The forms (Join, your name) and the setup and face screens wear the small logo in the header, not the big one, so
+  the main button stays above a phone's keyboard; once the room exists the header says "Room BKZW". Join and the
+  name step share one layout: a centered heading, the fields, the main button full width, Back under it; on a phone
+  on its side the code, name and Join sit in one row. After the setup the main button is "Play on this phone"
+  ("laptop" on a wide screen with a mouse) and "Host on this screen" the quieter choice under an "or"; on a laptop
+  they're two equal cards side by side, on a phone on its side name and Play on the left and hosting on the right.
 - Small, quick motion makes it feel alive: block buttons tilt and lift on hover and squish when pressed, player cards
   bounce in, "voted" and "suspected by" badges pop, hovering the start page's logo turns its hat's colours one round and back (the logo is inlined from
   `/logo.svg` for that too). Reduced motion turns it off.

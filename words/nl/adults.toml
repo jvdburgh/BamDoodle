@@ -2,6 +2,7 @@
 # Grof en grappig mag; haatdragend nooit. Geen scheldwoorden voor groepen, niets met minderjarigen, geen seksueel
 # geweld, geen harddrugs. Gecontroleerd tegen LDNOOBW (CC BY 4.0); spelling waar mogelijk tegen OpenTaal.
 language = "nl"
+group = "adults"
 adult = true
 
 [categories]

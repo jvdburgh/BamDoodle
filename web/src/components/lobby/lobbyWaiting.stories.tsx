@@ -22,7 +22,7 @@ type Story = StoryObj<typeof meta>;
 export const Waiting: Story = {
   play: async ({ args, canvas, userEvent }) => {
     await expect(canvas.getByRole("heading", { name: "Hi Juno! Draw your face" })).toHaveFocus();
-    await expect(canvas.getByText("Room code", { exact: false }).parentElement).toHaveTextContent("BKZW");
+    await expect(canvas.getByText("Room")).toHaveTextContent("Room BKZW");
 
     await userEvent.click(canvas.getByRole("button", { name: "Clear" }));
     await expect(args.onAvatarChange).toHaveBeenCalledWith([]);

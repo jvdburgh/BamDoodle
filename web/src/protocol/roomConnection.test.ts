@@ -60,7 +60,7 @@ const room: RoomSnapshot = {
     language: "en",
     categories: ["Animals"],
   },
-  wordCategories: [{ language: "en", name: "Animals", adult: false, words: 12 }],
+  wordCategories: [{ language: "en", name: "Animals", group: "everyday", adult: false, words: 12 }],
   phase: { phase: "lobby" },
 };
 

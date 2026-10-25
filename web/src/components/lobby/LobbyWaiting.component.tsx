@@ -1,16 +1,16 @@
 import { useEffect, useId, useRef } from "react";
 import { AvatarEditor } from "@/components/avatar/AvatarEditor.component";
 import type { AvatarStroke } from "@/components/avatar/_types/avatar.types";
-import { BrandLogo } from "@/components/brand/BrandLogo.component";
 import { BrandSketchyFrame } from "@/components/brand/BrandSketchyFrame.component";
 import { BrandStyles } from "@/components/brand/_utils/brandStyles.utils";
-import { SoundToggle } from "@/components/sound/SoundToggle.component";
+import { LobbyHeader } from "@/components/lobby/LobbyHeader.component";
 
 type LobbyWaitingProps = {
   name: string;
   roomCode: string;
   avatar: AvatarStroke[];
   onAvatarChange: (strokes: AvatarStroke[]) => void;
+  /** Done with your face: only then do you count as ready in the room. */
   onStart: () => void;
   /** Where the logo goes: the start page. */
   home?: string;
@@ -25,41 +25,33 @@ export function LobbyWaiting({ name, roomCode, avatar, onAvatarChange, onStart, 
   useEffect(() => heading.current?.focus(), []);
 
   return (
-    <main className="mx-auto flex min-h-svh max-w-md flex-col gap-5 px-4 py-4 pb-16 md:py-8">
-      <header className="flex items-center justify-between gap-3">
-        <BrandLogo named href={home} className="size-10" nameClassName="sr-only text-sm sm:not-sr-only" />
-        <div className="flex items-center gap-1.5">
-          <p className="rounded-full bg-night-soft px-3 py-1 text-sm text-white/80">
-            <span className="sr-only">Room code </span>
-            <span aria-hidden="true">Room </span>
-            <span className="font-display tracking-widest">{roomCode}</span>
-          </p>
-          <SoundToggle channel="music" />
-          <SoundToggle />
-        </div>
-      </header>
+    <main className="mx-auto flex min-h-svh max-w-md flex-col gap-5 px-4 py-4 pb-16 md:py-8 sideways:max-w-3xl sideways:gap-3 sideways:py-3 sideways:pb-3">
+      <LobbyHeader roomCode={roomCode} home={home} />
 
       <section
         aria-labelledby={headingId}
-        className="relative grid justify-items-center gap-4 rounded-[18px_24px_20px_16px] bg-night-soft/50 px-4 py-5"
+        className="relative grid justify-items-center gap-4 rounded-[18px_24px_20px_16px] bg-night-soft/50 px-4 py-5 sideways:gap-2 sideways:py-4"
       >
         <BrandSketchyFrame className="text-white/25" />
-        <div className="text-center">
-          <h2 id={headingId} ref={heading} tabIndex={-1} className="font-display text-2xl outline-none">
-            Hi {name}! Draw your face
-          </h2>
-        </div>
-        <AvatarEditor value={avatar} onChange={onAvatarChange} />
+        <h2
+          id={headingId}
+          ref={heading}
+          tabIndex={-1}
+          className="text-center font-display text-2xl outline-none sideways:text-xl"
+        >
+          Hi {name}! Draw your face
+        </h2>
+        <AvatarEditor value={avatar} onChange={onAvatarChange}>
+          {/* Pinned above a phone browser's bottom bar, never under the fold; on its side it sits under the colours. */}
+          <button
+            type="button"
+            onClick={onStart}
+            className={`${BrandStyles.primaryButton} sticky bottom-[calc(0.75rem_+_var(--browser-bar))] z-10 w-full shadow-[0_6px_18px_var(--color-night-deep)] md:bottom-3 sideways:static sideways:max-w-64`}
+          >
+            Go to the room
+          </button>
+        </AvatarEditor>
       </section>
-
-      {/* Pinned above a phone browser's bottom bar: never under the fold, however tall the face pad is. */}
-      <button
-        type="button"
-        onClick={onStart}
-        className={`${BrandStyles.primaryButton} sticky bottom-[calc(0.75rem_+_var(--browser-bar))] z-10 w-full shadow-[0_6px_18px_var(--color-night-deep)] md:bottom-3`}
-      >
-        Go to the room
-      </button>
     </main>
   );
 }

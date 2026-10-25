@@ -1,6 +1,7 @@
 # Logos, Dutch and international, hand-written for BamDoodle. CC BY-SA 4.0, see words/NOTICE.
 # Merknamen staan hier alleen als woord om te tekenen (het logo, uit je hoofd). / Brand names are only words to draw.
 language = "en"
+group = "logos"
 
 [categories]
 Logos = ["Action", "Adidas", "Aldi", "Amazon", "ANWB", "Apple", "Audi", "BMW", "Bol", "Coca-Cola", "Coolblue", "Disney", "Etos", "Facebook", "Ferrari", "Gazelle", "Google", "Grolsch", "Heineken", "Heinz", "HEMA", "IKEA", "ING", "Instagram", "Jumbo", "KLM", "Kruidvat", "Lacoste", "Lego", "Lidl", "Mastercard", "McDonald's", "Mercedes-Benz", "Michelin", "Netflix", "Nike", "Nintendo", "NS", "Nutella", "Oreo", "Pepsi", "Philips", "PlayStation", "PostNL", "Pringles", "Puma", "Rabobank", "Rolex", "Shell", "Snapchat", "Spotify", "Starbucks", "Tesla", "TikTok", "Toyota", "Volkswagen", "WhatsApp", "YouTube", "Zeeman"]

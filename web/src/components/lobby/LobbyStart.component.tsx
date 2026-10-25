@@ -5,6 +5,7 @@ import { BrandScribble } from "@/components/brand/BrandScribble.component";
 import { BrandSketchyFrame } from "@/components/brand/BrandSketchyFrame.component";
 import { BrandTagline } from "@/components/brand/BrandTagline.component";
 import { BrandStyles } from "@/components/brand/_utils/brandStyles.utils";
+import { LobbyHeader } from "@/components/lobby/LobbyHeader.component";
 import { LobbyHowToPlay } from "@/components/lobby/LobbyHowToPlay.component";
 import { SoundToggle } from "@/components/sound/SoundToggle.component";
 import { RoomViewUtils } from "@/components/room/_utils/roomView.utils";
@@ -40,6 +41,10 @@ const NAME_MAX = 20;
 const field =
   "w-full rounded-[10px_14px_12px_9px] bg-night-deep px-4 py-3 text-lg text-white placeholder:text-white/40 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-sun";
 
+/** On a laptop the play-or-host choices are two cards side by side; a phone on its side keeps them plain. */
+const choiceCard =
+  "md:relative md:content-between md:rounded-[14px_18px_16px_12px] md:bg-night-deep/50 md:p-5 sideways:bg-transparent! sideways:p-0!";
+
 /**
  * The first page: join a room (most people) or create one, then how to play below. Creating sets the room up first,
  * then asks your name. The music and sound toggles are here already: the music plays from the first tap.
@@ -58,9 +63,13 @@ export function LobbyStart({
   const [step, setStep] = useState<Step>(firstStep ?? (defaultCode ? "join" : "choose"));
   const [name, setName] = useState(defaultName);
   const [code, setCode] = useState(defaultCode);
+  /** Host on this screen, tapped without a name: say so instead of a button that does nothing. */
+  const [nameMissing, setNameMissing] = useState(false);
   const nameId = useId();
+  const nameHintId = useId();
   const codeId = useId();
   const firstField = useRef<HTMLElement | null>(null);
+  const nameInput = useRef<HTMLInputElement>(null);
   const opened = useRef(false);
   const joinButton = useRef<HTMLButtonElement>(null);
   const createButton = useRef<HTMLButtonElement>(null);
@@ -94,41 +103,77 @@ export function LobbyStart({
     else onEnter({ kind: "create", name: cleanName });
   };
 
+  const host = () => {
+    if (busy) return;
+    if (cleanName.length === 0) {
+      setNameMissing(true);
+      nameInput.current?.focus();
+      return;
+    }
+    onEnter({ kind: "host", name: cleanName });
+  };
+
   const nameField = (
-    <div className="grid gap-1.5">
+    <div className={`grid content-start gap-1.5 ${step === "create" ? "md:col-span-2 sideways:col-span-1!" : ""}`}>
       <label htmlFor={nameId} className="text-sm text-white/70">
         Your name
       </label>
       <input
-        ref={step === "create" || (step === "join" && defaultCode) ? first : undefined}
+        ref={(element) => {
+          nameInput.current = element;
+          if (step === "create" || (step === "join" && defaultCode)) first(element);
+        }}
         id={nameId}
         value={name}
-        onChange={(event) => setName(event.target.value.slice(0, NAME_MAX))}
+        onChange={(event) => {
+          setName(event.target.value.slice(0, NAME_MAX));
+          setNameMissing(false);
+        }}
         autoComplete="nickname"
+        aria-describedby={nameMissing ? nameHintId : undefined}
         className={field}
       />
+      {nameMissing && (
+        <p id={nameHintId} role="alert" className="text-sm text-berry">
+          Type your name first
+        </p>
+      )}
     </div>
   );
 
-  return (
-    <div className="flex min-h-svh flex-col pb-16 md:pb-0">
-      <div className="flex justify-end gap-1.5 px-4 pt-3">
-        <SoundToggle channel="music" />
-        <SoundToggle />
-      </div>
-      <div className="flex flex-1 flex-col">
-        {/* Two thirds of the screen on the choice, so how to play always peeks out below; the forms get it all. */}
-        <main
-          className={`mx-auto flex w-full max-w-md flex-col items-center justify-center gap-8 px-5 pb-6 ${step === "choose" ? "min-h-[66svh]" : "min-h-[calc(100svh-4rem)]"}`}
-        >
-          <div className="flex flex-col items-center gap-2 text-center">
-            <BrandLogo swirlOnHover className="size-28" />
-            <h2 className="font-display text-5xl">BamDoodle</h2>
-            <BrandTagline />
-          </div>
+  const problemLine = problem && (
+    <p role="alert" className="col-span-full text-sm text-berry">
+      {problem}
+    </p>
+  );
 
-          {step === "choose" ? (
-            <div className="grid w-full gap-5">
+  const backButton = (
+    <button
+      type="button"
+      onClick={onBack ?? (() => go("choose"))}
+      className={`${BrandStyles.ghostButton} col-span-full justify-self-center`}
+    >
+      Back
+    </button>
+  );
+
+  if (step === "choose") {
+    return (
+      <div className="flex min-h-svh flex-col pb-16 md:pb-0">
+        <div className="flex justify-end gap-1.5 px-4 pt-3">
+          <SoundToggle channel="music" />
+          <SoundToggle />
+        </div>
+        <div className="flex flex-1 flex-col">
+          {/* Two thirds of the screen, so how to play always peeks out below; on its side, the buttons beside the logo. */}
+          <main className="mx-auto flex min-h-[66svh] w-full max-w-md flex-col items-center justify-center gap-8 px-5 pb-6 sideways:min-h-[calc(100svh-3.5rem)] sideways:max-w-3xl sideways:flex-row sideways:gap-12">
+            <div className="flex flex-col items-center gap-2 text-center">
+              <BrandLogo swirlOnHover className="size-28 sideways:size-20" />
+              <h2 className="font-display text-5xl sideways:text-4xl">BamDoodle</h2>
+              <BrandTagline />
+            </div>
+
+            <div className="grid w-full gap-5 sideways:flex-1 sideways:gap-4">
               <button
                 ref={joinButton}
                 type="button"
@@ -146,93 +191,123 @@ export function LobbyStart({
                 disabled={busy}
                 className={`${BrandStyles.quietButton} group relative w-full gap-3`}
               >
-                <BrandSketchyFrame rainbow className="opacity-60" />
+                <BrandSketchyFrame rainbow className="opacity-60 group-disabled:hidden" />
                 <BrandScribble shape="pencilPlus" className="size-7 text-sun motion-safe:group-hover:animate-wiggle" />
                 {busy ? "Just a sec…" : "Create a room"}
               </button>
               <p className="text-center text-white/70">For {RoomViewUtils.playerCount}, on any device.</p>
+              <p className="hidden text-center text-sm text-white/60 md:block sideways:hidden!">
+                On a TV or laptop? Create a room and host it on this screen.
+              </p>
               {problem && (
                 <p role="alert" className="text-center text-sm text-berry">
                   {problem}
                 </p>
               )}
             </div>
-          ) : (
-            <form
-              onSubmit={submit}
-              className="relative grid w-full gap-5 rounded-[18px_24px_20px_16px] bg-night-soft/50 p-5 sm:p-6"
-            >
-              <BrandSketchyFrame className="text-white/25" />
-              <h3 className="text-center font-display text-2xl">{step === "join" ? "Join a room" : "Play or host?"}</h3>
+          </main>
+          <LobbyHowToPlay />
+        </div>
+        <BrandFooter />
+      </div>
+    );
+  }
 
-              {step === "join" && (
-                <>
-                  <div className="grid gap-1.5">
-                    <label htmlFor={codeId} className="text-sm text-white/70">
-                      Room code
-                    </label>
-                    <input
-                      ref={defaultCode ? undefined : first}
-                      id={codeId}
-                      value={code}
-                      onChange={(event) => setCode(RoomCodeUtils.clean(event.target.value))}
-                      autoComplete="off"
-                      autoCapitalize="characters"
-                      spellCheck={false}
-                      placeholder="BKZW"
-                      className={`${field} font-display text-3xl tracking-[0.3em] uppercase`}
-                    />
-                  </div>
-                  {nameField}
-                </>
-              )}
+  return (
+    <div className="flex min-h-svh flex-col pb-16 md:pb-0">
+      {/* The small logo on the forms: the fields and the button stay above a phone's keyboard. */}
+      <div
+        className={`mx-auto w-full px-4 pt-3 sideways:max-w-3xl ${step === "create" ? "max-w-md md:max-w-3xl" : "max-w-md"}`}
+      >
+        <LobbyHeader />
+      </div>
+      <main
+        className={`mx-auto flex min-h-[calc(100svh-4.5rem)] w-full flex-col px-4 py-4 md:justify-center sideways:min-h-0 sideways:max-w-3xl sideways:py-3 ${step === "create" ? "max-w-md md:max-w-3xl" : "max-w-md"}`}
+      >
+        {step === "join" ? (
+          <form
+            onSubmit={submit}
+            className="relative grid w-full gap-5 rounded-[18px_24px_20px_16px] bg-night-soft/50 p-5 sm:p-6 sideways:grid-cols-[minmax(0,11rem)_minmax(0,1fr)_auto] sideways:items-end sideways:gap-4 sideways:p-4"
+          >
+            <BrandSketchyFrame className="text-white/25" />
+            <h2 className="col-span-full text-center font-display text-2xl">Join a room</h2>
+            <div className="grid gap-1.5">
+              <label htmlFor={codeId} className="text-sm text-white/70">
+                Room code
+              </label>
+              <input
+                ref={defaultCode ? undefined : first}
+                id={codeId}
+                value={code}
+                onChange={(event) => setCode(RoomCodeUtils.clean(event.target.value))}
+                autoComplete="off"
+                autoCapitalize="characters"
+                spellCheck={false}
+                placeholder="e.g. ABCD"
+                className={`${field} font-display text-3xl tracking-[0.3em] uppercase placeholder:text-2xl placeholder:tracking-normal placeholder:normal-case`}
+              />
+            </div>
+            {nameField}
+            <button type="submit" disabled={!canSubmit} className={`${BrandStyles.primaryButton} w-full`}>
+              {busy ? "Just a sec…" : "Join"}
+            </button>
+            {problemLine}
+            {backButton}
+          </form>
+        ) : (
+          <form
+            onSubmit={submit}
+            className="relative grid w-full gap-5 rounded-[18px_24px_20px_16px] bg-night-soft/50 p-5 sm:p-6 md:grid-cols-2 sideways:grid-cols-2 sideways:gap-x-6 sideways:gap-y-4 sideways:p-4"
+          >
+            <BrandSketchyFrame className="text-white/25" />
+            <h2 className="col-span-full text-center font-display text-2xl">What’s your name?</h2>
+            {nameField}
 
-              {step === "create" && nameField}
-
-              {problem && (
-                <p role="alert" className="text-sm text-berry">
-                  {problem}
-                </p>
-              )}
-
+            <div className={`grid gap-3 sideways:col-start-1 ${choiceCard}`}>
+              <BrandSketchyFrame className="hidden text-white/15 md:block sideways:hidden!" />
+              <p className="hidden text-sm text-white/70 md:block sideways:hidden!">
+                Draw, suspect and vote along with everyone, each on their own device.
+              </p>
               <button type="submit" disabled={!canSubmit} className={`${BrandStyles.primaryButton} w-full`}>
-                {busy ? "Just a sec…" : step === "join" ? "Join" : "Play"}
+                {busy ? (
+                  "Just a sec…"
+                ) : (
+                  <>
+                    <span className="md:pointer-fine:hidden">Play on this phone</span>
+                    <span className="hidden md:pointer-fine:inline">Play on this laptop</span>
+                  </>
+                )}
               </button>
+            </div>
 
-              {step === "create" && (
-                <div className="grid justify-items-center gap-1 text-center">
-                  <p className="flex w-full items-center gap-3 text-sm text-white/60" aria-hidden="true">
-                    <span className="h-0.5 flex-1 rounded-full bg-white/10" />
-                    or
-                    <span className="h-0.5 flex-1 rounded-full bg-white/10" />
-                  </p>
-                  <button
-                    type="button"
-                    disabled={busy || cleanName.length === 0}
-                    onClick={() => onEnter({ kind: "host", name: cleanName })}
-                    className={`${BrandStyles.ghostButton} group gap-2 text-white`}
-                  >
-                    <BrandScribble shape="screen" className="size-6 text-sun motion-safe:group-hover:animate-wiggle" />
-                    Host on this screen
-                  </button>
-                  <p className="text-sm text-white/70">
-                    For a TV or laptop everyone can see: it runs the game, but doesn’t play.
-                  </p>
-                </div>
-              )}
-
+            <div
+              className={`grid gap-3 text-center sideways:col-start-2 sideways:row-span-2 sideways:row-start-2 sideways:content-center md:text-left sideways:text-center! ${choiceCard}`}
+            >
+              <BrandSketchyFrame className="hidden text-white/15 md:block sideways:hidden!" />
+              <p className="flex items-center gap-3 text-sm text-white/60 md:hidden sideways:flex!" aria-hidden="true">
+                <span className="h-0.5 flex-1 rounded-full bg-white/10" />
+                or
+                <span className="h-0.5 flex-1 rounded-full bg-white/10" />
+              </p>
               <button
                 type="button"
-                onClick={onBack ?? (() => go("choose"))}
-                className={`${BrandStyles.ghostButton} justify-self-center`}
+                onClick={host}
+                aria-disabled={busy || undefined}
+                className={`${BrandStyles.quietButton} group w-full gap-2 md:order-last sideways:order-none!`}
               >
-                Back
+                <BrandScribble shape="screen" className="size-6 text-sun motion-safe:group-hover:animate-wiggle" />
+                Host on this screen
               </button>
-            </form>
-          )}
-        </main>
-        {step === "choose" && <LobbyHowToPlay />}
-      </div>
+              <p className="text-sm text-white/70">
+                Put the game on a TV or laptop everyone can see. This screen runs it but doesn’t draw or vote.
+              </p>
+            </div>
+
+            {problemLine}
+            {backButton}
+          </form>
+        )}
+      </main>
       <BrandFooter />
     </div>
   );
