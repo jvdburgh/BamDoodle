@@ -189,8 +189,8 @@ describe("SoundPlayer", () => {
     player.setMusic(screen);
     await vi.advanceTimersByTimeAsync(10);
     const full = musicLevel()!;
-    const gain = (audio.musicSources()[0]?.output as { gain: FakeParam & Record<string, ReturnType<typeof vi.fn>> })
-      .gain;
+    const [music] = audio.musicSources();
+    const { gain } = music!.output as { gain: FakeParam & Record<string, ReturnType<typeof vi.fn>> };
     player.setMusicOn(false);
     await vi.advanceTimersByTimeAsync(1000);
     gain.setTargetAtTime.mockClear();
