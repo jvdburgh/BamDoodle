@@ -1,22 +1,7 @@
 ---
 name: word-list-patterns
-description: Checks for words/*.toml reviews, and the maintainer's decisions that override generic word-list advice
-metadata:
-  type: feedback
+description: words/*.toml checks and the maintainer's overrides
+metadata: {type: feedback}
 ---
-
-- Maintainer decision (2026-10-18): a word may equal its category name (e.g. "Sinterklaas" in category Sinterklaas),
-  even though the bamboozler sees the category. Don't flag it.
-- Maintainer decision (2026-10-18): the Efteling category lists every attraction (rides like "Baron 1898",
-  "Fata Morgana" included) plus figures; a Logos category lists brand names. Don't flag these as not drawable.
-- Maintainer decision (2026-10-18): Famous people may be living, politicians, controversial; not mass murderers
-  or people known mainly for abuse.
-- guess.rs (2026-10-18 diff): word may sit inside a longer guess unless the extras name a category rival. Check
-  rivals that CONTAIN the word (Wit-Rusland/Rusland, T-shirt/shirt, Efteling "Draak") and typo-rivals hitting
-  common extras (house~horse/mouse in Animals). Script: python3 -I over words/*/*.toml for whole-token containment.
-- Still check: duplicates per category, files sorted per category, an 18+ / everyday clash for one category name
-  (the server refuses to load it), nothing hateful.
-
-**Why:** the maintainer explicitly undid the "word equals category" check and the Efteling pruning.
-**How to apply:** run a python3 -I tomllib script over words/<lang>/*.toml for duplicates and sorting; leave the
-choices above alone.
+- Maintainer allows: a word equal to its category; every Efteling attraction; brand names in Logos; living, political, controversial Famous people (not abusers).
+- Check: guess.rs containment against category rivals that contain the word and typo-rivals; duplicates and sorting per category; a `group` header per pack; one group per category across files; nothing hateful.

@@ -91,6 +91,11 @@ Use `just` (it wraps cargo and pnpm the same way CI does):
 - **Browsers:** Firefox is the primary target, then Chrome and Edge. Pointer Events, not mouse or touch events.
 - **Language:** product copy in English for now (Dutch word lists exist); keep strings out of logic so i18n can come
   later.
+- **Words in the UI:** a round is one word (counted "Word 1 of 3" on screen), a turn is your go with the pen. One
+  verb per action. Phones and the host screen say the same thing at the same moment (`.claude/rules/web.md`).
+- **Parallel work:** a big batch can be split across agents in their own worktrees, by files so they don't overlap;
+  shared helpers go in first, on main. The lead agent merges the branches, fixes the seams, reviews the combined diff
+  and checks every screen before pushing.
 
 ## Don't
 

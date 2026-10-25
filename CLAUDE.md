@@ -17,4 +17,7 @@
   and say so.
 - Rules in `.claude/rules/` load by path. Skills: `protocol-change`, `word-lists`, `pull-request`,
   `storybook-stories`.
+- Big batches (the maintainer may ask for "sub agents"): `Agent` with `isolation: "worktree"`, one per group of files,
+  each with a self-contained brief (scope, files it owns, tests, "don't push or merge"). Merge with `git merge` into
+  main, then run the `reviewer` on the combined diff and a walkthrough of every screen before pushing.
 - Human notes on this setup: `.claude/README.md`.

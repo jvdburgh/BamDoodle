@@ -27,9 +27,11 @@ the table, on a video call, or with the drawing on the big screen at a party.
 
 You need 3 to 8 players, each with a phone (or a laptop or tablet).
 
-1. **One of you creates a room** at [bamdoodle.io](https://bamdoodle.io): pick how you draw (one stroke each, or
-   timed turns), the number of rounds and the word categories, then your name.
-2. **Everyone else joins** with the four-letter room code, or the link the host shares (`bamdoodle.io/CODE`).
+1. **One of you creates a room** at [bamdoodle.io](https://bamdoodle.io): pick how you draw (timed turns, or one
+   stroke each), the number of rounds and the word categories, then your name: play on your phone or host on a
+   big screen.
+2. **Everyone else joins** with the four-letter room code, the link the host shares (`bamdoodle.io/CODE`), or the QR
+   code on the big screen.
    Draw yourself a face while you wait.
 3. **Each round**, everyone gets the secret word on their phone. Except the bamboozler, who only sees the category.
    Take turns adding to the drawing; the bamboozler has to blend in.
