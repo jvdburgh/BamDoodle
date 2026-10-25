@@ -19,7 +19,8 @@ export const TheSecretWord: Story = {
     await expect(card).toHaveTextContent("The secret word is");
     await waitFor(() => expect(canvas.getByText("giraffe")).toBeVisible());
     await expect(card).toHaveTextContent("Everyone has this same word, except the bamboozler");
-    await expect(card).toHaveTextContent("not so clearly they can copy you!");
+    // No drawing tips: that's for players to find out.
+    await expect(card).not.toHaveTextContent("clearly");
   },
 };
 

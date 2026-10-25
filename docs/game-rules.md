@@ -33,9 +33,9 @@ goal for now.
 - **The bamboozler** sees only the category. They draw along, trying to look like they know the word.
 - **Right in your face** as each round starts, a card says it for a few seconds (a second and a half for whoever
   draws first, and it lets taps through since their clock is running; no extra pause before the first turn): "The
-  secret word is GIRAFFE. Everyone has this same word, except the bamboozler. Draw it, but not so clearly they can
-  copy you!", or "You're the bamboozler! Everyone else has the word. You only know it's Animals. Draw along and don't
-  get caught!". Clarity wins over a glance across the table. On a phone on its side the card sits over the column
+  secret word is GIRAFFE. Everyone has this same word, except the bamboozler.", or "You're the bamboozler! Everyone
+  else has the word. You only know it's Animals. Draw along and don't get caught!". How to draw it is for the players
+  to find out, so the card gives no tips. Clarity wins over a glance across the table. On a phone on its side the card sits over the column
   beside the drawing, not over the drawing. After that the round banner keeps it: the category and the word with
   "everyone's word", or for the bamboozler "???" with "You're the bamboozler" in berry, in the same place and size, so
   the banner's shape doesn't give the role away across the table. The bamboozler's own face wears the fedora (on

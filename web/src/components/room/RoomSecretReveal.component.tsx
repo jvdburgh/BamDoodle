@@ -38,9 +38,7 @@ export function RoomSecretReveal({ category, word, showMs = 3_200, className = "
           <>
             <p className="text-lg text-white/80">The secret word is</p>
             <p className="font-display text-5xl text-sun">{word}</p>
-            <p className="text-white/80">
-              Everyone has this same word, except the bamboozler. Draw it, but not so clearly they can copy you!
-            </p>
+            <p className="text-white/80">Everyone has this same word, except the bamboozler.</p>
           </>
         ) : (
           <>
