@@ -95,6 +95,9 @@ export const RandomizeAndClear: Story = {
     await expect(canvas.getByText("Draw your face, or leave it empty for a random one.")).toBeVisible();
     const clear = canvas.getByRole("button", { name: "Clear" });
     await expect(clear).toHaveAttribute("aria-disabled", "true");
+    // The same disabled look as every other button, though it keeps its focus.
+    await expect(getComputedStyle(clear).opacity).toBe("1");
+    await expect(getComputedStyle(clear).outlineStyle).toBe("dashed");
 
     const randomize = canvas.getByRole("button", { name: "Randomize" });
     randomize.focus();

@@ -57,7 +57,8 @@ All live state lives in the process ([decision 0002](decisions/0002-in-memory-st
   connected closes after 5 minutes (30 seconds if nobody ever joined it), and any room closes after 30 minutes without
   play (`roomClosed`). Watching screens and pings don't keep a room open; the host screen does.
 - **Words** come from `words/<language>/<pack>.toml`, loaded at startup (`WORDS_DIR`). Players pick categories, not
-  files: the room snapshot lists every category (`wordCategories`), and `settings.categories` says which are in play.
+  files: the room snapshot lists every category (`wordCategories`, each with the `group` its file names, which the
+setup lists them under), and `settings.categories` says which are in play.
 - **Limits** are all in `server/src/limits.rs`.
 
 The catch: a deploy or crash ends all running games. At hobby scale that's acceptable; deploy when it's quiet.

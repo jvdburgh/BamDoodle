@@ -17,7 +17,7 @@ type AvatarEditorProps = {
   children?: ReactNode;
 };
 
-const control = `${BrandStyles.quietButton} px-3 aria-disabled:cursor-default aria-disabled:opacity-40`;
+const control = `${BrandStyles.quietButton} px-3`;
 
 /** A doodled ring just outside the pad's edge (radius 50 of 100), centred on it: barely any wobble, a small overlap. */
 const RING = CanvasUtils.freehandPath(

@@ -230,7 +230,7 @@ export function LobbyStart({
             className="relative grid w-full gap-5 rounded-[18px_24px_20px_16px] bg-night-soft/50 p-5 sm:p-6 sideways:grid-cols-[minmax(0,11rem)_minmax(0,1fr)_auto] sideways:items-end sideways:gap-4 sideways:p-4"
           >
             <BrandSketchyFrame className="text-white/25" />
-            <h3 className="col-span-full text-center font-display text-2xl">Join a room</h3>
+            <h2 className="col-span-full text-center font-display text-2xl">Join a room</h2>
             <div className="grid gap-1.5">
               <label htmlFor={codeId} className="text-sm text-white/70">
                 Room code
@@ -260,7 +260,7 @@ export function LobbyStart({
             className="relative grid w-full gap-5 rounded-[18px_24px_20px_16px] bg-night-soft/50 p-5 sm:p-6 md:grid-cols-2 sideways:grid-cols-2 sideways:gap-x-6 sideways:gap-y-4 sideways:p-4"
           >
             <BrandSketchyFrame className="text-white/25" />
-            <h3 className="col-span-full text-center font-display text-2xl">What’s your name?</h3>
+            <h2 className="col-span-full text-center font-display text-2xl">What’s your name?</h2>
             {nameField}
 
             <div className={`grid gap-3 sideways:col-start-1 ${choiceCard}`}>

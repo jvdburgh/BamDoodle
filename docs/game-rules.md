@@ -97,8 +97,8 @@ Two words only: a **round** is one word, one drawing, one bamboozler and one vot
 pen. In the app the modes are named "Timed turns" ("Draw freely until the timer runs out") and "One stroke each"
 ("Draw one line, pass it on", with "Turns each: 1 2 3 4 5"); in code and on the wire they're `timed` and
 `oneStroke`. The categories are picked as small chips under their word pack's name (Everyday, Culture, Dutch,
-World, Film & TV, Trivia, Tech, Logos, 18+), each group with its own Select all or Clear, and Select all and Clear
-for everything (which leaves 18+ alone): a picked one gets a ✓ and a light sun outline, an unpicked one a +, and the
+World, Film & TV, Trivia, Tech, Logos, 18+), each group with its own Select all or Clear, and Select all (which
+leaves 18+ alone) and Clear for everything: a picked one gets a ✓ and a light sun outline, an unpicked one a +, and the
 heading counts them: "Categories (12 of 30 selected)". Every non-18+ category of the room's language is ticked by
 default, 18+ ones are marked and only in play when ticked.
 
