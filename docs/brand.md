@@ -135,4 +135,6 @@ Modern, a bit mysterious, colourful. It should feel like a hand-made little game
   BamDoodle? Help out on GitHub, and consider donating to Ukrainian citizens"), and on "The End" screen after the
   last round one small card: "Did you enjoy the game?", that it's free with no ads or accounts, a "Donate through
   United24" link (Ukraine's official fundraising platform) and "help out on GitHub", with the footer under it
-  (without its own ask, so it isn't said twice). No banner, nothing during a game.
+  (without its own ask, so it isn't said twice). No banner, nothing during a game. The footer stays small and quiet
+  but not plain: a doodled divider over it, a wobbly line either side of three little stars in berry, sun and
+  lagoon.

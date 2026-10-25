@@ -27,6 +27,11 @@ export const Default: Story = {
     for (const flag of ["Dutch flag", "EU flag"]) {
       await expect(canvas.getByRole("img", { name: flag })).toBeVisible();
     }
+    // A nod to the brand above the small print: a doodled line with stars in the hat's colours, only decoration.
+    const divider = canvas.getByRole("contentinfo").firstElementChild!;
+    await expect(divider).toHaveAttribute("aria-hidden", "true");
+    await expect(divider).toBeVisible();
+    await expect(divider.querySelectorAll("svg")).toHaveLength(5);
   },
 };
 

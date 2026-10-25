@@ -1,5 +1,6 @@
 import { AvatarDoodle } from "@/components/avatar/AvatarDoodle.component";
 import { AvatarUtils } from "@/components/avatar/_utils/avatar.utils";
+import { BrandScribble } from "@/components/brand/BrandScribble.component";
 import { BrandFlag, BrandLink, BrandSupportLine } from "@/components/brand/BrandSupportLine.component";
 import { ScribbleUtils } from "@/components/brand/_utils/scribble.utils";
 import { CanvasTools } from "@/components/canvas/_utils/canvasTools.utils";
@@ -38,13 +39,27 @@ function Version() {
   return <BrandLink href={RELEASE_URL + APP_VERSION}>Version {APP_VERSION}</BrandLink>;
 }
 
+/** A doodled line with three little stars in the hat's colours: where the page ends and the small print starts. */
+function FooterDivider() {
+  return (
+    <div aria-hidden="true" className="mb-2 flex items-center gap-2">
+      <BrandScribble shape="underline" seed={3} className="h-2.5 w-16 text-white/20 sm:w-24" />
+      <BrandScribble shape="star" seed={1} className="size-3.5 -rotate-12 text-berry/80" />
+      <BrandScribble shape="star" seed={2} className="size-4.5 -translate-y-0.5 text-sun/80" />
+      <BrandScribble shape="star" seed={3} className="size-3.5 rotate-12 text-lagoon/80" />
+      <BrandScribble shape="underline" seed={8} className="h-2.5 w-16 -scale-x-100 text-white/20 sm:w-24" />
+    </div>
+  );
+}
+
 /**
- * The small print: who made it, where it runs, the one thing we ask, and the version. `support={false}` leaves the
- * ask out where a page already makes it (The End's donate card).
+ * The small print: who made it, where it runs, the one thing we ask, and the version, under a doodled divider.
+ * `support={false}` leaves the ask out where a page already makes it (The End's donate card).
  */
 export function BrandFooter({ support = true }: { support?: boolean }) {
   return (
     <footer className="mt-10 flex flex-col items-center gap-1 px-4 pt-2 pb-3 text-center text-sm leading-relaxed text-white/75 md:mt-16 md:pt-4 md:pb-8">
+      <FooterDivider />
       <p className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1">
         <span>Made by</span>
         <BrandLink href={MAKER_URL} className="group inline-flex items-center gap-1.5">
@@ -59,7 +74,7 @@ export function BrandFooter({ support = true }: { support?: boolean }) {
         <span>
           in <BrandFlag country="nl" /> the Netherlands
         </span>
-        <span aria-hidden="true" className="text-white/40">
+        <span aria-hidden="true" className="text-white/40 max-sm:hidden">
           /
         </span>
         <span>
