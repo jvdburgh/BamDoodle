@@ -1,6 +1,7 @@
 import { useId, useState } from "react";
 import { BrandScribble } from "@/components/brand/BrandScribble.component";
 import { BrandSketchyFrame } from "@/components/brand/BrandSketchyFrame.component";
+import { LobbySetupUtils } from "@/components/lobby/_utils/lobbySetup.utils";
 import type { WordCategory } from "@/protocol/generated/WordCategory";
 
 type LobbyCategoryPickerProps = {
@@ -10,7 +11,14 @@ type LobbyCategoryPickerProps = {
   onChange: (names: string[]) => void;
 };
 
-/** Which word categories are in play, as chips: picked ones framed with a ✓. 18+ ones are marked and never pre-ticked. */
+const link =
+  "underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white";
+
+/**
+ * Which word categories are in play, as chips under their word pack's name (Everyday, Film & TV, …), each group with
+ * its own select-all or clear. Picked ones get a ✓ and a light sun outline. 18+ ones are marked and never pre-ticked.
+ * No scroll box of its own: the page scrolls.
+ */
 export function LobbyCategoryPicker({ categories, selected, onChange }: LobbyCategoryPickerProps) {
   const hintId = useId();
   const legendId = useId();
@@ -37,45 +45,72 @@ export function LobbyCategoryPicker({ categories, selected, onChange }: LobbyCat
           <button
             type="button"
             onClick={() => pick([...new Set([...selected, ...family])])}
-            className="text-sun underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            className={`text-sun ${link}`}
           >
             Select all
           </button>
-          <button
-            type="button"
-            onClick={() => pick([])}
-            className="text-white/70 underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-          >
+          <button type="button" onClick={() => pick([])} className={`text-white/70 ${link}`}>
             Clear
           </button>
         </span>
       </div>
-      {/* On a laptop the list scrolls in place, so the setup fits one screen whatever the number of categories. */}
-      <div className="relative -m-1 flex flex-wrap gap-1.5 p-1 md:max-h-[max(8rem,min(19rem,calc(100svh-26rem)))] md:overflow-y-auto">
-        {categories.map((category) => (
-          <label
-            key={category.name}
-            className="group relative flex min-h-10 cursor-pointer items-center gap-1.5 rounded-full bg-night-deep py-1 pr-3.5 pl-2.5 text-base text-white/70 hover:text-white has-checked:text-white has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-white"
-          >
-            <BrandSketchyFrame whenChecked traceIn={touched} className="text-sun" />
-            <input
-              type="checkbox"
-              checked={chosen.has(category.name)}
-              onChange={() => toggle(category.name)}
-              aria-label={category.adult ? `${category.name} (18+)` : category.name}
-              className="sr-only"
-            />
-            <BrandScribble
-              shape={chosen.has(category.name) ? "check" : "plus"}
-              seed={category.name.length}
-              className={`size-5 shrink-0 ${chosen.has(category.name) ? "text-sun" : "text-white/50"}`}
-            />
-            <span className="font-display leading-none">{category.name}</span>
-            {category.adult && (
-              <span className="rounded-full bg-berry px-1.5 text-xs font-semibold text-night">18+</span>
-            )}
-          </label>
-        ))}
+      <div className="grid gap-4">
+        {LobbySetupUtils.grouped(categories).map(({ group, name, categories: inGroup }) => {
+          const names = inGroup.map((category) => category.name);
+          const all = names.every((category) => chosen.has(category));
+          return (
+            <fieldset key={group} aria-labelledby={`${legendId}-${group}`}>
+              <div className="mb-1.5 flex items-baseline gap-3">
+                <legend
+                  id={`${legendId}-${group}`}
+                  className="text-xs font-semibold tracking-wider text-white/60 uppercase"
+                >
+                  {name}
+                </legend>
+                <button
+                  type="button"
+                  aria-label={all ? `Clear ${name}` : `Select all ${name}`}
+                  onClick={() =>
+                    pick(
+                      all
+                        ? selected.filter((category) => !names.includes(category))
+                        : [...new Set([...selected, ...names])],
+                    )
+                  }
+                  className={`text-xs ${all ? "text-white/60" : "text-sun"} ${link}`}
+                >
+                  {all ? "Clear" : "Select all"}
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {inGroup.map((category) => (
+                  <label
+                    key={category.name}
+                    className="group relative flex min-h-10 cursor-pointer items-center gap-1.5 rounded-full bg-night-deep py-1 pr-3.5 pl-2.5 text-base text-white/70 hover:text-white has-checked:text-white has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-white"
+                  >
+                    <BrandSketchyFrame whenChecked traceIn={touched} className="text-sun/60" />
+                    <input
+                      type="checkbox"
+                      checked={chosen.has(category.name)}
+                      onChange={() => toggle(category.name)}
+                      aria-label={category.adult ? `${category.name} (18+)` : category.name}
+                      className="sr-only"
+                    />
+                    <BrandScribble
+                      shape={chosen.has(category.name) ? "check" : "plus"}
+                      seed={category.name.length}
+                      className={`size-5 shrink-0 ${chosen.has(category.name) ? "text-sun" : "text-white/50"}`}
+                    />
+                    <span className="font-display leading-none">{category.name}</span>
+                    {category.adult && (
+                      <span className="rounded-full bg-berry px-1.5 text-xs font-semibold text-night">18+</span>
+                    )}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          );
+        })}
       </div>
       <p id={hintId} className="text-sm text-white/70 not-empty:mt-1.5" aria-live="polite">
         {selected.length === 0 && "Pick at least one category."}

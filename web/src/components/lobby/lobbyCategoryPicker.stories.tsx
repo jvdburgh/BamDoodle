@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
-import { expect, fn } from "storybook/test";
+import { expect, fn, within } from "storybook/test";
 import { wordCategoriesFixture } from "@/components/lobby/_fixtures/wordCategories.fixture";
 import { LobbyCategoryPicker } from "./LobbyCategoryPicker.component";
 
@@ -59,5 +59,40 @@ export const PickAndClear: Story = {
     await userEvent.click(canvas.getByRole("button", { name: "Select all" }));
     await expect(canvas.getByRole("checkbox", { name: /Lekker Nederlands/ })).toBeChecked();
     await expect(canvas.getByRole("checkbox", { name: /Lichamelijk/ })).not.toBeChecked();
+  },
+};
+
+/** Under their word pack's name, each group with its own select-all or clear; no scroll box, the page scrolls. */
+export const Groups: Story = {
+  play: async ({ args, canvas, userEvent }) => {
+    for (const name of ["Everyday", "Dutch", "Logos", "18+"]) {
+      await expect(canvas.getByRole("group", { name })).toBeVisible();
+    }
+    const dutch = within(canvas.getByRole("group", { name: "Dutch" }));
+    await expect(dutch.getAllByRole("checkbox").map((box) => box.getAttribute("aria-label"))).toEqual([
+      "Efteling",
+      "Lekker Nederlands",
+      "Sinterklaas",
+      "Typisch Nederlands",
+    ]);
+
+    await userEvent.click(canvas.getByRole("button", { name: "Select all Dutch" }));
+    await expect(args.onChange).toHaveBeenLastCalledWith([
+      "Dieren",
+      "Eten",
+      "Efteling",
+      "Lekker Nederlands",
+      "Sinterklaas",
+      "Typisch Nederlands",
+    ]);
+    await userEvent.click(canvas.getByRole("button", { name: "Clear Dutch" }));
+    await expect(args.onChange).toHaveBeenLastCalledWith(["Dieren", "Eten"]);
+
+    // 18+ is only ever picked on purpose, with the group's own button too.
+    await userEvent.click(canvas.getByRole("button", { name: "Select all 18+" }));
+    await expect(canvas.getByRole("checkbox", { name: "Na middernacht (18+)" })).toBeChecked();
+
+    const list = canvas.getByRole("group", { name: "Everyday" }).parentElement!;
+    await expect(getComputedStyle(list).overflowY).toBe("visible");
   },
 };

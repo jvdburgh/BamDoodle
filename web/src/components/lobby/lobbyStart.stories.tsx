@@ -64,12 +64,16 @@ export const BackFromTheSetup: Story = {
 export const NameYourself: Story = {
   args: { step: "create", onBack: fn() },
   play: async ({ args, canvas, userEvent }) => {
-    await expect(canvas.getByRole("heading", { name: "Play or host?" })).toBeVisible();
+    await expect(canvas.getByRole("heading", { name: "What’s your name?" })).toBeVisible();
+    // A form gets the small logo, so the button stays above a phone's keyboard.
+    await expect(canvas.queryByRole("heading", { name: "BamDoodle" })).toBeNull();
+    await expect(canvas.getByRole("link", { name: /BamDoodle/ })).toBeVisible();
     const name = canvas.getByLabelText("Your name");
     await expect(name).toHaveFocus();
-    await expect(canvas.getByRole("button", { name: "Play" })).toBeDisabled();
+    const play = canvas.getByRole("button", { name: /^Play on this (phone|laptop)$/ });
+    await expect(play).toBeDisabled();
     await userEvent.type(name, "  Joris ");
-    await userEvent.click(canvas.getByRole("button", { name: "Play" }));
+    await userEvent.click(play);
     await expect(args.onEnter).toHaveBeenCalledWith({ kind: "create", name: "Joris" });
     await userEvent.click(canvas.getByRole("button", { name: "Back" }));
     await expect(args.onBack).toHaveBeenCalled();
@@ -80,10 +84,19 @@ export const NameYourself: Story = {
 export const HostOnThisScreen: Story = {
   args: { step: "create" },
   play: async ({ args, canvas, userEvent }) => {
-    // Hosting needs a name too: the players read "Joris starts the round", not just "the host".
-    await expect(canvas.getByRole("button", { name: "Host on this screen" })).toBeDisabled();
-    await userEvent.type(canvas.getByLabelText("Your name"), "Joris");
-    await userEvent.click(canvas.getByRole("button", { name: "Host on this screen" }));
+    // Hosting needs a name too: the players read "Joris starts the round", not just "the host". Without one, the
+    // button says so instead of being disabled.
+    const host = canvas.getByRole("button", { name: "Host on this screen" });
+    await expect(host).toBeEnabled();
+    await userEvent.click(host);
+    await expect(args.onEnter).not.toHaveBeenCalled();
+    const name = canvas.getByLabelText("Your name");
+    await expect(canvas.getByRole("alert")).toHaveTextContent("Type your name first");
+    await expect(name).toHaveFocus();
+    await expect(name).toHaveAccessibleDescription("Type your name first");
+    await userEvent.type(name, "Joris");
+    await expect(canvas.queryByRole("alert")).toBeNull();
+    await userEvent.click(host);
     await expect(args.onEnter).toHaveBeenCalledWith({ kind: "host", name: "Joris" });
   },
 };
@@ -94,6 +107,7 @@ export const JoinARoom: Story = {
     await userEvent.click(canvas.getByRole("button", { name: "Join a room" }));
     const code = canvas.getByLabelText("Room code");
     await expect(code).toHaveFocus();
+    await expect(code).toHaveAttribute("placeholder", "e.g. ABCD");
     await userEvent.type(code, "bk-zw9a");
     await expect(code).toHaveValue("BKZW");
 
