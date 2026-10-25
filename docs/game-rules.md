@@ -120,8 +120,8 @@ Mo's) and cards say who suspects that player. After the last turn the same butto
 it. The final vote is a sheet over everything on every screen. Its top stays put while the rest scrolls: "Time's up!
 Who's sketchy?", the 30 s countdown, "3 of 6 voted", the secret again since the sheet covers the header (the category
 and the word, or "??? You're the bamboozler", the same size), "Who didn't know the word? Tap Vote on them. You can
-change it until time's up." and whose suspicion counts if you don't vote. Then the finished drawing ("Hide drawing"
-folds it away to bring the cards up) and a small card for every other player: face, name, "voted ✓" beside it once
+change it until time's up." and whose suspicion counts if you don't vote. Then the finished drawing, sized to leave room for the
+cards, and a small card for every other player: face, name, "voted ✓" beside it once
 they have (never for whom), their mini-map as a thumbnail and a quiet Vote button that turns sun with "Your vote ✓".
 Two columns on a phone, four on its side or on a laptop; the sheet closes when the vote ends. On a laptop everything fits one
 screen (cards in one column on the left, the canvas sized to fit with pens and colours right under it, round and turn

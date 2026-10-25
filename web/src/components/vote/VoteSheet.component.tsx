@@ -1,4 +1,4 @@
-import { useId, useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { BrandSheet } from "@/components/brand/BrandSheet.component";
 import { CanvasBoard } from "@/components/canvas/CanvasBoard.component";
 import type { Drawing } from "@/components/canvas/_utils/drawing.utils";
@@ -30,8 +30,8 @@ type VoteSheetProps = {
 
 /**
  * The final vote, a sheet over everything: the prompt stays at the top (time, the secret, who has voted), then the
- * finished drawing (it folds away to bring the cards up) and a small card per other player with their lines and a
- * Vote button.
+ * finished drawing, sized to leave room for the cards, and a small card per other player with their lines and a Vote
+ * button.
  */
 export function VoteSheet({
   players,
@@ -47,8 +47,6 @@ export function VoteSheet({
   word,
   notice,
 }: VoteSheetProps) {
-  const [drawingShown, setDrawingShown] = useState(true);
-  const drawingId = useId();
   const byId = (id: number | null) => players.find((player) => player.id === id);
 
   return (
@@ -65,33 +63,17 @@ export function VoteSheet({
         />
         {notice}
       </div>
-      <div className="grid justify-items-center gap-1">
-        <button
-          type="button"
-          aria-expanded={drawingShown}
-          aria-controls={drawingId}
-          onClick={() => setDrawingShown((shown) => !shown)}
-          className="min-h-11 justify-self-end rounded-full px-4 text-sm text-white/75 hover:text-white focus-visible:outline-2 focus-visible:outline-white"
-        >
-          {drawingShown ? "Hide drawing" : "Show drawing"}
-        </button>
-        <div
-          id={drawingId}
-          hidden={!drawingShown}
-          className="w-full max-w-xl sideways:max-w-[calc((100svh-14.5rem)*4/3)]"
-        >
-          {drawingShown && (
-            <CanvasBoard
-              drawing={drawing}
-              order={order}
-              activePlayerId={null}
-              color="transparent"
-              brushSize={0}
-              spotlightId={spotlight.shown}
-              label="The finished drawing."
-            />
-          )}
-        </div>
+      {/* As big as leaves room for the cards: about two rows of them under it on a phone, all on its side. */}
+      <div className="mx-auto w-full max-w-[min(36rem,calc((100svh-30rem)*4/3))] sideways:max-w-[calc((100svh-11.5rem)*4/3)]">
+        <CanvasBoard
+          drawing={drawing}
+          order={order}
+          activePlayerId={null}
+          color="transparent"
+          brushSize={0}
+          spotlightId={spotlight.shown}
+          label="The finished drawing."
+        />
       </div>
       <RoomPlayerList
         players={players.filter((player) => player.id !== youId)}

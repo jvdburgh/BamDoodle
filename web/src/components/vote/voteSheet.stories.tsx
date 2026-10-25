@@ -59,6 +59,7 @@ export const FullRoom: Story = {
     await expect(cards).toHaveLength(7);
     await expect(within(sheet()).queryByRole("button", { name: "Vote Juno" })).toBeNull();
     await expect(within(sheet()).getByText("3 of 8 voted")).toBeVisible();
+    await expect(within(sheet()).getByRole("img", { name: "The finished drawing." })).toBeVisible();
     // "voted ✓" sits beside the name; it says who has voted, never for whom.
     await expect(cards[0]).toHaveTextContent("Pipvoted ✓");
     await expect(cards[1]).not.toHaveTextContent("voted");
@@ -67,23 +68,6 @@ export const FullRoom: Story = {
     await expect(args.action.onChoose).toHaveBeenCalledWith(3);
     await expect(within(sheet()).getByRole("button", { name: "Your vote Mo" })).toHaveAttribute("aria-pressed", "true");
     await expect(within(sheet()).getByText(/You voted/)).toHaveTextContent("You voted Mo.");
-  },
-};
-
-/** The drawing folds away to bring the cards up, and comes back. */
-export const HideTheDrawing: Story = {
-  play: async ({ userEvent }) => {
-    const toggle = within(sheet()).getByRole("button", { name: "Hide drawing" });
-    await expect(toggle).toHaveAttribute("aria-expanded", "true");
-    await expect(within(sheet()).getByRole("img", { name: "The finished drawing." })).toBeVisible();
-    await userEvent.click(toggle);
-    await expect(within(sheet()).queryByRole("img", { name: "The finished drawing." })).toBeNull();
-    await expect(within(sheet()).getByRole("button", { name: "Show drawing" })).toHaveAttribute(
-      "aria-expanded",
-      "false",
-    );
-    await userEvent.click(within(sheet()).getByRole("button", { name: "Show drawing" }));
-    await expect(within(sheet()).getByRole("img", { name: "The finished drawing." })).toBeVisible();
   },
 };
 
