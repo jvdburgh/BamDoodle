@@ -25,5 +25,7 @@ export const InTheRoom: Story = {
   args: { roomCode: "BKZW" },
   play: async ({ canvas }) => {
     await expect(canvas.getByText("Room")).toHaveTextContent("Room BKZW");
+    // Already in a room: the logo asks before leaving, like the room's own.
+    await expect(canvas.getByRole("link")).toHaveAttribute("aria-haspopup", "dialog");
   },
 };

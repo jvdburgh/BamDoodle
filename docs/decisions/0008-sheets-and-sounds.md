@@ -13,7 +13,9 @@ accessibility is hard. Playtesters also found the app silent where it should ans
 - Sheets are native `<dialog>` elements opened with `showModal()`, wrapped once in `BrandSheet`
   (`web/src/components/brand/BrandSheet.component.tsx`): without `onClose` it can't be dismissed and reopens if the
   browser closes it anyway (the vote); with `onClose` it closes through the dialog, so focus returns to the opener.
-  No headless UI library.
+  Its `question` variant is a small centred card with two answers (the logo's "Are you sure you want to leave the
+  game?" inside a room). A `close` event that finds the dialog open again is ignored, so a remount (React's dev
+  double mount) never closes a sheet. No headless UI library.
 - Every button taps and every choice (radio, checkbox) picks, app-wide, from one click listener
   (`SoundPlayer.listenForPresses`, decided by `SoundCuesUtils.forPress`). A control with its own sound (suspect,
   vote) says so with `data-sound="own"`. Game moments have their own cues from room state (`useRoomSounds`), played

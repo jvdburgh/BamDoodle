@@ -119,7 +119,9 @@ describe.skipIf(!url)("RoomConnection against the real server", () => {
 
     const players = ["Sam", "Noor", "Jip"].map((name) => open({ kind: "join", code, name }));
     await until(tv, (state) => state.room?.players.length === 3);
-    expect(players[0]!.getState().room?.hostId).toBeNull();
+    // Waits for that player's own `joined`: the screen can hear about them first.
+    const first = await until(players[0]!, (state) => state.status === "joined");
+    expect(first.room?.hostId).toBeNull();
 
     tv.send({ type: "startRound" });
     const screenRound = RoomStateUtils.round(await until(tv, (state) => RoomStateUtils.round(state) !== null));

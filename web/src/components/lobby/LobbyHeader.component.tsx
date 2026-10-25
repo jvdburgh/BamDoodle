@@ -16,6 +16,8 @@ export function LobbyHeader({ roomCode, home = "/" }: LobbyHeaderProps) {
       <BrandLogo
         named
         href={home}
+        // Inside a room (your face, the room's settings) leaving asks first, as it does in the room itself.
+        confirmLeave={roomCode !== undefined}
         className="size-10"
         nameClassName={roomCode ? "sr-only text-sm sm:not-sr-only" : "text-sm"}
       />
