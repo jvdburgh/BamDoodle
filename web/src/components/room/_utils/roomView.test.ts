@@ -316,12 +316,14 @@ describe("RoomViewUtils.roundLines", () => {
 
   it("says what the reveal means for the points: fewer than half spotting them lets them slip through", () => {
     const sam = { name: "Sam", you: false };
-    expect(RoomViewUtils.spotted(1, 3, sam)).toBe("1 of 3 spotted Sam, so Sam slips through (+1)");
+    // Points are per voter: whoever spotted them scores, even when the bamboozler slips through.
+    expect(RoomViewUtils.spotted(1, 3, sam)).toBe("1 of 3 spotted Sam (+1), so Sam slips through (+1)");
+    expect(RoomViewUtils.spotted(2, 5, sam)).toBe("2 of 5 spotted Sam (+1 each), so Sam slips through (+1)");
     expect(RoomViewUtils.spotted(2, 4, sam)).toBe("2 of 4 spotted Sam: caught! +1 each");
     expect(RoomViewUtils.spotted(4, 4, sam)).toBe("Everyone spotted Sam! +1 each");
     expect(RoomViewUtils.spotted(0, 4, sam)).toBe("Nobody spotted Sam! Sam +1");
     const you = { name: "Juno", you: true };
-    expect(RoomViewUtils.spotted(1, 3, you)).toBe("1 of 3 spotted you, so you slip through (+1)");
+    expect(RoomViewUtils.spotted(1, 3, you)).toBe("1 of 3 spotted you (+1), so you slip through (+1)");
     expect(RoomViewUtils.spotted(0, 3, you)).toBe("Nobody spotted you! You +1");
     expect(RoomViewUtils.spotted(3, 3, you)).toBe("Everyone spotted you! +1 each for them");
   });

@@ -56,7 +56,8 @@ export function RoomRoundEnd({
       {reveal && (
         <>
           <RoomReveal
-            players={players.filter((player) => reveal.playerIds.includes(player.id))}
+            players={players}
+            playerIds={reveal.playerIds}
             bamboozlerId={reveal.reveal.bamboozlerId}
             votes={RoomViewUtils.votes(reveal.reveal.votes)}
             youId={youId}

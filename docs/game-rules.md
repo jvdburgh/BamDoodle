@@ -123,14 +123,14 @@ and the word, or "??? You're the bamboozler", the same size), "Who didn't know t
 change it until time's up." and whose suspicion counts if you don't vote. Then the finished drawing, sized to leave room for the
 cards, and a small card for every other player: face, name, "voted ✓" beside it once
 they have (never for whom), their mini-map as a thumbnail and a quiet Vote button that turns sun with "Your vote ✓".
-Two columns on a phone, four on its side or on a laptop; the sheet closes when the vote ends. On a laptop everything fits one
+Two columns on a phone, three when there's room, four on its side or on a laptop; the sheet closes when the vote ends. On a laptop everything fits one
 screen (cards in one column on the left, the canvas sized to fit with pens and colours right under it, round and turn
 progress bottom-left). On a phone: the progress and the strip of faces at the top, the canvas, and on your turn pens
 and colours pinned to the bottom (colours in one row that scrolls); on its side, the drawing on the left and the rest
 beside it. Then the reveal on the cards themselves: the hat drops
 onto the bamboozler, each card says who that player voted for (right or wrong), and once the round is scored each card
 pops its points and total. The table talk ("Mo has voted") leaves the drawing as the vote ends. Under the canvas the
-headline: who the bamboozler was and what that means for the points ("1 of 3 spotted Sam, so Sam slips through (+1)",
+headline: who the bamboozler was and what that means for the points ("1 of 3 spotted Sam (+1), so Sam slips through (+1)",
 "Everyone spotted Noor! +1 each", "Nobody spotted Sam! Sam +1"), and their guess (the guess's 20 seconds start at the
 reveal): "Your one guess at the word (Animals).", with what the matching forgives (capitals, accents, spaces, one
 typo in longer words). On a phone on its side the bamboozler's field comes first, beside the drawing. Then "End of

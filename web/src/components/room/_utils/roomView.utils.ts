@@ -99,7 +99,7 @@ function roundLines(result: RoundResult, players: RoomPlayer[], youId: number | 
 }
 
 /**
- * What the reveal means for the points: "1 of 3 spotted Sam, so Sam slips through (+1)". Fewer than half of the
+ * What the reveal means for the points: "1 of 3 spotted Sam (+1), so Sam slips through (+1)". Fewer than half of the
  * artists is the server's rule (`score` in room/mod.rs), repeated here only to say it before the results come in.
  */
 function spotted(caught: number, artists: number, bamboozler: { name: string; you: boolean }): string {
@@ -108,7 +108,7 @@ function spotted(caught: number, artists: number, bamboozler: { name: string; yo
   if (caught === 0) return `Nobody spotted ${name}! ${you ? "You" : name} +1`;
   if (caught >= artists) return `Everyone spotted ${name}! +1 each${you ? " for them" : ""}`;
   if (caught * 2 < artists)
-    return `${caught} of ${artists} spotted ${name}, so ${name} ${you ? "slip" : "slips"} through (+1)`;
+    return `${caught} of ${artists} spotted ${name} (${caught === 1 ? "+1" : "+1 each"}), so ${name} ${you ? "slip" : "slips"} through (+1)`;
   return `${caught} of ${artists} spotted ${name}: caught! +1 each${you ? " for them" : ""}`;
 }
 

@@ -147,7 +147,7 @@ export function RoomPlayerList({
               onPointerLeave={() => onPeek(null)}
               style={{ animationDelay: `${index * 60}ms` }}
               className={`relative min-w-0 animate-card-in gap-1.5 rounded-[12px_16px_14px_10px] p-1.5 transition-colors motion-reduce:animate-none ${
-                sheet ? "grid grid-cols-[minmax(0,2fr)_minmax(0,3fr)] items-center" : "flex flex-col"
+                sheet ? "grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)] items-center" : "flex flex-col"
               } ${
                 rail
                   ? "@5xl/room:grid @5xl/room:grid-cols-[minmax(0,1fr)_5.5rem] @5xl/room:items-center @5xl/room:gap-x-2.5 @5xl/room:gap-y-1 @5xl/room:p-2"
@@ -191,7 +191,8 @@ export function RoomPlayerList({
                     )}
                     {status && <span className="sr-only">, {status}</span>}
                   </span>
-                  {voted && (
+                  {/* On the sheet beside the name, quiet, so it doesn't read like your vote. */}
+                  {voted && sheet && (
                     <span className="ml-auto shrink-0 animate-pop-in text-xs text-white/70 motion-reduce:animate-none">
                       voted<span aria-hidden="true"> ✓</span>
                     </span>
@@ -215,7 +216,7 @@ export function RoomPlayerList({
                       sheet ? "col-start-2 row-start-2" : "mt-1.5"
                     } ${
                       action.kind === "vote"
-                        ? `min-h-11 w-full px-2 font-display ${sheet ? "text-base whitespace-nowrap" : "text-lg"}`
+                        ? `min-h-11 w-full px-2 font-display ${sheet ? "text-base whitespace-nowrap sideways:text-sm" : "text-lg"}`
                         : "min-h-8 px-3 text-xs font-semibold"
                     } ${
                       action.kind === "vote"
@@ -244,10 +245,15 @@ export function RoomPlayerList({
                     <span className="rounded-lg px-2 py-0.5 text-berry ring-1 ring-berry">you suspected</span>
                   </p>
                 )}
-                {(suspects.length > 0 || (yourVoteId === player.id && !action)) && (
+                {((voted && !sheet) || suspects.length > 0 || (yourVoteId === player.id && !action)) && (
                   <p className="mt-1.5 flex flex-wrap gap-1 text-xs leading-snug">
                     {yourVoteId === player.id && !action && (
                       <span className="rounded-lg bg-berry px-2 py-0.5 font-semibold text-night">your vote</span>
+                    )}
+                    {voted && !sheet && (
+                      <span className="animate-pop-in rounded-lg bg-sun px-2 py-0.5 text-night motion-reduce:animate-none">
+                        voted
+                      </span>
                     )}
                     {suspects.length > 0 && (
                       <span

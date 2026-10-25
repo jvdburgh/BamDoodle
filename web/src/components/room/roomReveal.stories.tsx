@@ -29,7 +29,15 @@ export const SomeCaughtThem: Story = {
 export const SlipsThrough: Story = {
   args: { votes: { 1: 3, 2: 4, 4: 1, 3: 1 } },
   play: async ({ canvas }) => {
-    await expect(canvas.getByText("1 of 3 spotted Mo, so Mo slips through (+1)")).toBeVisible();
+    await expect(canvas.getByText("1 of 3 spotted Mo (+1), so Mo slips through (+1)")).toBeVisible();
+  },
+};
+
+/** Only who played the round counts: someone who joined during it isn't one of the artists. */
+export const LateJoinerDoesNotCount: Story = {
+  args: { players: playersFixture.slice(0, 5), playerIds: [1, 2, 3, 4] },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText("2 of 3 spotted Mo: caught! +1 each")).toBeVisible();
   },
 };
 

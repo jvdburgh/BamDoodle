@@ -3,8 +3,12 @@ import type { RoomPlayer } from "@/components/room/_types/room.types";
 import { RoomViewUtils } from "@/components/room/_utils/roomView.utils";
 
 type RoomRevealProps = {
-  /** Everyone who played the round: the bamboozler and the artists. */
   players: RoomPlayer[];
+  /**
+   * Who played the round (its `turnOrder`): only they are artists, as the server counts them; someone who joined
+   * during it isn't. Everyone in `players` when left out.
+   */
+  playerIds?: number[];
   bamboozlerId: number;
   /** Final votes: voter → suspect. */
   votes: Record<number, number>;
@@ -15,12 +19,14 @@ type RoomRevealProps = {
 
 /**
  * The moment of truth: who the bamboozler was, popping in, and what the votes mean for the points ("1 of 3 spotted
- * Sam, so Sam slips through (+1)"). Who voted for whom is on the cards. On a phone on its side it's a line or two,
+ * Sam (+1), so Sam slips through (+1)"). Who voted for whom is on the cards. On a phone on its side it's a line or two,
  * so the bamboozler's guess fits beside the drawing.
  */
-export function RoomReveal({ players, bamboozlerId, votes, youId = null, big = false }: RoomRevealProps) {
+export function RoomReveal({ players, playerIds, bamboozlerId, votes, youId = null, big = false }: RoomRevealProps) {
   const bamboozler = players.find((player) => player.id === bamboozlerId);
-  const artists = players.filter((player) => player.id !== bamboozlerId);
+  const artists = players.filter(
+    (player) => player.id !== bamboozlerId && (!playerIds || playerIds.includes(player.id)),
+  );
   const caught = artists.filter((player) => votes[player.id] === bamboozlerId).length;
   if (!bamboozler) return null;
 
