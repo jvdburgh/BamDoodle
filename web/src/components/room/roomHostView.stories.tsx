@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
-import { expect, fn } from "storybook/test";
+import { expect, fn, waitFor } from "storybook/test";
 import { RoomHostView } from "./RoomHostView.component";
 import { hostRound, resultFixture, roomStateFixture, strokeViewsFixture } from "./_fixtures/roomState.fixture";
 import type { PhaseView } from "@/protocol/generated/PhaseView";
@@ -138,5 +138,30 @@ export const Reconnecting: Story = {
   args: { reconnecting: true },
   play: async ({ canvas }) => {
     await expect(canvas.getByText("Lost the connection. Getting back in…")).toBeVisible();
+  },
+};
+
+const paintedMiniMaps = (root: HTMLElement) =>
+  [...root.querySelectorAll<HTMLButtonElement>('button[aria-label^="Spotlight"]')].filter((button) => {
+    const map = button.querySelector("canvas");
+    const data = map?.getContext("2d")?.getImageData(0, 0, map.width, map.height).data ?? [];
+    for (let i = 3; i < data.length; i += 4) if (data[i]) return true;
+    return false;
+  });
+
+/** The round is over: the mini-maps still show who drew what. */
+export const MiniMapsAfterTheRound: Story = {
+  args: { phase: { phase: "finished", result: resultFixture(), strokes: strokeViewsFixture } },
+  play: async ({ canvasElement }) => {
+    await waitFor(() => expect(paintedMiniMaps(canvasElement).length).toBeGreaterThan(0));
+  },
+};
+
+export const MiniMapsInTheVote: Story = {
+  args: {
+    phase: { phase: "voting", round: hostRound({ activePlayerId: null }), votingRemainingMs: 30_000 },
+  },
+  play: async ({ canvasElement }) => {
+    await waitFor(() => expect(paintedMiniMaps(canvasElement).length).toBeGreaterThan(0));
   },
 };
