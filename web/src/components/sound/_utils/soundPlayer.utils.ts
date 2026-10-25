@@ -292,8 +292,8 @@ function startMusic(audio: AudioContext, track: MusicTrack) {
 function updateMusic() {
   const audio = context;
   if (!audio) return;
-  // Decoded ahead, also while it's off, so switching it on has nothing left to wait for.
-  if (musicScreen) void loadMusic(audio);
+  // Fetched ahead on every screen with music; decoded (a few MB in memory) only once it's on.
+  if (musicScreen && musicOn()) void loadMusic(audio);
   if (audio.state !== "running") return;
   const level = musicLevel();
   if (music) {

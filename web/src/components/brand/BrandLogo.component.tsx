@@ -2,6 +2,7 @@ import { useEffect, useId, useState } from "react";
 import { BrandSheet } from "@/components/brand/BrandSheet.component";
 import { BrandTagline } from "@/components/brand/BrandTagline.component";
 import { BrandStyles } from "@/components/brand/_utils/brandStyles.utils";
+import { LeaveGuardUtils } from "@/components/brand/_utils/leaveGuard.utils";
 
 type BrandLogoProps = {
   /** The logo's size. */
@@ -16,18 +17,17 @@ type BrandLogoProps = {
    */
   nameClassName?: string;
   /**
-   * The bamboozler's own screen: the coat's collar goes up and the hat's colours swirl, twice per mount (key it by
-   * round), a quiet static badge with reduced motion. The logo is inlined for that (it's an `<img>` otherwise), so its parts can move.
+   * The bamboozler's own screen: the coat's collar goes up and the hat's colours swirl, twice per `replayKey` (pass
+   * the round), a quiet static badge with reduced motion. The logo is inlined for that (it's an `<img>` otherwise), so its parts can move.
    */
   sly?: boolean;
+  /** A new value replays the sly moment (the round number), without remounting the link and its leave question. */
+  replayKey?: number;
   /** The start page: hovering turns the hat's colours one round, leaving turns them back (not with reduced motion). */
   swirlOnHover?: boolean;
   /** In a room, the link asks "Are you sure you want to leave the game?" first, with Stay and Leave. */
   confirmLeave?: boolean;
 };
-
-/** Fired on `window` when you confirm leaving the room, right before the page goes. */
-export const LEAVING_EVENT = "bamdoodle:leaving";
 
 let logoMarkup: Promise<string> | undefined;
 
@@ -53,6 +53,7 @@ export function BrandLogo({
   className,
   href,
   sly = false,
+  replayKey,
   swirlOnHover = false,
   named = false,
   nameClassName = "text-sm",
@@ -65,7 +66,7 @@ export function BrandLogo({
   const alt = named ? "" : "BamDoodle";
   const image = <img src="/logo.svg" alt={alt} className={sly ? "size-full" : `shrink-0 ${className ?? ""}`} />;
   const mark = sly ? (
-    <span className={`relative block shrink-0 ${className ?? ""}`}>
+    <span key={replayKey} className={`relative block shrink-0 ${className ?? ""}`}>
       {markup ? (
         <>
           <span
@@ -118,8 +119,7 @@ export function BrandLogo({
         aria-haspopup={confirmLeave ? "dialog" : undefined}
         onClick={(event) => {
           // A new tab (a modifier, the middle button) leaves nothing.
-          if (!confirmLeave || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
-            return;
+          if (!confirmLeave || LeaveGuardUtils.opensElsewhere(event)) return;
           event.preventDefault();
           setAskingToLeave(true);
         }}
@@ -137,7 +137,10 @@ export function BrandLogo({
             <a
               href={href}
               // You said so already: the room drops its own "leave this page?" (`beforeunload`) before the page goes.
-              onClick={() => window.dispatchEvent(new Event(LEAVING_EVENT))}
+              onClick={(event) => {
+                if (!LeaveGuardUtils.opensElsewhere(event))
+                  window.dispatchEvent(new Event(LeaveGuardUtils.LEAVING_EVENT));
+              }}
               className={BrandStyles.quietButton}
             >
               Leave

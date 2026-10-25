@@ -81,10 +81,10 @@ Pixabay Content License, not the AGPL; `web/public/sounds/NOTICE` says so, for f
 seamlessly (the silence before and the quiet tail after are left out) and keeps playing for as long as the room is
 open, and from the start page on (the room picks it up without restarting): softer while someone draws or votes, so the ticks and cues stay clear, and never stopped or restarted by a sound
 effect. It has its own Music toggle next to the sound toggle, remembered per device: on by default on the host screen,
-for the host on their own device (a phone too) and on a laptop or desktop, off by default on other players' phones and
-tablets, so a table full of phones doesn't play it out of step. Like every sound, it waits for the first tap. The
-track is downloaded as soon as a screen has music and decoded at that first tap, whether the music is on or off, so
-switching it on starts it that very moment, at its volume, never fading in (also when it's switched back on while
+for the player who created the room (a phone too; not for a player who takes the host role over later) and on a laptop
+or desktop, off by default on other players' phones and tablets, so a table full of phones doesn't play it out of step. Like every sound, it waits for the first tap. The
+track (about 700 KB) is downloaded as soon as a screen has music, and decoded (a few MB in memory) only once the music
+is on, so switching it on only waits for the decode, then plays at its volume, never fading in (also when it's switched back on while
 fading out). It picks up again after the browser suspends audio (a locked phone, a call).
 
 ## Feel

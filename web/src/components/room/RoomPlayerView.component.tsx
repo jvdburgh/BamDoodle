@@ -233,7 +233,7 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
         {/* Logo, "?" and sound; the round banner in the middle on a laptop, under them on a phone. */}
         <header className="grid grid-cols-[auto_1fr_auto] items-center gap-x-2 gap-y-3 @5xl/room:grid-cols-[1fr_minmax(0,44rem)_1fr]">
           <BrandLogo
-            key={view.roundNumber}
+            replayKey={view.roundNumber}
             named
             href={home}
             confirmLeave

@@ -22,3 +22,6 @@ and its own copies of the round flow and scoring, for working on the screens wit
 - Shorter links and QR codes; room codes in error reports are scrubbed in any case and under any host.
 - Old `/join/…` links from the beta open the start page instead of the room. Accepted: the beta was among friends.
 - No second implementation of the game rules in the client to keep in step with the server.
+- Sixteen letters (no look-alikes) give 65,536 codes: with up to 500 rooms a random guess finds one 0.8% of the time.
+  Every connection gets one guess, but nothing limits guesses per device yet; a per-IP limit on join and watch
+  attempts (the `RateLimiter` in connection.rs) is the follow-up.

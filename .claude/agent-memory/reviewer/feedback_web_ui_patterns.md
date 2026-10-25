@@ -7,3 +7,4 @@ metadata: {type: feedback}
 - Dialogs: cancel preventDefault doesn't hold past a few Esc/back; close via `dialog.close()` so focus returns; a modal hides the page's alerts; userEvent Escape doesn't fire native cancel in tests.
 - Focus targets hidden by `@max-*:hidden` no-op; overlays over the canvas while the turn clock runs; pointer input copied outside `usePointerStroke`.
 - Parallel work seams: the same moment worded differently on phone and host screen, duplicate button names, one rule copied twice, docs saying "every screen" when one lacks it.
+- Defaults keyed on a role that can transfer (isHost after HostChanged) fire on the inheritor too; "ready at once" prefetch costs every phone (data, decoded PCM); window-event seams (leave event vs beforeunload) need a test at the listener, not only the dispatcher.

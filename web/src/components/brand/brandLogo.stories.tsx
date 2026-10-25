@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, waitFor, within } from "storybook/test";
-import { BrandLogo, LEAVING_EVENT } from "./BrandLogo.component";
+import { BrandLogo } from "./BrandLogo.component";
+import { stayOnTheStory } from "./_fixtures/stayOnTheStory.fixture";
+import { LeaveGuardUtils } from "./_utils/leaveGuard.utils";
 
 const meta = {
   title: "Brand/BrandLogo",
@@ -62,15 +64,6 @@ export const SlyHomeLink: Story = {
   },
 };
 
-/** Links don't navigate away from the story (a broken question would end the test run). */
-const stayOnTheStory = () => {
-  const stay = (event: Event) => {
-    if (event.target instanceof Element && event.target.closest("a")) event.preventDefault();
-  };
-  document.addEventListener("click", stay, true);
-  return () => document.removeEventListener("click", stay, true);
-};
-
 /** In a room the logo asks first: Stay closes the question, and nothing leaves. */
 export const InARoomAsksFirst: Story = {
   args: { named: true, href: "/", className: "size-10", confirmLeave: true },
@@ -91,7 +84,7 @@ export const LeaveAsksOnlyOnce: Story = {
   beforeEach: stayOnTheStory,
   play: async ({ canvas, userEvent }) => {
     const room = fn();
-    window.addEventListener(LEAVING_EVENT, room);
+    window.addEventListener(LeaveGuardUtils.LEAVING_EVENT, room);
     try {
       await userEvent.click(canvas.getByRole("link", { name: /^BamDoodle/ }));
       await expect(room).not.toHaveBeenCalled();
@@ -99,7 +92,7 @@ export const LeaveAsksOnlyOnce: Story = {
       await userEvent.click(within(question).getByRole("link", { name: "Leave" }));
       await expect(room).toHaveBeenCalledTimes(1);
     } finally {
-      window.removeEventListener(LEAVING_EVENT, room);
+      window.removeEventListener(LeaveGuardUtils.LEAVING_EVENT, room);
     }
   },
 };

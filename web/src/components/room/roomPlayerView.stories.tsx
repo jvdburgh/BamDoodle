@@ -8,6 +8,7 @@ import type { ServerMessage } from "@/protocol/generated/ServerMessage";
 import { RoomStateUtils } from "@/protocol/roomState.utils";
 import type { PhaseView } from "@/protocol/generated/PhaseView";
 import type { RejectReason } from "@/protocol/generated/RejectReason";
+import { stayOnTheStory } from "@/components/brand/_fixtures/stayOnTheStory.fixture";
 
 type Props = {
   phase: PhaseView;
@@ -129,14 +130,7 @@ export const Watching: Story = {
 
 /** Mid-game the logo doesn't just leave: it asks first, and Stay keeps you in the room. */
 export const LogoAsksBeforeLeaving: Story = {
-  beforeEach: () => {
-    // A logo that didn't ask would take the test run with it.
-    const stay = (event: Event) => {
-      if (event.target instanceof Element && event.target.closest("a")) event.preventDefault();
-    };
-    document.addEventListener("click", stay, true);
-    return () => document.removeEventListener("click", stay, true);
-  },
+  beforeEach: stayOnTheStory,
   play: async ({ canvas, userEvent }) => {
     await userEvent.click(canvas.getByRole("link", { name: /^BamDoodle/ }));
     const question = canvas.getByRole("dialog", { name: "Leave the game?" });

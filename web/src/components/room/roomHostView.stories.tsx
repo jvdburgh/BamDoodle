@@ -5,6 +5,7 @@ import { RoomHostView } from "./RoomHostView.component";
 import { AvatarUtils } from "@/components/avatar/_utils/avatar.utils";
 import { hostRound, resultFixture, roomStateFixture, strokeViewsFixture } from "./_fixtures/roomState.fixture";
 import type { PhaseView } from "@/protocol/generated/PhaseView";
+import { stayOnTheStory } from "@/components/brand/_fixtures/stayOnTheStory.fixture";
 
 type Props = {
   phase: PhaseView;
@@ -80,14 +81,7 @@ export const NeverShowsTheWord: Story = {
 /** The big screen's logo asks before it leaves the room too; Stay keeps the room on screen. */
 export const LogoAsksBeforeLeaving: Story = {
   args: { hosting: true, onStart: fn(), onSettings: fn() },
-  beforeEach: () => {
-    // A logo that didn't ask would take the test run with it.
-    const stay = (event: Event) => {
-      if (event.target instanceof Element && event.target.closest("a")) event.preventDefault();
-    };
-    document.addEventListener("click", stay, true);
-    return () => document.removeEventListener("click", stay, true);
-  },
+  beforeEach: stayOnTheStory,
   play: async ({ canvas, userEvent }) => {
     await userEvent.click(canvas.getByRole("link", { name: /^BamDoodle/ }));
     const question = canvas.getByRole("dialog", { name: "Leave the game?" });

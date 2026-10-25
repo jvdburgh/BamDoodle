@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { RouteUtils } from "@/app/route.utils";
+import { LeaveGuardUtils } from "@/components/brand/_utils/leaveGuard.utils";
 import type { AvatarStroke } from "@/components/avatar/_types/avatar.types";
-import { LEAVING_EVENT } from "@/components/brand/BrandLogo.component";
 import { AvatarUtils } from "@/components/avatar/_utils/avatar.utils";
 import { LobbySetup } from "@/components/lobby/LobbySetup.component";
 import { LobbyStart, type LobbyEntry } from "@/components/lobby/LobbyStart.component";
@@ -214,8 +214,9 @@ function GameRoom({ state, connection, createdHere }: GameRoomProps) {
   /** What the host is picking; only complete settings go to the server, which sends them back to everyone. */
   const [draft, setDraft] = useState<RoomSettings | null>(null);
   const playing = room.phase.phase === "drawing" || room.phase.phase === "voting" || room.phase.phase === "guessing";
-  // Hosting, music plays unless switched off, on a phone too; everyone else gets the device's default.
-  useRoomSounds(state, { musicByDefault: isHost || MusicUtils.onByDefault() });
+  // The room's creator hears music unless they switch it off, on a phone too; everyone else (also a player who
+  // takes the host role over later) gets the device's default.
+  useRoomSounds(state, { musicByDefault: createdHere || MusicUtils.onByDefault() });
 
   // Past the face screen (or skipped it, joining mid-round): the host no longer waits for your face.
   useEffect(() => {
@@ -228,19 +229,8 @@ function GameRoom({ state, connection, createdHere }: GameRoomProps) {
     if (window.location.pathname !== path) window.history.replaceState(null, "", path);
   }, [room.code]);
 
-  // Mid-round, reloading or closing the tab asks first, with the browser's own prompt. The logo asks in the room
-  // itself; after Leave there, the browser doesn't ask again.
-  useEffect(() => {
-    if (!playing) return;
-    const confirmLeave = (event: BeforeUnloadEvent) => event.preventDefault();
-    const leaving = () => window.removeEventListener("beforeunload", confirmLeave);
-    window.addEventListener("beforeunload", confirmLeave);
-    window.addEventListener(LEAVING_EVENT, leaving);
-    return () => {
-      window.removeEventListener("beforeunload", confirmLeave);
-      window.removeEventListener(LEAVING_EVENT, leaving);
-    };
-  }, [playing]);
+  // Mid-round, reloading or closing the tab asks first, with the browser's own prompt; not again after the logo's Leave.
+  useEffect(() => (playing ? LeaveGuardUtils.guard() : undefined), [playing]);
 
   if (settingUp && isHost && betweenRounds) {
     return (

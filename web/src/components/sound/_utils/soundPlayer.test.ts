@@ -168,7 +168,7 @@ describe("SoundPlayer", () => {
     expect(audio.musicSources()).toHaveLength(1);
   });
 
-  it("has the track ready on a phone with music off: switched on, it plays that very moment", async () => {
+  it("has the track downloaded on a phone with music off: switched on, it only decodes, then plays", async () => {
     const player = await load();
     player.setMusic({ ...screen, byDefault: false });
     await vi.advanceTimersByTimeAsync(10);
@@ -177,6 +177,8 @@ describe("SoundPlayer", () => {
     await vi.advanceTimersByTimeAsync(10);
     expect(audio.musicSources()).toHaveLength(0);
     player.setMusicOn(true);
+    await vi.advanceTimersByTimeAsync(10);
+    expect(fetchMusic).toHaveBeenCalledTimes(1);
     const [music] = audio.musicSources();
     expect(music?.start).toHaveBeenCalledWith(0, music?.loopStart);
     const output = music?.output as { gain: FakeParam } | undefined;
