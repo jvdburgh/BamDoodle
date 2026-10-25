@@ -200,7 +200,6 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
       msTotal={countdown?.totalMs ?? 0}
       secret={
         <RoomWordCard
-          inline
           category={view.category}
           word={round?.word ?? result?.word ?? null}
           view={result ? "artist" : youAreBamboozler ? "bamboozler" : playing ? "artist" : "host"}

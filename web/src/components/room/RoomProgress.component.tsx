@@ -17,7 +17,7 @@ type RoomProgressProps = {
   /** Time left in the turn (drawing) or the vote (voting). */
   msLeft: number;
   msTotal: number;
-  /** The first line: the category and the word, or that you're the bamboozler (`RoomWordCard inline`). */
+  /** The first line: the category and the word, or that you're the bamboozler (`RoomWordCard`). */
   secret?: ReactNode;
 };
 

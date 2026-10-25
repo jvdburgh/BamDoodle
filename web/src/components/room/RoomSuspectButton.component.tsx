@@ -36,9 +36,11 @@ export function RoomSuspectButton({
         type="button"
         data-sound="own"
         aria-pressed={suspected}
-        // The card's Suspect / Vote button is the one stop for the keyboard; the face is for pointers and taps.
+        // The card's Suspect / Vote button is the one stop for the keyboard and screen readers; the face is a shortcut
+        // for pointers and taps, so it isn't a second button with the same name.
         tabIndex={-1}
-        aria-label={kind === "vote" ? `Vote for ${name}` : `Mark ${name} as suspicious`}
+        aria-hidden="true"
+        aria-label={kind === "vote" ? `Vote ${name}` : `Suspect ${name}`}
         onClick={onToggle}
         className="group grid size-full place-items-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
       >

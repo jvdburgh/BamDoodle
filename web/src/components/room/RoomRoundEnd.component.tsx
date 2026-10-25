@@ -102,8 +102,8 @@ export function RoomRoundEnd({
               ) : (
                 <p className="text-white/70">
                   {hostScreen
-                    ? `${hostScreen} starts round ${nextRound} from the big screen…`
-                    : `Waiting for ${hostName ?? "the host"} to start round ${nextRound}…`}
+                    ? `${hostScreen} starts word ${nextRound} from the big screen…`
+                    : `Waiting for ${hostName ?? "the host"} to start word ${nextRound}…`}
                 </p>
               )}
               {isHost && onSettings && (

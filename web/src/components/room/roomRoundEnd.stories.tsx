@@ -77,7 +77,7 @@ export const LateJoinerDoesNotCount: Story = {
 export const WaitingForTheHost: Story = {
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("heading", { name: "This round" })).toBeVisible();
-    await expect(canvas.getByText("Waiting for Juno to start round 2…")).toBeVisible();
+    await expect(canvas.getByText("Waiting for Juno to start word 2…")).toBeVisible();
     await expect(canvas.queryByRole("button")).toBeNull();
   },
 };
@@ -85,7 +85,7 @@ export const WaitingForTheHost: Story = {
 export const HostScreenStartsIt: Story = {
   args: { hostScreen: "Joris" },
   play: async ({ canvas }) => {
-    await expect(canvas.getByText("Joris starts round 2 from the big screen…")).toBeVisible();
+    await expect(canvas.getByText("Joris starts word 2 from the big screen…")).toBeVisible();
   },
 };
 

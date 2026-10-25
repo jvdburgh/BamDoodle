@@ -22,7 +22,7 @@ const meta = {
     turnTitle: "Noor’s turn",
     msLeft: 11_200,
     msTotal: 15_000,
-    secret: <RoomWordCard inline category="Animals" word="Giraffe" view="artist" />,
+    secret: <RoomWordCard category="Animals" word="Giraffe" view="artist" />,
   },
 } satisfies Meta<typeof RoomProgress>;
 
@@ -43,7 +43,7 @@ export const Drawing: Story = {
 
 /** The bamboozler's banner is the same size as everyone else's. */
 export const Bamboozler: Story = {
-  args: { secret: <RoomWordCard inline category="Animals" word={null} view="bamboozler" /> },
+  args: { secret: <RoomWordCard category="Animals" word={null} view="bamboozler" /> },
   play: async ({ canvas }) => {
     await expect(canvas.getByText("???")).toBeVisible();
     await expect(canvas.getByText("You’re the bamboozler")).toBeVisible();

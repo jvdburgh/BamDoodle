@@ -171,7 +171,7 @@ export const Results: Story = {
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("img", { name: "Shared drawing." })).toBeVisible();
     await waitFor(() => expect(canvas.getByText("Giraffe")).toBeVisible());
-    await expect(canvas.getByText("Round 1’s scores")).toBeVisible();
+    await expect(canvas.getByText("Word 1’s scores")).toBeVisible();
     const scores = canvas.getByRole("list", { name: "This round" });
     await expect(scores.querySelector("li")).toHaveTextContent(/^Pip.*voted Mo ✓\+11 point$/);
     await expect(canvas.queryByRole("button", { name: "Next round" })).toBeNull();

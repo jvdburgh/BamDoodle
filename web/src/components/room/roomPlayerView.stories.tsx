@@ -326,12 +326,12 @@ export const FinalVote: Story = {
     await expect(sheet.getByRole("button", { name: "Vote Mo" }).offsetHeight).toBeGreaterThanOrEqual(44);
     await expect(canvas.getByText(/your suspicion of/)).toHaveTextContent("your suspicion of Kiki counts");
     // A suspicion from the drawing isn't a vote: nothing says "Your vote" until you tap.
-    await expect(canvas.getByRole("button", { name: "Vote for Kiki" })).toHaveAttribute("aria-pressed", "false");
+    await expect(canvas.getByRole("button", { name: "Vote Kiki" })).toHaveAttribute("aria-pressed", "false");
     await expect(canvas.queryByRole("button", { name: /^Your vote/ })).toBeNull();
     const kiki = canvas.getByRole("button", { name: "Vote Kiki" }).closest("li")!;
     await expect(kiki).toHaveTextContent("you suspected");
     await expect(canvas.queryByRole("button", { name: /Lock in/ })).toBeNull();
-    await userEvent.click(canvas.getByRole("button", { name: "Vote for Mo" }));
+    await userEvent.click(canvas.getByRole("button", { name: "Vote Mo" }));
     await expect(args.send).toHaveBeenCalledWith({ type: "castVote", suspectId: 3 });
   },
 };
@@ -359,9 +359,10 @@ export const ChangeYourVote: Story = {
     pendingVote: 3,
   },
   play: async ({ args, canvas, userEvent }) => {
-    await expect(canvas.getByRole("button", { name: "Vote for Mo" })).toHaveAttribute("aria-pressed", "true");
-    await expect(canvas.getByRole("button", { name: "Vote for Kiki" })).toHaveAttribute("aria-pressed", "false");
-    await userEvent.click(canvas.getByRole("button", { name: "Vote for Kiki" }));
+    // The picked one says so: "Your vote ✓".
+    await expect(canvas.getByRole("button", { name: /^Your vote.*Mo/ })).toHaveAttribute("aria-pressed", "true");
+    await expect(canvas.getByRole("button", { name: "Vote Kiki" })).toHaveAttribute("aria-pressed", "false");
+    await userEvent.click(canvas.getByRole("button", { name: "Vote Kiki" }));
     await expect(args.send).toHaveBeenLastCalledWith({ type: "castVote", suspectId: 4 });
   },
 };
@@ -386,7 +387,7 @@ export const YourGuess: Story = {
 export const ResultsForTheHost: Story = {
   args: { phase: { phase: "finished", result: resultFixture(), strokes: strokeViewsFixture } },
   play: async ({ args, canvas, userEvent }) => {
-    await expect(canvas.getByText("End of round 1 of 5. The word was")).toBeVisible();
+    await expect(canvas.getByText("Word 1 of 5 was")).toBeVisible();
     // Everyone's points this round, with the way on under them.
     const scores = canvas.getByRole("heading", { name: "This round" });
     await expect(scores).toBeVisible();
@@ -401,7 +402,7 @@ export const ResultsForEveryoneElse: Story = {
   args: { phase: { phase: "finished", result: resultFixture(), strokes: strokeViewsFixture }, you: 4 },
   play: async ({ canvas }) => {
     await expect(canvas.queryByRole("button", { name: "Next round" })).toBeNull();
-    await expect(canvas.getByText("Waiting for Juno to start round 2…")).toBeVisible();
+    await expect(canvas.getByText("Waiting for Juno to start word 2…")).toBeVisible();
   },
 };
 

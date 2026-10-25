@@ -86,7 +86,7 @@ export const WearingTheHat: Story = {
 export const HatPreviewOnFocus: Story = {
   args: { hat: "preview", className: "mt-12 size-32" },
   render: (args) => (
-    <button type="button" aria-label="Mark Pip as suspicious" className="group rounded-full">
+    <button type="button" aria-label="Suspect Pip" className="group rounded-full">
       <AvatarDoodle {...args} />
     </button>
   ),
@@ -95,7 +95,7 @@ export const HatPreviewOnFocus: Story = {
     const opacity = () => Number(getComputedStyle(hat).opacity);
     await expect(opacity()).toBe(0);
     await userEvent.tab();
-    await expect(canvas.getByRole("button", { name: "Mark Pip as suspicious" })).toHaveFocus();
+    await expect(canvas.getByRole("button", { name: "Suspect Pip" })).toHaveFocus();
     await waitFor(() => expect(opacity()).toBeGreaterThan(0.5));
   },
 };

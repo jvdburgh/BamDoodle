@@ -37,7 +37,7 @@ export function RoomResults({
     >
       <div className={big ? "min-w-60 flex-1" : ""}>
         <p className={big ? "text-2xl text-white/80" : "text-white/70"}>
-          End of round {roundNumber} of {rounds}. The word was
+          Word {roundNumber} of {rounds} was
         </p>
         <p className={`font-display text-sun ${big ? "text-6xl" : "text-4xl"}`}>{word}</p>
         <p className={`mt-1 ${big ? "text-2xl" : ""}`}>

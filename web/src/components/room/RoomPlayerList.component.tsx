@@ -9,7 +9,7 @@ import type { RoomOutcome, RoomPlayer } from "@/components/room/_types/room.type
 import { RoomViewUtils } from "@/components/room/_utils/roomView.utils";
 
 /**
- * What a tap on a face does: while drawing the hat marks someone as suspicious (changeable, public), in the final
+ * What a tap on a face does: while drawing the hat says you suspect them (changeable, public), in the final
  * vote it's your vote (changeable until the vote ends, secret). Left out on the host screen.
  */
 export type RoomPlayerAction = {
@@ -58,7 +58,7 @@ type RoomPlayerListProps = {
 
 /**
  * The turn order and who drew what: one card per player with a live mini-map of only their strokes (click it to
- * spotlight them on the canvas), and the face as the hat: tap it to mark them as suspicious, or in the final vote to
+ * spotlight them on the canvas), and the face as the hat: tap it to suspect them, or in the final vote to
  * vote for them. After the vote the cards carry the reveal and the round's points.
  */
 export function RoomPlayerList({

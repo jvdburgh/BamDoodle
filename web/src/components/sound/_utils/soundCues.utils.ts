@@ -3,6 +3,7 @@ import type { Award } from "@/protocol/generated/Award";
 import type { PlayerSummary } from "@/protocol/generated/PlayerSummary";
 import type { Role } from "@/protocol/generated/Role";
 import type { Vote } from "@/protocol/generated/Vote";
+import { RoomViewUtils } from "@/components/room/_utils/roomView.utils";
 
 export type SoundCue =
   | "start"
@@ -69,7 +70,7 @@ function forReveal(role: Role | null, you: number | null, reveal: NonNullable<So
   }
   if (role === "bamboozler") {
     const caughtBy = votes.filter((vote) => vote.suspectId === bamboozlerId && vote.voterId !== bamboozlerId).length;
-    return [caughtBy * 2 < artists ? "slippedThrough" : "busted"];
+    return [RoomViewUtils.slipsThrough(caughtBy, artists) ? "slippedThrough" : "busted"];
   }
   return [];
 }

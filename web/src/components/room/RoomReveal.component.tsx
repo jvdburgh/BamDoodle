@@ -29,12 +29,10 @@ export function RoomReveal({ players, playerIds, bamboozlerId, votes, youId = nu
   );
   const caught = artists.filter((player) => votes[player.id] === bamboozlerId).length;
   if (!bamboozler) return null;
-  const caughtLine =
-    caught === 0
-      ? "Nobody caught them!"
-      : caught === artists.length
-        ? "Everyone saw through it!"
-        : `${caught} of ${artists.length} caught them`;
+  const caughtLine = RoomViewUtils.spotted(caught, artists.length, {
+    name: bamboozler.name,
+    you: bamboozler.id === youId,
+  });
 
   if (big) {
     return (
@@ -62,7 +60,7 @@ export function RoomReveal({ players, playerIds, bamboozlerId, votes, youId = nu
 
   return (
     <div className="flex flex-col items-center gap-4 text-center sideways:gap-1">
-      <p className={big ? "text-2xl text-white/75" : "text-white/75"}>The bamboozler was…</p>
+      <p className="text-white/75">The bamboozler was…</p>
       <div
         className="flex animate-pop-in flex-col items-center gap-2 motion-reduce:animate-none sideways:flex-row"
         style={{ animationDelay: "500ms" }}
@@ -72,15 +70,13 @@ export function RoomReveal({ players, playerIds, bamboozlerId, votes, youId = nu
           backdrop={false}
           hat="worn"
           hatDelayMs={1200}
-          className={big ? "mt-10 size-36" : "mt-5 size-20 sideways:mt-2 sideways:size-12"}
+          className="mt-5 size-20 sideways:mt-2 sideways:size-12"
         />
-        <p className={`font-display text-berry ${big ? "text-6xl" : "text-4xl sideways:text-3xl"}`}>
+        <p className="font-display text-4xl text-berry sideways:text-3xl">
           {bamboozler.id === youId ? "You!" : bamboozler.name}
         </p>
       </div>
-      <p className={`font-display ${big ? "text-3xl" : "text-xl"}`}>
-        {RoomViewUtils.spotted(caught, artists.length, { name: bamboozler.name, you: bamboozler.id === youId })}
-      </p>
+      <p className="font-display text-xl">{caughtLine}</p>
     </div>
   );
 }

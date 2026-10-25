@@ -73,6 +73,8 @@ export function RoomHostView({ state, revealCode = false, home = "/", controls }
   const spotlit = players.find((player) => player.id === spotlight.shown);
   const bamboozler = players.find((player) => player.id === view.bamboozlerId);
   const waiting = RoomViewUtils.waitingForPlayers(players);
+  /** Who's in the room right now, as the phones count them. */
+  const here = players.filter((player) => player.connected).length;
   /** What the server just turned down, for the host screen (say, a player left right before Start round). */
   const problem = controls && view.problem ? RoomViewUtils.problem(view.problem) : null;
   const stillDrawing = RoomViewUtils.stillOnTheirFace(players.filter((player) => player.connected));
@@ -83,7 +85,7 @@ export function RoomHostView({ state, revealCode = false, home = "/", controls }
       : result
         ? result.gameOver
           ? "Final round’s scores"
-          : `Round ${result.number}’s scores`
+          : `Word ${result.number}’s scores`
         : "Who’s sketchy?";
 
   const problemLine = problem && (
@@ -136,16 +138,16 @@ export function RoomHostView({ state, revealCode = false, home = "/", controls }
           <p className="text-right font-display leading-tight text-white">
             {phase === "lobby" ? (
               <span className="text-3xl">
-                {players.length} {players.length === 1 ? "player" : "players"}
+                {here} {here === 1 ? "player" : "players"}
               </span>
             ) : (
               <span className="text-3xl lg:text-4xl">
-                Round {view.roundNumber} of {view.rounds}
+                Word {view.roundNumber} of {view.rounds}
               </span>
             )}
             {phase === "drawing" && round && (
               <span className="block text-2xl text-white/90">
-                Turn {round.turn} of {round.turnsPerPlayer}
+                Turn {round.turn} of {round.turnsPerPlayer} each
               </span>
             )}
           </p>
@@ -207,7 +209,7 @@ export function RoomHostView({ state, revealCode = false, home = "/", controls }
                   {view.host
                     ? `${view.host.name} starts the round from their phone.`
                     : room.hostScreen
-                      ? `${room.hostScreen} starts the round from the host screen.`
+                      ? `${room.hostScreen} starts the round from the big screen.`
                       : "Waiting for players…"}
                 </p>
               )}

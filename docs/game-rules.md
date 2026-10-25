@@ -63,7 +63,8 @@ can change the number of rounds between rounds; when that's already been reached
 
 1. **Lobby.** The start page offers **Join a room** (most people) or **Create a room**, with "How to play" below
    (the steps, the points and a few questions). Joining asks for the four-letter
-   room code (shown as "Join at bamdoodle.io with code …" on the host's screen) and a nickname, or skips the code when
+   room code (on the host's phone: "Join at bamdoodle.io with code …"; on a host screen: "Scan or go to bamdoodle.io
+   and type …" beside a QR code) and a nickname, or skips the code when
    you open a shared link (`bamdoodle.io/BKZW`; the address bar shows it once you're in). Creating starts with setting up the
    room ("You can change all of this between rounds."): mode ("How a turn works."), turns each or time per turn,
    rounds per game, the language and the word categories to play with
@@ -73,8 +74,7 @@ can change the number of rounds between rounds; when that's already been reached
    numbers on the choices and a small sketch of what's picked. Under the rounds, a rough length: "About 17 minutes
    with 5 players" (5 players' turns, a line taking about 6 seconds, plus a minute per round for the vote, the guess
    and the results). Back and Next end the form, with the picks in one line beside Next ("Timed · 20 s · 2 turns
-   each · 4 rounds · English · 33 categories"). The start page and
-   the setup both say who it's for: 3 to 8 players. Then the host's nickname (after the setup, so it's clearly
+   each · 4 rounds · English · 33 categories"). Who it's for (3 to 8 players, any device) is in How to play. Then the host's nickname (after the setup, so it's clearly
    theirs and not the room's), and only then is the room created, with those settings. The host (a player or the
    host screen) can open the settings again between rounds as "Room settings" ("Changes reach everyone right
    away."), back with "Back to the room"; every change there reaches the room at once. Then everyone draws their avatar
@@ -176,10 +176,10 @@ pops its points and total. The table talk ("Mo has voted") leaves the drawing as
 headline: who the bamboozler was and what that means for the points ("1 of 3 spotted Sam (+1), so Sam slips through (+1)",
 "Everyone spotted Noor! +1 each", "Nobody spotted Sam! Sam +1"), and their guess (the guess's 20 seconds start at the
 reveal): "Your one guess at the word (Animals)." and "No worries, we're not too picky about spelling." (true to the
-matching under Current defaults). On a phone on its side the bamboozler's field comes first, beside the drawing. Then "End of
-round 1 of 3. The word was GIRAFFE", the guess ("Sam guessed it: "giraffe"! +1" or "Sam guessed "horse": not it, no
+matching under Current defaults). On a phone on its side the bamboozler's field comes first, beside the drawing. Then "Word 1
+of 3 was GIRAFFE" (rounds are words on screen, as in the banner), the guess ("Sam guessed it: "giraffe"! +1" or "Sam guessed "horse": not it, no
 point."), "This round" (everyone's points with why, popping in, and their totals) and under it the host's "Next round",
-or for everyone else who they're waiting for ("Waiting for Juno to start round 2…", or "Joris starts round 2 from the
+or for everyone else who they're waiting for ("Waiting for Juno to start word 2…", or "Joris starts word 2 from the
 big screen…"). After the last round
 "The End": the podium with everyone's final score and a fun line each from the whole game ("spotted the bamboozler
 3×", "slipped through twice", "caught on every bluff"; on a device that saw every round, not after a rejoin) (on a phone when you tap "See the final scores", which every player

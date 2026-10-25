@@ -25,15 +25,16 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
 
 export const Toggles: Story = {
-  play: async ({ canvas }) => {
-    const button = canvas.getByRole("button", { name: "Mark Juno as suspicious" });
+  play: async ({ canvasElement }) => {
+    const button = canvasElement.querySelector("button")!;
     await expect(button).toHaveAttribute("aria-pressed", "false");
     const hat = button.querySelector("img")!;
     const opacity = () => Number(getComputedStyle(hat).opacity);
     await userEvent.click(button);
     await expect(button).toHaveAttribute("aria-pressed", "true");
     await waitFor(() => expect(opacity()).toBe(1));
-    await expect(button).toHaveAccessibleName("Mark Juno as suspicious");
+    // A shortcut for pointers: the card's own Suspect button is the one screen readers get.
+    await expect(button).toHaveAttribute("aria-hidden", "true");
     await userEvent.click(button);
     await expect(button).toHaveAttribute("aria-pressed", "false");
     // Back to the faint preview (it still has focus), no longer worn.
@@ -43,10 +44,7 @@ export const Toggles: Story = {
 
 export const Suspected: Story = {
   args: { suspected: true },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("button", { name: "Mark Juno as suspicious" })).toHaveAttribute(
-      "aria-pressed",
-      "true",
-    );
+  play: async ({ canvasElement }) => {
+    await expect(canvasElement.querySelector("button")!).toHaveAttribute("aria-pressed", "true");
   },
 };
