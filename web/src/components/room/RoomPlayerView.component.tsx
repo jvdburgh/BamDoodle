@@ -32,7 +32,7 @@ import { RoomViewUtils } from "@/components/room/_utils/roomView.utils";
 import { StrokeWireUtils } from "@/components/room/_utils/strokeWire.utils";
 import { SoundToggle } from "@/components/sound/SoundToggle.component";
 import { SoundPlayer } from "@/components/sound/_utils/soundPlayer.utils";
-import { VotePrompt } from "@/components/vote/VotePrompt.component";
+import { VoteSheet } from "@/components/vote/VoteSheet.component";
 import type { ClientMessage } from "@/protocol/generated/ClientMessage";
 import { RoomStateUtils } from "@/protocol/roomState.utils";
 
@@ -407,43 +407,21 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
             </aside>
 
             {/* The final call: a sheet over everything, with the drawing and a big Vote button per player. */}
-            {phase === "voting" && playing && round && (
-              <BrandSheet label="Who’s sketchy?">
-                {notice}
-                <VotePrompt
-                  players={players.filter((player) => round.turnOrder.includes(player.id))}
-                  voted={players.find((player) => player.id === yourVoteId)}
-                  suspected={players.find((player) => player.id === suspicion)}
-                  votedIds={round.voted}
-                  msLeft={ClockUtils.left(state.timers.voting, now)}
-                />
-                <div className="mx-auto w-full max-w-xl">
-                  <CanvasBoard
-                    drawing={drawing}
-                    order={order}
-                    activePlayerId={null}
-                    color="transparent"
-                    brushSize={0}
-                    spotlightId={spotlight.shown}
-                    label="The finished drawing."
-                  />
-                </div>
-                <RoomPlayerList
-                  players={players.filter((player) => round.turnOrder.includes(player.id))}
-                  drawing={drawing}
-                  youId={you?.id ?? null}
-                  activeId={null}
-                  nextId={null}
-                  spotlightId={spotlight.pinned}
-                  onSpotlight={spotlight.pin}
-                  onPeek={spotlight.setPeek}
-                  action={action}
-                  yourVoteId={yourVoteId}
-                  votedIds={round.voted}
-                  youWearTheHat={youAreBamboozler}
-                  layout="sheet"
-                />
-              </BrandSheet>
+            {phase === "voting" && you && round && action && (
+              <VoteSheet
+                players={players.filter((player) => round.turnOrder.includes(player.id))}
+                youId={you.id}
+                drawing={drawing}
+                order={order}
+                spotlight={spotlight}
+                action={action}
+                suspectedId={suspicion}
+                votedIds={round.voted}
+                msLeft={ClockUtils.left(state.timers.voting, now)}
+                category={round.category}
+                word={round.word}
+                notice={notice}
+              />
             )}
 
             {/*
@@ -538,7 +516,7 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
           {active
             ? turnTitle(active)
             : phase === "voting" && playing
-              ? "Time’s up! Tap the face of who you think didn’t know the word. You can change it until the vote ends."
+              ? "Time’s up! Who didn’t know the word? Tap Vote on them. You can change it until time’s up."
               : ""}
         </p>
       </div>

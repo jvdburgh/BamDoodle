@@ -116,9 +116,13 @@ button under the name, or a tap on the face itself (hovering it shows the logo's
 their head; the button then says "Suspected ✓" and another tap takes it off. Marking or changing it is public table
 talk ("Noor thinks Jip is sketchy") and cards say who suspects that player. After the last turn the same button says
 "Vote" and the face is the vote too: a tap votes for them (the hat drops on, "Your vote ✓"), a tap on another changes
-it. The final vote is a sheet over everything on every screen: "Time's up! Who's sketchy?" with a 30 s countdown that
-says whose suspicion counts if you don't vote, the finished drawing, and a card per player with their mini-map and a
-big Vote button; it shows who has voted, never for whom, and closes when the vote ends. On a laptop everything fits one
+it. The final vote is a sheet over everything on every screen. Its top stays put while the rest scrolls: "Time's up!
+Who's sketchy?", the 30 s countdown, "3 of 6 voted", the secret again since the sheet covers the header (the category
+and the word, or "??? You're the bamboozler", the same size), "Who didn't know the word? Tap Vote on them. You can
+change it until time's up." and whose suspicion counts if you don't vote. Then the finished drawing ("Hide drawing"
+folds it away to bring the cards up) and a small card for every other player: face, name, "voted ✓" beside it once
+they have (never for whom), their mini-map as a thumbnail and a quiet Vote button that turns sun with "Your vote ✓".
+Two columns on a phone, four on its side or on a laptop; the sheet closes when the vote ends. On a laptop everything fits one
 screen (cards in one column on the left, the canvas sized to fit with pens and colours right under it, round and turn
 progress bottom-left). On a phone: the progress and the strip of faces at the top, the canvas, and on your turn pens
 and colours pinned to the bottom (colours in one row that scrolls); on its side, the drawing on the left and the rest

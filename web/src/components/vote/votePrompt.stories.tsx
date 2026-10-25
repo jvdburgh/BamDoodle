@@ -21,19 +21,34 @@ const meta = {
     suspected: undefined,
     votedIds: [1, 4],
     msLeft: 24_000,
+    category: "Animals",
+    word: "Giraffe",
   },
 } satisfies Meta<typeof VotePrompt>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const TapAFace: Story = {
+/** The sheet hides the header, so the prompt says the secret again, next to the time and the count. */
+export const TapVote: Story = {
   play: async ({ canvas }) => {
-    await expect(canvas.getByText("Tap the face of who you think didn’t know the word.")).toBeVisible();
+    await expect(
+      canvas.getByText("Who didn’t know the word? Tap Vote on them. You can change it until time’s up."),
+    ).toBeVisible();
     await expect(canvas.getByText("0:24")).toBeVisible();
     await expect(canvas.getByText("2 of 6 voted")).toBeVisible();
-    await expect(canvas.getByRole("img", { name: "Pip has voted" })).toBeVisible();
+    await expect(canvas.getByText("Animals")).toBeVisible();
+    await expect(canvas.getByText("Giraffe")).toBeVisible();
     await expect(canvas.queryByRole("button")).toBeNull();
+  },
+};
+
+/** The bamboozler's line takes the word's place, the same size. */
+export const Bamboozler: Story = {
+  args: { word: null },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText("??? You’re the bamboozler")).toBeVisible();
+    await expect(canvas.queryByText("Giraffe")).toBeNull();
   },
 };
 
@@ -49,7 +64,7 @@ export const Voted: Story = {
   args: { voted: mo, votedIds: [1, 4, 2] },
   play: async ({ canvas }) => {
     await expect(canvas.getByText(/You voted/)).toHaveTextContent(
-      `You voted ${mo?.name}. Tap another face to change it.`,
+      `You voted ${mo?.name}. You can change it until time’s up.`,
     );
   },
 };

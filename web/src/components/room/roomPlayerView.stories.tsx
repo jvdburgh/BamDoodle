@@ -218,9 +218,8 @@ export const FinalVote: Story = {
     // A sheet over everything, with the drawing in it and a big Vote button per player.
     const sheet = within(canvas.getByRole("dialog", { name: "Who’s sketchy?" }));
     await expect(sheet.getByRole("img", { name: "The finished drawing." })).toBeVisible();
-    await expect(sheet.getByRole("button", { name: "Vote Mo" }).getBoundingClientRect().height).toBeGreaterThanOrEqual(
-      44,
-    );
+    // The layout height: the cards' entrance animation scales them for a moment.
+    await expect(sheet.getByRole("button", { name: "Vote Mo" }).offsetHeight).toBeGreaterThanOrEqual(44);
     await expect(canvas.getByText(/your suspicion of/)).toHaveTextContent("your suspicion of Kiki counts");
     // A suspicion from the drawing isn't a vote: nothing says "Your vote" until you tap.
     await expect(canvas.getByRole("button", { name: "Vote for Kiki" })).toHaveAttribute("aria-pressed", "false");

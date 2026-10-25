@@ -49,7 +49,8 @@ type RoomPlayerListProps = {
    * "grid": two columns of cards on a phone (so names fit), three on a tablet, and one column of wide cards in a
    * laptop's `room` container;
    * "row": everyone in one row (host screen);
-   * "sheet": two columns, three when there's room, whatever the screen (the vote sheet).
+   * "sheet": small cards (the face and name, the mini-map as a thumbnail beside the Vote button) in two columns,
+   * three when there's room, four on a phone on its side or a laptop (the vote sheet).
    */
   layout?: "grid" | "row" | "sheet";
 };
@@ -99,7 +100,7 @@ export function RoomPlayerList({
           layout === "row"
             ? `grid-cols-3 ${rowColumns[players.length] ?? rowColumns[6]}`
             : layout === "sheet"
-              ? "grid-cols-2 @lg/players:grid-cols-3"
+              ? "grid-cols-2 @lg/players:grid-cols-3 @3xl/players:grid-cols-4 sideways:grid-cols-4"
               : "grid-cols-2 @lg/players:grid-cols-3 @5xl/room:grid-cols-1"
         }`}
       >
@@ -117,16 +118,20 @@ export function RoomPlayerList({
           const revealDelay = 900 + index * 150;
           const scoreDelay = revealDelay + 600;
           const ring =
-            chosen || isBamboozler
-              ? "shadow-[inset_0_0_0_2px_var(--color-berry)]"
-              : spotlit
-                ? ""
-                : active
-                  ? "shadow-[inset_0_0_0_2px_var(--color-sun)]"
-                  : you
-                    ? "shadow-[inset_0_0_0_2px_var(--color-iris)]"
-                    : "";
+            chosen && action?.kind === "vote"
+              ? "shadow-[inset_0_0_0_2px_var(--color-sun)]"
+              : chosen || isBamboozler
+                ? "shadow-[inset_0_0_0_2px_var(--color-berry)]"
+                : spotlit
+                  ? ""
+                  : active
+                    ? "shadow-[inset_0_0_0_2px_var(--color-sun)]"
+                    : you
+                      ? "shadow-[inset_0_0_0_2px_var(--color-iris)]"
+                      : "";
           const rail = layout === "grid";
+          const sheet = layout === "sheet";
+          const voted = votedIds.includes(player.id);
           const drawerRing = active && (
             <BrandScribble
               shape="ring"
@@ -141,15 +146,20 @@ export function RoomPlayerList({
               onPointerEnter={(event) => event.pointerType === "mouse" && onPeek(player.id)}
               onPointerLeave={() => onPeek(null)}
               style={{ animationDelay: `${index * 60}ms` }}
-              className={`relative flex min-w-0 animate-card-in flex-col gap-1.5 rounded-[12px_16px_14px_10px] p-1.5 transition-colors motion-reduce:animate-none ${
+              className={`relative min-w-0 animate-card-in gap-1.5 rounded-[12px_16px_14px_10px] p-1.5 transition-colors motion-reduce:animate-none ${
+                sheet ? "grid grid-cols-[minmax(0,2fr)_minmax(0,3fr)] items-center" : "flex flex-col"
+              } ${
                 rail
                   ? "@5xl/room:grid @5xl/room:grid-cols-[minmax(0,1fr)_5.5rem] @5xl/room:items-center @5xl/room:gap-x-2.5 @5xl/room:gap-y-1 @5xl/room:p-2"
                   : ""
               } ${active ? "bg-night-soft" : you ? "bg-iris/20" : "bg-night-deep/70"} ${ring}`}
             >
               {spotlit && <BrandSketchyFrame bold className="text-white" />}
-              <div className={`min-w-0 ${rail ? "@5xl/room:col-start-1 @5xl/room:row-start-1" : ""}`}>
-                <div className="peer flex min-w-0 items-center gap-2">
+              {/* On a sheet card its parts sit in the card's grid: the header across, the thumbnail beside the button. */}
+              <div
+                className={`min-w-0 ${rail ? "@5xl/room:col-start-1 @5xl/room:row-start-1" : ""} ${sheet ? "contents" : ""}`}
+              >
+                <div className={`peer flex min-w-0 items-center gap-2 ${sheet ? "col-span-2" : ""}`}>
                   {action && !you ? (
                     <RoomSuspectButton
                       name={player.name}
@@ -158,7 +168,7 @@ export function RoomPlayerList({
                       suspected={chosen}
                       onToggle={() => action.onChoose(action.kind === "suspect" && chosen ? null : player.id)}
                       ring={drawerRing}
-                      className="size-12"
+                      className={sheet ? "size-10" : "size-12"}
                     />
                   ) : (
                     <span className="peer relative size-12 shrink-0">
@@ -181,6 +191,11 @@ export function RoomPlayerList({
                     )}
                     {status && <span className="sr-only">, {status}</span>}
                   </span>
+                  {voted && (
+                    <span className="ml-auto shrink-0 animate-pop-in text-xs text-white/70 motion-reduce:animate-none">
+                      voted<span aria-hidden="true"> ✓</span>
+                    </span>
+                  )}
                 </div>
                 {you && action && (
                   <span
@@ -196,15 +211,19 @@ export function RoomPlayerList({
                     data-sound="own"
                     aria-pressed={chosen}
                     onClick={() => action.onChoose(action.kind === "suspect" && chosen ? null : player.id)}
-                    className={`mt-1.5 rounded-full transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+                    className={`rounded-full transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+                      sheet ? "col-start-2 row-start-2" : "mt-1.5"
+                    } ${
                       action.kind === "vote"
-                        ? "min-h-11 w-full px-4 font-display text-lg"
+                        ? `min-h-11 w-full px-2 font-display ${sheet ? "text-base whitespace-nowrap" : "text-lg"}`
                         : "min-h-8 px-3 text-xs font-semibold"
                     } ${
-                      chosen
-                        ? "bg-berry text-night"
-                        : action.kind === "vote"
-                          ? "bg-sun text-night hover:bg-amber"
+                      action.kind === "vote"
+                        ? chosen
+                          ? "bg-sun text-night"
+                          : "text-white ring-2 ring-white/35 ring-inset hover:bg-white/10 hover:ring-white/70"
+                        : chosen
+                          ? "bg-berry text-night"
                           : "bg-night text-white hover:bg-night-soft"
                     }`}
                   >
@@ -221,19 +240,14 @@ export function RoomPlayerList({
                   </p>
                 )}
                 {action?.kind === "vote" && action.suspectedId === player.id && !chosen && (
-                  <p className="mt-1.5 text-xs">
+                  <p className={`text-xs ${sheet ? "col-span-2" : "mt-1.5"}`}>
                     <span className="rounded-lg px-2 py-0.5 text-berry ring-1 ring-berry">you suspected</span>
                   </p>
                 )}
-                {(votedIds.includes(player.id) || suspects.length > 0 || (yourVoteId === player.id && !action)) && (
+                {(suspects.length > 0 || (yourVoteId === player.id && !action)) && (
                   <p className="mt-1.5 flex flex-wrap gap-1 text-xs leading-snug">
                     {yourVoteId === player.id && !action && (
                       <span className="rounded-lg bg-berry px-2 py-0.5 font-semibold text-night">your vote</span>
-                    )}
-                    {votedIds.includes(player.id) && (
-                      <span className="animate-pop-in rounded-lg bg-sun px-2 py-0.5 text-night motion-reduce:animate-none">
-                        voted
-                      </span>
                     )}
                     {suspects.length > 0 && (
                       <span
@@ -312,7 +326,7 @@ export function RoomPlayerList({
                   }}
                   className={`group relative block rounded-[6px_8px_7px_5px] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-white ${
                     rail ? "@5xl/room:col-start-2 @5xl/room:row-span-2 @5xl/room:row-start-1" : ""
-                  }`}
+                  } ${sheet ? "col-start-1 row-start-2" : ""}`}
                 >
                   <CanvasMiniMap drawing={drawing} playerId={player.id} />
                   <span
