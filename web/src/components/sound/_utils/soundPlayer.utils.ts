@@ -15,6 +15,9 @@ const MUSIC_SRC = "/sounds/quirky-detective.m4a";
 const MUSIC_GAIN = 0.14;
 /** The music's level while someone draws or votes, as a share of its full level. */
 const MUSIC_DUCKED = 0.35;
+const SCRATCH_LENGTH = 0.12;
+/** The pause between cues played one after the other, in seconds. */
+const CUE_GAP = 0.08;
 
 type Note = { frequency: number; at: number; length: number; type?: OscillatorType; gain?: number };
 
@@ -48,6 +51,66 @@ const notes: Record<Exclude<SoundCue, "scribble">, Note[]> = {
     { frequency: 1047, at: 0.36, length: 0.3 },
     { frequency: 784, at: 0.62, length: 0.1 },
     { frequency: 1047, at: 0.74, length: 0.6 },
+  ],
+  caughtThem: [
+    { frequency: 784, at: 0, length: 0.07 },
+    { frequency: 784, at: 0.09, length: 0.07 },
+    { frequency: 1047, at: 0.18, length: 0.1 },
+    { frequency: 1319, at: 0.28, length: 0.26 },
+  ],
+  fooled: [
+    { frequency: 392, at: 0, length: 0.16, type: "sine", gain: 0.6 },
+    { frequency: 370, at: 0.18, length: 0.16, type: "sine", gain: 0.55 },
+    { frequency: 349, at: 0.36, length: 0.34, type: "sine", gain: 0.5 },
+  ],
+  slippedThrough: [
+    { frequency: 294, at: 0, length: 0.05, type: "square", gain: 0.2 },
+    { frequency: 349, at: 0.1, length: 0.05, type: "square", gain: 0.2 },
+    { frequency: 415, at: 0.2, length: 0.05, type: "square", gain: 0.2 },
+    { frequency: 587, at: 0.32, length: 0.06, gain: 0.7 },
+    { frequency: 831, at: 0.4, length: 0.22, gain: 0.6 },
+  ],
+  busted: [
+    { frequency: 233, at: 0, length: 0.12, type: "square", gain: 0.3 },
+    { frequency: 175, at: 0.15, length: 0.32, type: "square", gain: 0.3 },
+  ],
+  guessedIt: [
+    { frequency: 784, at: 0, length: 0.07 },
+    { frequency: 988, at: 0, length: 0.07, gain: 0.6 },
+    { frequency: 1175, at: 0.09, length: 0.3 },
+    { frequency: 1568, at: 0.09, length: 0.3, gain: 0.4 },
+  ],
+  nailedIt: [
+    { frequency: 523, at: 0, length: 0.05 },
+    { frequency: 659, at: 0.05, length: 0.05 },
+    { frequency: 784, at: 0.1, length: 0.05 },
+    { frequency: 1047, at: 0.17, length: 0.4 },
+    { frequency: 1319, at: 0.17, length: 0.4, gain: 0.5 },
+  ],
+  nope: [
+    { frequency: 294, at: 0, length: 0.07, type: "square", gain: 0.25 },
+    { frequency: 220, at: 0.1, length: 0.14, type: "square", gain: 0.25 },
+  ],
+  coin: [
+    { frequency: 988, at: 0, length: 0.06, type: "square", gain: 0.18 },
+    { frequency: 1319, at: 0.06, length: 0.2, type: "square", gain: 0.18 },
+  ],
+  win: [
+    { frequency: 392, at: 0, length: 0.09 },
+    { frequency: 523, at: 0.1, length: 0.09 },
+    { frequency: 659, at: 0.2, length: 0.09 },
+    { frequency: 784, at: 0.3, length: 0.18 },
+    { frequency: 659, at: 0.5, length: 0.09 },
+    { frequency: 784, at: 0.6, length: 0.55 },
+    { frequency: 1047, at: 0.6, length: 0.55, gain: 0.6 },
+    { frequency: 1319, at: 0.6, length: 0.55, gain: 0.4 },
+  ],
+  goodGame: [
+    { frequency: 392, at: 0, length: 0.14, gain: 0.7 },
+    { frequency: 523, at: 0.16, length: 0.14, gain: 0.7 },
+    { frequency: 659, at: 0.32, length: 0.14, gain: 0.7 },
+    { frequency: 587, at: 0.5, length: 0.12, gain: 0.6 },
+    { frequency: 523, at: 0.64, length: 0.45, gain: 0.6 },
   ],
   suspect: [
     { frequency: 880, at: 0, length: 0.05, type: "sine", gain: 0.3 },
@@ -118,8 +181,13 @@ if (typeof window !== "undefined") {
   });
 }
 
-function tone(audio: AudioContext, output: AudioNode, { frequency, at, length, type = "triangle", gain = 1 }: Note) {
-  const start = audio.currentTime + at;
+function tone(
+  audio: AudioContext,
+  output: AudioNode,
+  { frequency, at, length, type = "triangle", gain = 1 }: Note,
+  delay: number,
+) {
+  const start = audio.currentTime + delay + at;
   const oscillator = audio.createOscillator();
   const envelope = audio.createGain();
   oscillator.type = type;
@@ -133,8 +201,8 @@ function tone(audio: AudioContext, output: AudioNode, { frequency, at, length, t
 }
 
 /** A short pencil scratch: filtered noise with a quick swell. */
-function scratch(audio: AudioContext, output: AudioNode) {
-  const length = 0.12;
+function scratch(audio: AudioContext, output: AudioNode, delay: number) {
+  const length = SCRATCH_LENGTH;
   const buffer = audio.createBuffer(1, Math.ceil(audio.sampleRate * length), audio.sampleRate);
   const data = buffer.getChannelData(0);
   for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
@@ -145,7 +213,7 @@ function scratch(audio: AudioContext, output: AudioNode) {
   filter.frequency.value = 2600;
   filter.Q.value = 0.8;
   const envelope = audio.createGain();
-  const start = audio.currentTime;
+  const start = audio.currentTime + delay;
   envelope.gain.setValueAtTime(0, start);
   envelope.gain.linearRampToValueAtTime(0.35, start + 0.03);
   envelope.gain.exponentialRampToValueAtTime(0.0001, start + length);
@@ -287,17 +355,41 @@ function clearMusicChoice() {
   updateMusic();
 }
 
-function play(cue: SoundCue) {
+/** Every effect plays through this one node, so muting also silences cues already queued. */
+let effects: GainNode | null = null;
+
+function play(cue: SoundCue, delay = 0) {
   if (muted || !context || context.state !== "running") return;
-  const master = context.createGain();
-  master.gain.value = MASTER_GAIN;
-  master.connect(context.destination);
-  if (cue === "scribble") scratch(context, master);
-  else for (const note of notes[cue]) tone(context, master, note);
+  if (!effects) {
+    effects = context.createGain();
+    effects.connect(context.destination);
+  }
+  effects.gain.value = MASTER_GAIN;
+  if (cue === "scribble") scratch(context, effects, delay);
+  else for (const note of notes[cue]) tone(context, effects, note, delay);
+}
+
+function lengthOf(cue: SoundCue): number {
+  return cue === "scribble" ? SCRATCH_LENGTH : Math.max(...notes[cue].map((note) => note.at + note.length));
+}
+
+/** When, on the audio clock, the cues played in turn so far are over. */
+let inTurnUntil = 0;
+
+/** Plays cues one after the other, after any still playing from an earlier call, so they never overlap. */
+function playInTurn(cues: SoundCue[]) {
+  if (muted || !context || context.state !== "running") return;
+  let delay = Math.max(0, inTurnUntil - context.currentTime);
+  for (const cue of cues) {
+    play(cue, delay);
+    delay += lengthOf(cue) + CUE_GAP;
+  }
+  inTurnUntil = context.currentTime + delay;
 }
 
 function setMuted(next: boolean) {
   muted = next;
+  if (muted && effects) effects.gain.value = 0;
   try {
     window.localStorage.setItem(STORAGE_KEY, next ? "1" : "0");
   } catch {
@@ -325,6 +417,7 @@ function listenForPresses(target: Pick<Document, "addEventListener" | "removeEve
 
 export const SoundPlayer = {
   play,
+  playInTurn,
   listenForPresses,
   isMuted: () => muted,
   setMuted,

@@ -25,6 +25,7 @@ type FakeSource = {
 /** A small stand-in for the Web Audio graph: a clock, gains that record automation, sources that record start/stop. */
 function fakeAudio() {
   const sources: FakeSource[] = [];
+  const oscillators: { start: ReturnType<typeof vi.fn>; stop: ReturnType<typeof vi.fn> }[] = [];
   const gains: FakeParam[] = [];
   const contexts: { state: string; resume: ReturnType<typeof vi.fn> }[] = [];
   const track = { duration: 60, sampleRate: RATE, getChannelData: () => trackSamples() };
@@ -54,7 +55,11 @@ function fakeAudio() {
       gains.push(gain);
       return { ...node(), gain };
     };
-    createOscillator = () => ({ ...node(), type: "", frequency: param(), start: vi.fn(), stop: vi.fn() });
+    createOscillator = () => {
+      const oscillator = { ...node(), type: "", frequency: param(), start: vi.fn(), stop: vi.fn() };
+      oscillators.push(oscillator);
+      return oscillator;
+    };
     createBiquadFilter = () => ({ ...node(), type: "", frequency: param(), Q: param() });
     createBuffer = (_channels: number, length: number) => ({ getChannelData: () => new Float32Array(length) });
     createBufferSource = () => {
@@ -78,10 +83,10 @@ function fakeAudio() {
     decodeAudioData = () => Promise.resolve(track);
   }
   const musicSources = () => sources.filter((source) => source.buffer === track);
-  return { FakeAudioContext, musicSources, gains, contexts };
+  return { FakeAudioContext, musicSources, oscillators, gains, contexts };
 }
 
-describe("SoundPlayer music", () => {
+describe("SoundPlayer", () => {
   let audio: ReturnType<typeof fakeAudio>;
   let tap: () => void;
   let becomeVisible: () => void;
@@ -180,6 +185,16 @@ describe("SoundPlayer music", () => {
       timeUp: true,
       reveal: true,
       fanfare: true,
+      caughtThem: true,
+      fooled: true,
+      slippedThrough: true,
+      busted: true,
+      guessedIt: true,
+      nailedIt: true,
+      nope: true,
+      coin: true,
+      win: true,
+      goodGame: true,
       suspect: true,
       pick: true,
       vote: true,
@@ -316,5 +331,53 @@ describe("SoundPlayer music", () => {
     await vi.advanceTimersByTimeAsync(10);
     expect(fetchMusic).toHaveBeenCalledTimes(2);
     expect(audio.musicSources()).toHaveLength(1);
+  });
+
+  /** When each note starts and ends, from the oscillators made since `from`. */
+  const notesFrom = (from: number, to = audio.oscillators.length) =>
+    audio.oscillators.slice(from, to).map((oscillator) => ({
+      start: oscillator.start.mock.lastCall?.[0] as number,
+      end: (oscillator.stop.mock.lastCall?.[0] as number) - 0.02,
+    }));
+
+  it("plays a moment's cues one after the other, never on top of each other", async () => {
+    const player = await load();
+    tap();
+    player.playInTurn(["coin", "coin"]);
+    const notes = notesFrom(0);
+    const first = notes.slice(0, notes.length / 2);
+    const second = notes.slice(notes.length / 2);
+    expect(notes.length).toBeGreaterThan(0);
+    expect(Math.min(...second.map((note) => note.start))).toBeGreaterThan(Math.max(...first.map((note) => note.end)));
+  });
+
+  it("waits for cues still playing from the moment before", async () => {
+    const player = await load();
+    tap();
+    player.playInTurn(["reveal", "caughtThem"]);
+    const before = audio.oscillators.length;
+    player.playInTurn(["nope"]);
+    const earlier = notesFrom(0, before);
+    expect(Math.min(...notesFrom(before).map((note) => note.start))).toBeGreaterThan(
+      Math.max(...earlier.map((note) => note.end)),
+    );
+  });
+
+  it("silences cues still queued when muted", async () => {
+    const player = await load();
+    tap();
+    player.playInTurn(["nope", "coin", "win"]);
+    const effects = audio.gains.filter((gain) => gain.value > 0);
+    expect(effects.length).toBeGreaterThan(0);
+    player.setMuted(true);
+    expect(effects.map((gain) => gain.value)).toEqual(effects.map(() => 0));
+  });
+
+  it("stays silent while muted", async () => {
+    const player = await load();
+    tap();
+    player.setMuted(true);
+    player.playInTurn(["nope", "coin", "win"]);
+    expect(audio.oscillators).toHaveLength(0);
   });
 });

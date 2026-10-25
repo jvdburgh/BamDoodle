@@ -61,6 +61,16 @@ control with its own sound (suspect, vote) says so with `data-sound="own"`. Cues
 of the vote, a falling chime when time's up, and small sounds for picking a colour, finishing a stroke and voting.
 Quiet by default, silent until the first tap (browsers require it), and a mute toggle remembered per device.
 
+**Feedback cues** tell each player how the round went for them (`SoundCuesUtils.between`). Right after the reveal's
+drumroll: a bouncy "caught them" when your vote was on the bamboozler, a gentle falling sigh when it wasn't (or you
+didn't vote); as the bamboozler, a sly tiptoe and wink when fewer than half the artists caught you, a low buzz when
+they did. When the round ends, everyone hears the bamboozler's guess: a bright chord when it's right (a quick
+victory run for the bamboozler themselves), a short "nope" when it's wrong. Then a coin if you scored, once per round
+however many points. After the last round, a win sting if you're on top (a tie counts) and a friendly "good game"
+otherwise. A host screen, and someone who wasn't in the round, hears only what's public: the reveal, the guess and,
+at the end, the fanfare. Cues of one moment play one after the other, never on top of each other or of cues still
+playing (`SoundPlayer.playInTurn`), and muting silences those still waiting too.
+
 **Music:** one quirky detective loop (Pixabay, re-encoded to 96 kbps AAC in `web/public/sounds/`). It is under the
 Pixabay Content License, not the AGPL; `web/public/sounds/NOTICE` says so, for forks. It loops the track's audible span
 seamlessly (the silence before and the quiet tail after are left out) and keeps playing for as long as the room is

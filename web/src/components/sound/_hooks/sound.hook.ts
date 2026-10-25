@@ -7,11 +7,14 @@ export function useSoundMuted() {
   return useSyncExternalStore(SoundPlayer.subscribe, SoundPlayer.isMuted, () => false);
 }
 
-/** Plays the room's cues (turns, ticks, time's up) as the moment changes. Mount once per room, not per view. */
+/**
+ * Plays the room's cues (turns, ticks, time's up, how the round went for you) as the moment changes, one after the
+ * other. Mount once per room, not per view.
+ */
 export function useSoundCues(moment: SoundMoment) {
   const previous = useRef(moment);
   useEffect(() => {
-    for (const cue of SoundCuesUtils.between(previous.current, moment)) SoundPlayer.play(cue);
+    SoundPlayer.playInTurn(SoundCuesUtils.between(previous.current, moment));
     previous.current = moment;
   });
 }
