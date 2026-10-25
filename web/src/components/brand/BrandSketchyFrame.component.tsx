@@ -3,8 +3,10 @@ type BrandSketchyFrameProps = {
   bold?: boolean;
   /** The hat's colours, travelling slowly round: for the start page's main buttons. Ignores `text-*`. */
   rainbow?: boolean;
-  /** Shown only while the surrounding `group`'s input is checked, drawn in as it gets checked: a picked choice. */
+  /** Shown only while the surrounding `group`'s input is checked: a picked choice. */
   whenChecked?: boolean;
+  /** With `whenChecked`: traced round in one quick line as it gets checked. Off until someone picks, so not on load. */
+  traceIn?: boolean;
   /** Colour via `text-*` (the border uses `currentColor`); add `rounded-*` to match the parent. */
   className?: string;
 };
@@ -17,6 +19,7 @@ export function BrandSketchyFrame({
   bold = false,
   rainbow = false,
   whenChecked = false,
+  traceIn = false,
   className = "",
 }: BrandSketchyFrameProps) {
   if (rainbow) {
@@ -33,7 +36,7 @@ export function BrandSketchyFrame({
   return (
     <span
       aria-hidden="true"
-      className={`sketchy pointer-events-none absolute rounded-[inherit] border-current ${bold ? "inset-1 border-4" : "-inset-px border-2"} ${whenChecked ? "opacity-0 group-has-checked:opacity-100 motion-safe:group-has-checked:animate-draw-in" : ""} ${className}`}
+      className={`sketchy pointer-events-none absolute rounded-[inherit] border-current ${bold ? "inset-1 border-4" : "-inset-px border-2"} ${whenChecked ? "frame-trace opacity-0 group-has-checked:opacity-100" : ""} ${whenChecked && traceIn ? "motion-safe:group-has-checked:animate-trace" : ""} ${className}`}
     />
   );
 }

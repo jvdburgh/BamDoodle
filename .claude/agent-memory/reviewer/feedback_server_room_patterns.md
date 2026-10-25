@@ -13,6 +13,10 @@ once-only message becomes repeatable (castVote made changeable: every change reb
   length up to MAX_MESSAGE_BYTES are stored and rebroadcast as `settingsChanged` to every connection.
 
 Also check:
+- New connection kind/role (host screen, 2026-10-25): wired into Leave but not every removal path. task.rs
+  deliver() drops a slow conn without the role's detach; a takeover that drops the old conn silently (no
+  `Rejected{Replaced}` like replace_connection_of) makes two same-token tabs reconnect-steal forever; MAX_SCREENS
+  counted before a reclaim.
 - Count limits sized to fit MAX_MESSAGE_BYTES: compute worst case with `node -e JSON.stringify` (avatar was exactly 16384).
 - Derived state frozen in `Phase::Finished(result)` (e.g. `game_over`) while `updateSettings` is allowed in Finished.
 - Paths into a phase change that skip the follow-up check: e.g. `disconnect` -> `next_turn` -> voting.

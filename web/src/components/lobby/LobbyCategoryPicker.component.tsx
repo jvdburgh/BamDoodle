@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { useId, useState } from "react";
 import { BrandScribble } from "@/components/brand/BrandScribble.component";
 import { BrandSketchyFrame } from "@/components/brand/BrandSketchyFrame.component";
 import type { WordCategory } from "@/protocol/generated/WordCategory";
@@ -14,37 +14,46 @@ type LobbyCategoryPickerProps = {
 export function LobbyCategoryPicker({ categories, selected, onChange }: LobbyCategoryPickerProps) {
   const hintId = useId();
   const legendId = useId();
+  const aboutId = useId();
+  const [touched, setTouched] = useState(false);
   const chosen = new Set(selected);
   const family = categories.filter((category) => !category.adult).map((category) => category.name);
+  const pick = (names: string[]) => {
+    setTouched(true);
+    onChange(names);
+  };
   const toggle = (name: string) =>
-    onChange(chosen.has(name) ? selected.filter((other) => other !== name) : [...selected, name]);
+    pick(chosen.has(name) ? selected.filter((other) => other !== name) : [...selected, name]);
 
   return (
-    <fieldset aria-labelledby={legendId} aria-describedby={hintId}>
-      <div className="mb-1.5 flex items-baseline justify-between gap-3">
-        <legend id={legendId} className="text-sm text-white/70">
+    <fieldset aria-labelledby={legendId} aria-describedby={`${aboutId} ${hintId}`}>
+      <div className="flex items-baseline justify-between gap-3">
+        <legend id={legendId} className="font-display text-xl">
           Categories{" "}
-          <span className="text-white">
+          <span className="font-body text-base text-white/60">
             ({selected.length} of {categories.length} selected)
           </span>
         </legend>
         <span className="flex gap-3 text-sm">
           <button
             type="button"
-            onClick={() => onChange([...new Set([...selected, ...family])])}
+            onClick={() => pick([...new Set([...selected, ...family])])}
             className="text-sun underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
             Select all
           </button>
           <button
             type="button"
-            onClick={() => onChange([])}
+            onClick={() => pick([])}
             className="text-white/70 underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
             Clear
           </button>
         </span>
       </div>
+      <p id={aboutId} className="mb-3 text-sm text-white/70">
+        Where the secret word comes from. 18+ ones only play when you pick them.
+      </p>
       {/* On a laptop the list scrolls in place, so the setup fits one screen whatever the number of categories. */}
       <div className="relative -m-1 flex flex-wrap gap-1.5 p-1 md:max-h-[max(8rem,min(19rem,calc(100svh-26rem)))] md:overflow-y-auto">
         {categories.map((category) => (
@@ -52,7 +61,7 @@ export function LobbyCategoryPicker({ categories, selected, onChange }: LobbyCat
             key={category.name}
             className="group relative flex min-h-9 cursor-pointer items-center gap-1.5 rounded-full bg-night-deep py-1 pr-3 pl-2 text-sm text-white/70 hover:text-white has-checked:text-white has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-white"
           >
-            <BrandSketchyFrame whenChecked className="text-sun" />
+            <BrandSketchyFrame whenChecked traceIn={touched} className="text-sun" />
             <input
               type="checkbox"
               checked={chosen.has(category.name)}

@@ -65,3 +65,7 @@ export const Plus: Story = {
 export const Screen: Story = {
   args: { shape: "screen", className: "size-16 text-white" },
 };
+
+export const Star: Story = {
+  args: { shape: "star", className: "size-16 text-sun" },
+};

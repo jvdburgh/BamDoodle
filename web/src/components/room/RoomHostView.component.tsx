@@ -66,6 +66,8 @@ export function RoomHostView({ state, revealCode = false, home = "/", controls }
   const spotlit = players.find((player) => player.id === spotlight.shown);
   const bamboozler = players.find((player) => player.id === view.bamboozlerId);
   const waiting = RoomViewUtils.waitingForPlayers(players);
+  /** What the server just turned down, for the host screen (say, a player left right before Start round). */
+  const problem = controls && view.problem ? RoomViewUtils.problem(view.problem) : null;
   const stillDrawing = RoomViewUtils.stillOnTheirFace(players.filter((player) => player.connected));
 
   const playerList = (
@@ -160,8 +162,20 @@ export function RoomHostView({ state, revealCode = false, home = "/", controls }
                     </button>
                   </div>
                   <p className="text-center text-xl text-white/80">
-                    {waiting ?? (stillDrawing && `✏️ ${stillDrawing}`) ?? "Everyone’s in? Start when you’re ready."}
+                    {waiting ??
+                      (stillDrawing && (
+                        <>
+                          <span aria-hidden="true">✏️ </span>
+                          {stillDrawing}
+                        </>
+                      )) ??
+                      "Everyone’s in? Start when you’re ready."}
                   </p>
+                  {problem && (
+                    <p role="alert" className="text-center text-lg text-berry">
+                      {problem}
+                    </p>
+                  )}
                 </div>
               ) : (
                 <p className="text-center text-xl text-white/80">
@@ -267,6 +281,18 @@ export function RoomHostView({ state, revealCode = false, home = "/", controls }
                     onNext={result.gameOver ? () => setPodiumFor(resultKey) : controls?.onStart}
                     big
                   />
+                  {controls && (
+                    <div className="mt-3 grid justify-items-center gap-2">
+                      <button type="button" onClick={controls.onSettings} className={BrandStyles.ghostButton}>
+                        Room settings
+                      </button>
+                      {problem && (
+                        <p role="alert" className="text-center text-lg text-berry">
+                          {problem}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>

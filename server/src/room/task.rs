@@ -14,7 +14,7 @@ use tokio::{
 use super::{Audience, HostClaim, Outbox, Room, Viewer};
 use crate::{
     limits,
-    protocol::{ClientMessage, PlayerId, RejectReason, ServerMessage},
+    protocol::{ClientMessage, RejectReason, ServerMessage},
     registry::{Registry, RoomHandle},
     usage,
     words::WordLibrary,
@@ -121,7 +121,7 @@ async fn run(mut room: Room, mut commands: mpsc::Receiver<RoomCommand>, registry
             }) => match room.join(&name, session_token.as_deref(), now.into_std()) {
                 Ok((seat, outbox)) => {
                     let viewer = Viewer::Player(seat.player_id);
-                    replace_connection_of(&mut connections, viewer);
+                    replace_connections(&mut connections, |connection| connection.viewer == viewer);
                     let joined = ServerMessage::Joined {
                         you: Some(seat.player_id),
                         session_token: Some(seat.session_token),
@@ -146,22 +146,23 @@ async fn run(mut room: Room, mut commands: mpsc::Receiver<RoomCommand>, registry
                 }
             },
             Some(RoomCommand::Watch { host, reply }) => {
-                let screens = connections
+                let watchers = connections
                     .values()
-                    .filter(|connection| connection.viewer == Viewer::Screen)
+                    .filter(|connection| connection.viewer == Viewer::Screen && !connection.hosting)
                     .count();
-                if screens >= limits::MAX_SCREENS {
+                let (session_token, outbox) = match host {
+                    Some(claim) => room.attach_host_screen(claim, now.into_std()),
+                    None => (None, Vec::new()),
+                };
+                let hosting = session_token.is_some();
+                // The cap is for watchers: the host screen always gets back in.
+                if !hosting && watchers >= limits::MAX_SCREENS {
                     let _ = reply.send(Err(RejectReason::RoomFull));
-                    Vec::new()
+                    outbox
                 } else {
-                    let (session_token, outbox) = match host {
-                        Some(claim) => room.attach_host_screen(claim, now.into_std()),
-                        None => (None, Vec::new()),
-                    };
-                    let hosting = session_token.is_some();
                     if hosting {
-                        // The host screen is back on a new connection: the old one is no longer the host.
-                        connections.retain(|_, connection| !connection.hosting);
+                        // The host screen on a new connection (a reload, another tab): the old one hears why.
+                        replace_connections(&mut connections, |connection| connection.hosting);
                     }
                     let joined = ServerMessage::Joined {
                         you: None,
@@ -260,10 +261,11 @@ async fn run(mut room: Room, mut commands: mpsc::Receiver<RoomCommand>, registry
     }
 }
 
-/// A newer connection takes over a seat: the old one hears why, then closes (dropping its sender ends it).
-fn replace_connection_of(connections: &mut HashMap<ConnectionId, Connection>, viewer: Viewer) {
+/// A newer connection takes over a seat or the host screen: the old one hears why, then closes (dropping its sender
+/// ends it).
+fn replace_connections(connections: &mut HashMap<ConnectionId, Connection>, replaced: impl Fn(&Connection) -> bool) {
     connections.retain(|_, connection| {
-        if connection.viewer != viewer {
+        if !replaced(connection) {
             return true;
         }
         let _ = connection.sender.try_send(ServerMessage::Rejected {
@@ -279,19 +281,23 @@ fn deliver(connections: &mut HashMap<ConnectionId, Connection>, room: &mut Room,
     let mut pending = outbox;
     while !pending.is_empty() {
         let dropped = dispatch(connections, std::mem::take(&mut pending));
-        for (id, player_id) in dropped {
+        for id in dropped {
             tracing::debug!(connection = id, "dropping a connection that can't keep up");
-            connections.remove(&id);
-            if let Some(player_id) = player_id {
-                pending.extend(room.disconnect(player_id, now.into_std()));
+            match connections.remove(&id) {
+                Some(Connection {
+                    viewer: Viewer::Player(player_id),
+                    ..
+                }) => pending.extend(room.disconnect(player_id, now.into_std())),
+                Some(Connection { hosting: true, .. }) => pending.extend(room.detach_host_screen(now.into_std())),
+                _ => {}
             }
         }
     }
 }
 
 /// Returns connections whose queue is full or closed.
-fn dispatch(connections: &HashMap<ConnectionId, Connection>, outbox: Outbox) -> Vec<(ConnectionId, Option<PlayerId>)> {
-    let mut dropped: Vec<(ConnectionId, Option<PlayerId>)> = Vec::new();
+fn dispatch(connections: &HashMap<ConnectionId, Connection>, outbox: Outbox) -> Vec<ConnectionId> {
+    let mut dropped: Vec<ConnectionId> = Vec::new();
     for (audience, message) in outbox {
         for (id, connection) in connections {
             let wanted = match (audience, connection.viewer) {
@@ -300,15 +306,8 @@ fn dispatch(connections: &HashMap<ConnectionId, Connection>, outbox: Outbox) -> 
                 (Audience::Screens, Viewer::Screen) => true,
                 _ => false,
             };
-            if wanted
-                && !dropped.iter().any(|(dropped_id, _)| dropped_id == id)
-                && connection.sender.try_send(message.clone()).is_err()
-            {
-                let player_id = match connection.viewer {
-                    Viewer::Player(player_id) => Some(player_id),
-                    Viewer::Screen => None,
-                };
-                dropped.push((*id, player_id));
+            if wanted && !dropped.contains(id) && connection.sender.try_send(message.clone()).is_err() {
+                dropped.push(*id);
             }
         }
     }
@@ -472,6 +471,85 @@ mod tests {
             screens.push(watch(&room).await.unwrap());
         }
         assert_eq!(watch(&room).await.unwrap_err(), RejectReason::RoomFull);
+    }
+
+    async fn host_token(outbox: &mut mpsc::Receiver<ServerMessage>) -> String {
+        match outbox.recv().await {
+            Some(ServerMessage::Joined {
+                session_token: Some(token),
+                ..
+            }) => token,
+            other => panic!("not hosting: {other:?}"),
+        }
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn a_host_screen_keeps_its_room_open_while_it_waits_for_players() {
+        let registry = registry();
+        let (_, room) = registry.create().unwrap();
+        let _tv = screen(&room, Some(HostClaim::New)).await.unwrap();
+        tokio::time::sleep(limits::UNUSED_ROOM_GRACE + limits::EMPTY_ROOM_GRACE).await;
+        assert_eq!(registry.room_count(), 1);
+    }
+
+    #[tokio::test]
+    async fn a_second_host_tab_takes_over_and_the_first_hears_why() {
+        let registry = registry();
+        let (_, room) = registry.create().unwrap();
+        let (_, mut first) = screen(&room, Some(HostClaim::New)).await.unwrap();
+        let token = host_token(&mut first).await;
+
+        let (_, mut second) = screen(&room, Some(HostClaim::Resume(token))).await.unwrap();
+        host_token(&mut second).await;
+        let mut seen = Vec::new();
+        while let Some(message) = first.recv().await {
+            seen.push(message);
+        }
+        assert!(seen.contains(&ServerMessage::Rejected {
+            reason: RejectReason::Replaced
+        }));
+    }
+
+    #[tokio::test]
+    async fn the_host_screen_gets_back_in_when_watchers_fill_the_screens() {
+        let registry = registry();
+        let (_, room) = registry.create().unwrap();
+        let (tv, mut tv_outbox) = screen(&room, Some(HostClaim::New)).await.unwrap();
+        let token = host_token(&mut tv_outbox).await;
+        let mut watchers = Vec::new();
+        for _ in 1..limits::MAX_SCREENS {
+            watchers.push(watch(&room).await.unwrap());
+        }
+        room.commands.send(RoomCommand::Leave { connection: tv }).await.unwrap();
+        watchers.push(watch(&room).await.unwrap());
+        assert_eq!(watch(&room).await.unwrap_err(), RejectReason::RoomFull);
+
+        let (_, mut back) = screen(&room, Some(HostClaim::Resume(token))).await.unwrap();
+        host_token(&mut back).await;
+    }
+
+    #[tokio::test]
+    async fn a_host_screen_that_cant_keep_up_hands_over_like_one_that_left() {
+        let now = std::time::Instant::now();
+        let mut room = Room::new("BKTZ".into(), Arc::new(WordLibrary::default()), 1);
+        room.attach_host_screen(HostClaim::New, now);
+        let (slow, _slow_outbox) = mpsc::channel(1);
+        let mut connections = HashMap::from([(
+            1,
+            Connection {
+                viewer: Viewer::Screen,
+                hosting: true,
+                sender: slow,
+            },
+        )]);
+        let outbox = vec![
+            (Audience::Everyone, ServerMessage::Pong),
+            (Audience::Everyone, ServerMessage::Pong),
+        ];
+
+        deliver(&mut connections, &mut room, outbox, Instant::now());
+        assert!(connections.is_empty());
+        assert!(room.host_screen.as_ref().is_some_and(|screen| !screen.connected));
     }
 
     #[tokio::test]

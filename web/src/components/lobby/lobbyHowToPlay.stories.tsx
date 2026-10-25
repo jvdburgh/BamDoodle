@@ -12,15 +12,15 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  play: async ({ canvas }) => {
+  play: async ({ canvas, canvasElement }) => {
     await expect(canvas.getByRole("heading", { name: "How to play", level: 2 })).toBeVisible();
-    const steps = canvas.getAllByRole("listitem").filter((item) => item.querySelector("h3"));
-    await expect(steps.map((step) => step.querySelector("h3")?.textContent)).toEqual([
+    const steps = [...canvasElement.querySelectorAll("ol > li h3")];
+    await expect(steps.map((step) => step.textContent)).toEqual([
       "Draw the secret word together",
       "One of you is bluffing",
       "Vote who’s sketchy",
     ]);
     await expect(canvas.getByRole("heading", { name: "Points" })).toBeVisible();
-    await expect(canvas.getByText("Is it free?")).toBeVisible();
+    await expect(canvas.getByRole("heading", { name: "Free, on any device" })).toBeVisible();
   },
 };

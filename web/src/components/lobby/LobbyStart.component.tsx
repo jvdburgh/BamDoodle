@@ -117,9 +117,9 @@ export function LobbyStart({
         <SoundToggle channel="music" />
         <SoundToggle />
       </div>
-      {/* On a laptop how to play sits beside the buttons, which stay in view while it scrolls. */}
+      {/* On a laptop how to play sits beside the buttons. */}
       <div className="mx-auto grid w-full max-w-6xl flex-1 lg:grid-cols-[minmax(0,28rem)_minmax(0,1fr)] lg:gap-16 lg:px-8">
-        <main className="mx-auto flex min-h-[calc(100svh-4rem)] w-full max-w-md flex-col items-center justify-center gap-8 px-5 pb-10 lg:sticky lg:top-0 lg:self-start">
+        <main className="mx-auto flex min-h-[calc(100svh-4rem)] w-full max-w-md flex-col items-center justify-center gap-8 px-5 pb-10 lg:min-h-0 lg:self-start lg:pt-24">
           <div className="flex flex-col items-center gap-2 text-center">
             <BrandLogo swirlOnHover className="size-28" />
             <h2 className="font-display text-5xl">BamDoodle</h2>
@@ -127,7 +127,7 @@ export function LobbyStart({
           </div>
 
           {step === "choose" ? (
-            <div className="grid w-full gap-3">
+            <div className="grid w-full gap-5">
               <button
                 ref={joinButton}
                 type="button"
@@ -158,10 +158,10 @@ export function LobbyStart({
           ) : (
             <form
               onSubmit={submit}
-              className="relative grid w-full gap-5 rounded-[18px_24px_20px_16px] bg-night-soft/50 p-5"
+              className="relative grid w-full gap-5 rounded-[18px_24px_20px_16px] bg-night-soft/50 p-5 sm:p-6"
             >
               <BrandSketchyFrame className="text-white/25" />
-              <h3 className="font-display text-2xl">{step === "join" ? "Join a room" : "Play or host?"}</h3>
+              <h3 className="text-center font-display text-2xl">{step === "join" ? "Join a room" : "Play or host?"}</h3>
 
               {step === "join" && (
                 <>
@@ -193,32 +193,39 @@ export function LobbyStart({
                 </p>
               )}
 
-              <div className="flex items-center justify-between gap-3">
-                <button type="button" onClick={onBack ?? (() => go("choose"))} className={BrandStyles.ghostButton}>
-                  Back
-                </button>
-                <button type="submit" disabled={!canSubmit} className={BrandStyles.primaryButton}>
-                  {busy ? "Just a sec…" : step === "join" ? "Join" : "Play"}
-                </button>
-              </div>
+              <button type="submit" disabled={!canSubmit} className={`${BrandStyles.primaryButton} w-full`}>
+                {busy ? "Just a sec…" : step === "join" ? "Join" : "Play"}
+              </button>
 
               {step === "create" && (
-                <div className="grid gap-2 border-t-2 border-white/10 pt-5">
+                <div className="grid justify-items-center gap-1 text-center">
+                  <p className="flex w-full items-center gap-3 text-sm text-white/60" aria-hidden="true">
+                    <span className="h-0.5 flex-1 rounded-full bg-white/10" />
+                    or
+                    <span className="h-0.5 flex-1 rounded-full bg-white/10" />
+                  </p>
                   <button
                     type="button"
                     disabled={busy}
                     onClick={() => onEnter({ kind: "host" })}
-                    className={`${BrandStyles.quietButton} group gap-3`}
+                    className={`${BrandStyles.ghostButton} group gap-2 text-white`}
                   >
-                    <BrandScribble shape="screen" className="size-7 text-sun motion-safe:group-hover:animate-wiggle" />
+                    <BrandScribble shape="screen" className="size-6 text-sun motion-safe:group-hover:animate-wiggle" />
                     Host on this screen
                   </button>
-                  <p className="text-center text-sm text-white/70">
-                    For a TV or laptop everyone can see: it shows the code and the drawing and starts the rounds, but
-                    doesn’t play.
+                  <p className="text-sm text-white/70">
+                    For a TV or laptop everyone can see: it runs the game, but doesn’t play.
                   </p>
                 </div>
               )}
+
+              <button
+                type="button"
+                onClick={onBack ?? (() => go("choose"))}
+                className={`${BrandStyles.ghostButton} justify-self-center`}
+              >
+                Back
+              </button>
             </form>
           )}
         </main>

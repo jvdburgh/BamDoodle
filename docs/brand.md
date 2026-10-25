@@ -88,9 +88,14 @@ Modern, a bit mysterious, colourful. It should feel like a hand-made little game
 - The start page's Join and Create buttons wear a sketchy outline in the hat's colours that slowly travels round,
   with doodled icons (a door, a pencil with a plus) that wiggle on hover. The music and sound toggles sit at the top
   right of every screen, the start page included. Under the buttons on a phone and beside them on a laptop, "How to
-  play": three illustrated steps, the points and a few questions, which is also what search engines read (with FAQ structured data in `index.html`).
-- A picked choice in the setup (a mode, a number, a category) keeps the same navy background and gets the hand-drawn
-  frame in sun, drawn in as you pick it; categories also show a doodled ✓ or +.
+  play": the same doodled cards for the three steps, the points and "Free, on any device", which is also what search engines read (with FAQ structured data in `index.html`).
+- The setup has no groups: every setting has its own heading with a line on what it does under it, and a sketch of
+  what's picked beside it. A picked choice (a mode, a number, a category) keeps the same navy background and gets the
+  hand-drawn frame in sun and a doodled ✓; the frame traces round in one quick line when you pick, never on load.
+  Unpicked categories show a +.
+- The name step after the setup and the Join form share one layout: a centered heading, the fields, the main button
+  full width, Back under it. After the setup that main button is Play; "Host on this screen" is the quieter choice
+  under an "or".
 - Small, quick motion makes it feel alive: block buttons tilt and lift on hover and squish when pressed, player cards
   bounce in, "voted" and "suspected by" badges pop, hovering the start page's logo turns its hat's colours one round and back (the logo is inlined from
   `/logo.svg` for that too). Reduced motion turns it off.

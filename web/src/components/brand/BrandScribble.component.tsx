@@ -15,7 +15,8 @@ export type BrandScribbleShape =
   | "pencilPlus"
   | "check"
   | "plus"
-  | "screen";
+  | "screen"
+  | "star";
 
 const speakerBody = [
   [8, 19, 0.5],
@@ -140,6 +141,24 @@ const shapes: Record<BrandScribbleShape, { viewBox: string; paths: (seed: number
       ].map((points) => CanvasUtils.freehandPath(points, 3.4 * weight)),
       CanvasUtils.freehandPath(ScribbleUtils.line(seed + 6, 13, 26, 34, 17, -6), 2.6 * weight),
     ],
+  },
+  star: {
+    viewBox: "0 0 48 48",
+    // Five points in one go, the way you'd doodle a star.
+    paths: (seed, weight) => {
+      const tips = [0, 2, 4, 1, 3, 0].map((index) => {
+        const angle = -Math.PI / 2 + (index * 2 * Math.PI) / 5;
+        return [24 + Math.cos(angle) * 20, 26 + Math.sin(angle) * 20] as const;
+      });
+      return tips
+        .slice(1)
+        .map(([x, y], index) =>
+          CanvasUtils.freehandPath(
+            ScribbleUtils.line(seed + index, tips[index]![0], tips[index]![1], x, y, 0.8),
+            3.4 * weight,
+          ),
+        );
+    },
   },
   check: {
     viewBox: "0 0 48 48",

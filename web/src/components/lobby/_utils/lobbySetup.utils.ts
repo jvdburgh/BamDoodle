@@ -20,4 +20,7 @@ const choices = {
   rounds: [3, 4, 5, 10],
 };
 
-export const LobbySetupUtils = { choices, inLanguage, defaults };
+/** Same as the server: `TIMED_TURNS_PER_PLAYER` in limits.rs. */
+const timedTurnsPerPlayer = 2;
+
+export const LobbySetupUtils = { choices, timedTurnsPerPlayer, inLanguage, defaults };

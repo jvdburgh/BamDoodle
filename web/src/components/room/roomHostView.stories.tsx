@@ -95,6 +95,8 @@ export const HostingTheNextRound: Story = {
   play: async ({ args, canvas, userEvent }) => {
     await userEvent.click(canvas.getByRole("button", { name: "Next round" }));
     await expect(args.onStart).toHaveBeenCalled();
+    await userEvent.click(canvas.getByRole("button", { name: "Room settings" }));
+    await expect(args.onSettings).toHaveBeenCalled();
   },
 };
 

@@ -1,10 +1,13 @@
 import type { BrandScribbleShape } from "@/components/brand/BrandScribble.component";
 
+/** One card of the start page's "How to play": a doodle, a title and a line or a short list. */
+type HowToPlayCard = { icon: BrandScribbleShape | "hat"; title: string; text: string; items?: string[] };
+
 /**
- * The start page's "How to play", in words the rules in docs/game-rules.md agree with. The questions are also in
- * index.html as FAQ structured data for search engines; a test keeps the two the same.
+ * The start page's "How to play", in words the rules in docs/game-rules.md agree with. The same words go to search
+ * engines as FAQ structured data in index.html (`faq`); a test keeps the two the same.
  */
-const steps: { icon: BrandScribbleShape | "hat"; title: string; text: string }[] = [
+const steps: HowToPlayCard[] = [
   {
     icon: "pencil",
     title: "Draw the secret word together",
@@ -22,26 +25,28 @@ const steps: { icon: BrandScribbleShape | "hat"; title: string; text: string }[]
   },
 ];
 
-const points = [
-  "+1 for every player who votes for the bamboozler",
-  "+1 for the bamboozler when fewer than half of the others catch them",
-  "+1 for the bamboozler who guesses the word",
+const points: HowToPlayCard = {
+  icon: "star",
+  title: "Points",
+  items: [
+    "+1 for every player who votes for the bamboozler",
+    "+1 for the bamboozler when fewer than half of the others catch them",
+    "+1 for the bamboozler who guesses the word",
+  ],
+  text: "Every round has a new word and a new bamboozler. Most points after the last round wins.",
+};
+
+const anyDevice: HowToPlayCard = {
+  icon: "screen",
+  title: "Free, on any device",
+  text: "Play in the browser on a phone, tablet or laptop, with 3 to 8 players and English or Dutch words. No app, no accounts, no ads.",
+};
+
+/** The same answers as questions, for search engines. */
+const faq = (): { question: string; answer: string }[] => [
+  { question: "How do you play BamDoodle?", answer: steps.map((step) => `${step.title}: ${step.text}`).join(" ") },
+  { question: "How do points work?", answer: `${(points.items ?? []).join(". ")}. ${points.text}` },
+  { question: "What do I need to play?", answer: anyDevice.text },
 ];
 
-const questions: { question: string; answer: string }[] = [
-  {
-    question: "What do I need to play?",
-    answer:
-      "3 to 8 players, each with a phone. No app and no accounts: create a room and share its link or four-letter code. A TV or laptop can show the drawing big as a host screen.",
-  },
-  {
-    question: "Is it free?",
-    answer: "Yes, with no ads, no accounts and no cookies. BamDoodle is open source and hosted in the European Union.",
-  },
-  {
-    question: "Which languages can I play in?",
-    answer: "English and Dutch, with everyday categories and optional 18+ ones.",
-  },
-];
-
-export const HowToPlayUtils = { steps, points, questions };
+export const HowToPlayUtils = { steps, more: [points, anyDevice], faq };

@@ -16,7 +16,7 @@ import type { RoomConnection } from "@/protocol/roomConnection";
 export function WatchRoute({ code }: { code: string }) {
   const { connection, state } = useRoomConnection({ kind: "watch", code });
 
-  const failed = state?.status === "failed" || state?.status === "closed";
+  const failed = state?.status === "failed" || state?.status === "closed" || state?.status === "replaced";
   if (!failed && connection && RoomViewUtils.inRoom(state)) return <HostRoom state={state} connection={connection} />;
 
   return (
@@ -24,9 +24,11 @@ export function WatchRoute({ code }: { code: string }) {
       <BrandLogo href="/" className="size-20" />
       <p className="font-display text-2xl" role={failed ? "alert" : "status"}>
         {failed
-          ? state?.failure
-            ? RoomViewUtils.problem(state.failure)
-            : "Couldn’t reach the game. Check the connection and reload."
+          ? state?.status === "replaced"
+            ? RoomViewUtils.problem("replaced")
+            : state?.failure
+              ? RoomViewUtils.problem(state.failure)
+              : "Couldn’t reach the game. Check the connection and reload."
           : `Opening room ${code}…`}
       </p>
     </main>

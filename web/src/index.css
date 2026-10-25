@@ -37,6 +37,18 @@
   --animate-confetti: confetti 2800ms ease-in both;
   /* The fedora lands on a head: the one you suspect, yourself as the bamboozler, the reveal. */
   --animate-hat-drop: hat-drop 650ms cubic-bezier(0.3, 0.9, 0.35, 1.25) both;
+  /* A picked setup choice: its frame traced round in one quick line (BrandSketchyFrame traceIn). */
+  --animate-trace: trace 280ms ease-out both;
+
+  @keyframes trace {
+    from {
+      --trace: 0deg;
+    }
+    to {
+      --trace: 360deg;
+    }
+  }
+
   /* A doodled icon shakes itself awake when its button is hovered (the start page). */
   --animate-wiggle: wiggle 500ms ease-in-out both;
 
@@ -180,6 +192,11 @@
     filter: url(#sketchy);
   }
 
+  /* Shows as much of a frame as --trace has drawn of it, clockwise from the top. */
+  .frame-trace {
+    mask: conic-gradient(black var(--trace, 360deg), transparent 0);
+  }
+
   /* The hat's colours as an outline (BrandSketchyFrame rainbow), slowly travelling round. Only the ring is shown. */
   .frame-rainbow {
     background: conic-gradient(
@@ -267,4 +284,10 @@
   to {
     --frame-turn: 360deg;
   }
+}
+
+@property --trace {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 360deg;
 }

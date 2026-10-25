@@ -1,6 +1,7 @@
-import { useEffect, useId, useRef, type FormEvent, type ReactNode, type Ref } from "react";
+import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode, type Ref } from "react";
 import { BrandFooter } from "@/components/brand/BrandFooter.component";
 import { BrandLogo } from "@/components/brand/BrandLogo.component";
+import { BrandScribble } from "@/components/brand/BrandScribble.component";
 import { BrandSketchyFrame } from "@/components/brand/BrandSketchyFrame.component";
 import { BrandStyles } from "@/components/brand/_utils/brandStyles.utils";
 import { LobbyCategoryPicker } from "@/components/lobby/LobbyCategoryPicker.component";
@@ -46,9 +47,6 @@ export function LobbySetup({
   home = "/",
 }: LobbySetupProps) {
   const first = useRef<HTMLInputElement>(null);
-  const wordsHeading = useId();
-  const roundHeading = useId();
-  const gameHeading = useId();
   const change = (patch: Partial<RoomSettings>) => onChange({ ...settings, ...patch });
   const ready = settings.categories.length > 0;
 
@@ -84,75 +82,59 @@ export function LobbySetup({
           >
             <BrandSketchyFrame className="text-white/25" />
             <h2 className="font-display text-2xl md:col-span-2">Set up your room</h2>
-            <div className="grid content-start gap-6">
-              <section aria-labelledby={roundHeading} className="grid content-start gap-5">
-                <h3 id={roundHeading} className="font-display text-xl">
-                  Each round
-                </h3>
-                <LobbyChoice
-                  legend="Turns"
-                  name="lobby-mode"
-                  options={turnOptions}
-                  value={settings.mode}
-                  onChange={(mode) => change({ mode })}
-                  firstRef={first}
-                />
-                {settings.mode === "oneStroke" ? (
-                  <LobbyPills
-                    legend="Each player draws"
-                    sketch={{ kind: "turns", count: settings.turnsPerPlayer }}
-                    name="lobby-turns"
-                    options={LobbySetupUtils.choices.turnsPerPlayer.map((turns) => ({
-                      value: turns,
-                      label: turns === 1 ? "once" : `${turns} times`,
-                    }))}
-                    value={settings.turnsPerPlayer}
-                    onChange={(turnsPerPlayer) => change({ turnsPerPlayer })}
-                  />
-                ) : (
-                  <LobbyPills
-                    legend="Seconds per turn"
-                    sketch={{ kind: "seconds", seconds: settings.turnSeconds }}
-                    name="lobby-seconds"
-                    options={LobbySetupUtils.choices.turnSeconds.map((seconds) => ({
-                      value: seconds,
-                      label: `${seconds} s`,
-                    }))}
-                    value={settings.turnSeconds}
-                    onChange={(turnSeconds) => change({ turnSeconds })}
-                  />
-                )}
-              </section>
-              <section
-                aria-labelledby={gameHeading}
-                className="grid content-start gap-5 border-t-2 border-white/10 pt-6"
-              >
-                <h3 id={gameHeading} className="font-display text-xl">
-                  The game
-                </h3>
+            <div className="grid content-start gap-7">
+              <LobbyChoice
+                legend="Turns"
+                hint="Everyone takes turns adding to the same drawing."
+                name="lobby-mode"
+                options={turnOptions}
+                value={settings.mode}
+                onChange={(mode) => change({ mode })}
+                firstRef={first}
+              />
+              {settings.mode === "oneStroke" ? (
                 <LobbyPills
-                  legend="Rounds per game"
-                  sketch={{ kind: "rounds", count: settings.rounds }}
-                  name="lobby-rounds"
-                  options={LobbySetupUtils.choices.rounds.map((rounds) => ({ value: rounds, label: String(rounds) }))}
-                  value={settings.rounds}
-                  onChange={(rounds) => change({ rounds })}
+                  legend="Lines per player"
+                  hint="How many times everyone draws in a round."
+                  sketch={{ kind: "turns", count: settings.turnsPerPlayer }}
+                  name="lobby-turns"
+                  options={LobbySetupUtils.choices.turnsPerPlayer.map((turns) => ({
+                    value: turns,
+                    label: turns === 1 ? "once" : `${turns} times`,
+                  }))}
+                  value={settings.turnsPerPlayer}
+                  onChange={(turnsPerPlayer) => change({ turnsPerPlayer })}
                 />
-              </section>
+              ) : (
+                <LobbyPills
+                  legend="Time per turn"
+                  hint={`Everyone gets ${LobbySetupUtils.timedTurnsPerPlayer} turns in a round.`}
+                  sketch={{ kind: "seconds", seconds: settings.turnSeconds }}
+                  name="lobby-seconds"
+                  options={LobbySetupUtils.choices.turnSeconds.map((seconds) => ({
+                    value: seconds,
+                    label: `${seconds} s`,
+                  }))}
+                  value={settings.turnSeconds}
+                  onChange={(turnSeconds) => change({ turnSeconds })}
+                />
+              )}
+              <LobbyPills
+                legend="Rounds"
+                hint="Every round has a new secret word and a new bamboozler."
+                sketch={{ kind: "rounds", count: settings.rounds }}
+                name="lobby-rounds"
+                options={LobbySetupUtils.choices.rounds.map((rounds) => ({ value: rounds, label: String(rounds) }))}
+                value={settings.rounds}
+                onChange={(rounds) => change({ rounds })}
+              />
             </div>
 
-            <section
-              aria-labelledby={wordsHeading}
-              className="grid content-start gap-5 border-t-2 border-white/10 pt-6 md:border-t-0 md:border-l-2 md:pt-0 md:pl-10"
-            >
-              <div className="flex items-center justify-between gap-3">
-                <h3 id={wordsHeading} className="font-display text-xl">
-                  Words
-                </h3>
-                <LobbySetupSketch sketch={{ kind: "words" }} className="h-9 w-12 shrink-0" />
-              </div>
+            <div className="grid content-start gap-7 border-t-2 border-white/10 pt-6 md:border-t-0 md:border-l-2 md:pt-0 md:pl-10">
               <LobbyPills<Language>
                 legend="Language"
+                hint="Of the secret words."
+                sketch={{ kind: "words" }}
                 name="lobby-language"
                 options={[
                   { value: "en", label: "English" },
@@ -168,7 +150,7 @@ export function LobbySetup({
                 selected={settings.categories}
                 onChange={(categories) => change({ categories })}
               />
-            </section>
+            </div>
 
             <div className="sticky bottom-[calc(0.75rem_+_var(--browser-bar))] z-10 flex items-center justify-end gap-3 md:col-span-2 md:bottom-3">
               {onBack && (
@@ -192,20 +174,26 @@ export function LobbySetup({
   );
 }
 
-/** A labelled group of choices, with an optional sketch beside its label. */
+/** A setting: its name as a heading, a line on what it does, and a sketch of what's picked beside them. */
 function LobbyField({
   legend,
+  hint,
   sketch,
   children,
 }: {
   legend: string;
+  hint: string;
   sketch?: LobbySetupSketchKind;
   children: ReactNode;
 }) {
+  const hintId = useId();
   return (
-    <fieldset className="relative">
-      <legend className="mb-2 text-sm text-white/70">{legend}</legend>
-      {sketch && <LobbySetupSketch sketch={sketch} className="absolute -top-2 right-0 h-8 w-11" />}
+    <fieldset aria-describedby={hintId} className="relative">
+      <legend className="pr-14 font-display text-xl">{legend}</legend>
+      <p id={hintId} className="mb-3 pr-14 text-sm text-white/70">
+        {hint}
+      </p>
+      {sketch && <LobbySetupSketch sketch={sketch} className="absolute top-0 right-0 h-9 w-12" />}
       {children}
     </fieldset>
   );
@@ -213,6 +201,7 @@ function LobbyField({
 
 function LobbyChoice<T extends string | number>({
   legend,
+  hint,
   name,
   options,
   value,
@@ -220,6 +209,7 @@ function LobbyChoice<T extends string | number>({
   firstRef,
 }: {
   legend: string;
+  hint: string;
   name: string;
   options: Option<T>[];
   value: T;
@@ -227,28 +217,35 @@ function LobbyChoice<T extends string | number>({
   firstRef?: Ref<HTMLInputElement>;
 }) {
   const detailId = useId();
+  const [touched, setTouched] = useState(false);
   return (
-    <LobbyField legend={legend}>
+    <LobbyField legend={legend} hint={hint}>
       <div className="grid gap-2 sm:grid-cols-2">
         {options.map((option) => (
           <label
             key={option.value}
             className="group relative cursor-pointer rounded-[12px_16px_14px_10px] bg-night-deep p-3 has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-white"
           >
-            <BrandSketchyFrame whenChecked className="text-sun" />
+            <BrandSketchyFrame whenChecked traceIn={touched} className="text-sun" />
             <input
               ref={value === option.value ? firstRef : undefined}
               type="radio"
               name={name}
               value={option.value}
               checked={value === option.value}
-              onChange={() => onChange(option.value)}
+              onChange={() => {
+                setTouched(true);
+                onChange(option.value);
+              }}
               aria-label={option.title}
               aria-describedby={`${detailId}-${option.value}`}
               className="sr-only"
             />
             <LobbySetupSketch sketch={option.sketch} className="absolute top-2 right-2 h-7 w-10" />
-            <span className="block pr-10 font-display text-lg leading-tight">{option.title}</span>
+            <span className="flex items-center gap-1.5 pr-10 font-display text-lg leading-tight">
+              <LobbyPickedCheck />
+              {option.title}
+            </span>
             <span id={`${detailId}-${option.value}`} className="mt-0.5 block text-sm text-white/70">
               {option.detail}
             </span>
@@ -261,6 +258,7 @@ function LobbyChoice<T extends string | number>({
 
 function LobbyPills<T extends string | number>({
   legend,
+  hint,
   sketch,
   name,
   options,
@@ -268,34 +266,45 @@ function LobbyPills<T extends string | number>({
   onChange,
 }: {
   legend: string;
+  hint: string;
   sketch?: LobbySetupSketchKind;
   name: string;
   options: { value: T; label: string }[];
   value: T;
   onChange: (value: T) => void;
 }) {
+  const [touched, setTouched] = useState(false);
   return (
-    <LobbyField legend={legend} sketch={sketch}>
+    <LobbyField legend={legend} hint={hint} sketch={sketch}>
       <div className="flex flex-wrap gap-2">
         {options.map((option) => (
           <label
             key={option.value}
-            className="group relative grid min-h-11 min-w-11 cursor-pointer place-items-center rounded-full bg-night-deep px-4 font-display text-lg has-checked:text-sun has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-white"
+            className="group relative flex min-h-11 min-w-11 cursor-pointer items-center justify-center gap-1.5 rounded-full bg-night-deep px-4 font-display text-lg has-checked:text-sun has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-white"
           >
-            <BrandSketchyFrame whenChecked className="text-sun" />
+            <BrandSketchyFrame whenChecked traceIn={touched} className="text-sun" />
             <input
               type="radio"
               name={name}
               value={option.value}
               checked={value === option.value}
-              onChange={() => onChange(option.value)}
+              onChange={() => {
+                setTouched(true);
+                onChange(option.value);
+              }}
               aria-label={option.label}
               className="sr-only"
             />
+            <LobbyPickedCheck />
             {option.label}
           </label>
         ))}
       </div>
     </LobbyField>
   );
+}
+
+/** The doodled ✓ on a picked choice. */
+function LobbyPickedCheck() {
+  return <BrandScribble shape="check" className="hidden size-4 shrink-0 text-sun group-has-checked:inline-block" />;
 }
