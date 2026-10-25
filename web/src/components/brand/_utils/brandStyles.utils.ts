@@ -1,10 +1,11 @@
 /**
  * Shared button and panel looks: the lobby, the phone view and the host screen. Disabled (`disabled`, or
- * `aria-disabled` for a button that keeps its focus), every button is the same quiet navy one with a dashed sun
- * outline and its label: clearly not ready, never a faded (muddy) sun. Focused, the white focus outline wins.
+ * `aria-disabled` for a button that keeps its focus), every button is the same quiet navy one with a faint dashed
+ * outline and its label: clearly not ready, never a faded (muddy) sun nor a sun accent. Focused, the white focus
+ * outline wins.
  */
 const button =
-  "inline-flex items-center justify-center rounded-[12px_16px_14px_10px] py-3 font-display leading-none transition-transform focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-white active:translate-y-0.5 disabled:cursor-not-allowed disabled:text-white/60 disabled:shadow-none disabled:outline-2 disabled:-outline-offset-2 disabled:outline-sun/60 disabled:outline-dashed aria-disabled:cursor-not-allowed aria-disabled:text-white/60 aria-disabled:shadow-none aria-disabled:not-focus-visible:outline-2 aria-disabled:not-focus-visible:-outline-offset-2 aria-disabled:not-focus-visible:outline-sun/60 aria-disabled:not-focus-visible:outline-dashed";
+  "inline-flex items-center justify-center rounded-[12px_16px_14px_10px] py-3 font-display leading-none transition-transform focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-white active:translate-y-0.5 disabled:cursor-not-allowed disabled:text-white/60 disabled:shadow-none disabled:outline-2 disabled:-outline-offset-2 disabled:outline-white/30 disabled:outline-dashed aria-disabled:cursor-not-allowed aria-disabled:text-white/60 aria-disabled:shadow-none aria-disabled:not-focus-visible:outline-2 aria-disabled:not-focus-visible:-outline-offset-2 aria-disabled:not-focus-visible:outline-white/30 aria-disabled:not-focus-visible:outline-dashed";
 
 /** The block buttons (the main actions): bigger type, a tilt and lift on hover, a squish when pressed. */
 const block =

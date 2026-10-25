@@ -106,8 +106,11 @@ Modern, a bit mysterious, colourful. It should feel like a hand-made little game
   "Free, on any device", a column on a phone and a grid on a laptop, which is also what search engines read (with FAQ structured data in `index.html`).
   A phone on its side puts the logo and tagline on the left and the buttons on the right, so both fit the first
   screen.
-- Disabled buttons are all one look (`BrandStyles`): a quiet navy button with a dashed sun outline and the same label,
-  never a faded sun one (that reads as muddy brown on navy).
+- Disabled buttons are all one look (`BrandStyles`): a quiet navy button with a faint, neutral dashed outline (white
+  at 30%) and the same label, never a faded sun one (that reads as muddy brown on navy) and never a sun outline (that
+  reads as an accent, not as "not yet").
+- Buttons and choices (category chips, number pills, colour swatches) never select their text when tapped or dragged
+  (a base style in `index.css`).
 - The setup has no boxes: every setting has its own heading (the unit in it, numbers on the choices) with a line on
   what it does under it, and a sketch of what's picked beside it. A picked mode or number keeps the same navy
   background and gets the hand-drawn frame in sun and a doodled ✓; a picked category a lighter sun frame and the ✓.

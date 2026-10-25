@@ -21,6 +21,8 @@ export const JoinFirst: Story = {
       "Join a room",
       "Create a room",
     ]);
+    // A tap or a drag on a button never selects its label.
+    for (const button of buttons) await expect(getComputedStyle(button).userSelect).toBe("none");
     await expect(canvas.getByRole("heading", { name: "How to play" })).toBeInTheDocument();
   },
 };
@@ -38,7 +40,7 @@ export const GettingTheRoomReady: Story = {
   play: async ({ canvas }) => {
     const button = canvas.getByRole("button", { name: "Just a sec…" });
     await expect(button).toBeDisabled();
-    // Disabled reads as a quiet navy button with a dashed sun outline, not a faded (muddy) sun one.
+    // Disabled reads as a quiet navy button with a faint dashed outline, not a faded (muddy) sun one.
     const style = getComputedStyle(button);
     await expect(style.opacity).toBe("1");
     await expect(style.outlineStyle).toBe("dashed");

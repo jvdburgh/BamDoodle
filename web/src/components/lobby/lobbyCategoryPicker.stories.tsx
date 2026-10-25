@@ -47,6 +47,9 @@ export const PickAndClear: Story = {
       );
     await expect(frameOpacity("Dieren")).toBe(1);
     await expect(frameOpacity("Efteling")).toBe(0);
+    // A tap or a drag on a chip never selects its name.
+    const chip = canvas.getByRole("checkbox", { name: "Efteling" }).closest("label")!;
+    await expect(getComputedStyle(chip).userSelect).toBe("none");
     await expect(canvas.getByRole("checkbox", { name: "Na middernacht (18+)" })).not.toBeChecked();
 
     await userEvent.click(canvas.getByText("Efteling"));
