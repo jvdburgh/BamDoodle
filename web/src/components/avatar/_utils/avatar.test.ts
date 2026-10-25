@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { AvatarHistory, AvatarStroke } from "@/components/avatar/_types/avatar.types";
+import type { AvatarStroke } from "@/components/avatar/_types/avatar.types";
 import { AvatarUtils } from "@/components/avatar/_utils/avatar.utils";
 import type { StrokePoint } from "@/components/canvas/_types/stroke.types";
 
@@ -72,41 +72,25 @@ describe("AvatarUtils.face", () => {
 describe("AvatarUtils.edit", () => {
   const face = AvatarUtils.face(1);
   const line: AvatarStroke = { color: "#f13866", size: 0.04, hasPressure: false, points: [[0.2, 0.2, 0.5]] };
-  const start: AvatarHistory = { past: [], present: face };
 
   it("adds a drawn stroke on top", () => {
-    expect(AvatarUtils.edit(start, { kind: "draw", stroke: line })).toEqual({ past: [face], present: [...face, line] });
+    expect(AvatarUtils.edit(face, { kind: "draw", stroke: line })).toEqual([...face, line]);
   });
 
-  it("undoes back to the previous avatar, one step at a time", () => {
-    const drawn = AvatarUtils.edit(start, { kind: "draw", stroke: line });
-    const twice = AvatarUtils.edit(drawn, { kind: "draw", stroke: line });
-    expect(AvatarUtils.edit(twice, { kind: "undo" })).toEqual(drawn);
-    expect(AvatarUtils.edit(AvatarUtils.edit(twice, { kind: "undo" }), { kind: "undo" })).toEqual(start);
-  });
-
-  it("can undo a clear and a shuffle", () => {
-    const cleared = AvatarUtils.edit(start, { kind: "clear" });
-    expect(cleared.present).toEqual([]);
-    expect(AvatarUtils.edit(cleared, { kind: "undo" })).toEqual(start);
-
-    const shuffled = AvatarUtils.edit(start, { kind: "shuffle", seed: 9 });
-    expect(shuffled.present).toEqual(AvatarUtils.face(9));
-    expect(AvatarUtils.edit(shuffled, { kind: "undo" })).toEqual(start);
+  it("clears, and randomizes to a doodle face", () => {
+    expect(AvatarUtils.edit(face, { kind: "clear" })).toEqual([]);
+    expect(AvatarUtils.edit([], { kind: "randomize", seed: 9 })).toEqual(AvatarUtils.face(9));
   });
 
   it("refuses a stroke past the limits", () => {
     const points = Array.from({ length: AvatarUtils.limits.points }, (): StrokePoint => [0.5, 0.5, 0.5]);
-    const long: AvatarStroke = { ...line, points };
-    expect(AvatarUtils.edit(start, { kind: "draw", stroke: long })).toBe(start);
-
-    const many: AvatarHistory = { past: [], present: Array.from({ length: AvatarUtils.limits.strokes }, () => line) };
+    expect(AvatarUtils.edit(face, { kind: "draw", stroke: { ...line, points } })).toBe(face);
+    const many = Array.from({ length: AvatarUtils.limits.strokes }, () => line);
     expect(AvatarUtils.edit(many, { kind: "draw", stroke: line })).toBe(many);
   });
 
-  it("does nothing when there is nothing to undo or clear", () => {
-    expect(AvatarUtils.edit(start, { kind: "undo" })).toBe(start);
-    const empty: AvatarHistory = { past: [face], present: [] };
+  it("does nothing when there is nothing to clear", () => {
+    const empty: AvatarStroke[] = [];
     expect(AvatarUtils.edit(empty, { kind: "clear" })).toBe(empty);
   });
 });

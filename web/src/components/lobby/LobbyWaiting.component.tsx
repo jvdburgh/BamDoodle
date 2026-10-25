@@ -4,6 +4,7 @@ import type { AvatarStroke } from "@/components/avatar/_types/avatar.types";
 import { BrandLogo } from "@/components/brand/BrandLogo.component";
 import { BrandSketchyFrame } from "@/components/brand/BrandSketchyFrame.component";
 import { BrandStyles } from "@/components/brand/_utils/brandStyles.utils";
+import { SoundToggle } from "@/components/sound/SoundToggle.component";
 
 type LobbyWaitingProps = {
   name: string;
@@ -27,11 +28,15 @@ export function LobbyWaiting({ name, roomCode, avatar, onAvatarChange, onStart, 
     <main className="mx-auto flex min-h-svh max-w-md flex-col gap-5 px-4 py-4 pb-16 md:py-8">
       <header className="flex items-center justify-between gap-3">
         <BrandLogo named href={home} className="size-10" />
-        <p className="rounded-full bg-night-soft px-3 py-1 text-sm text-white/80">
-          <span className="sr-only">Room code </span>
-          <span aria-hidden="true">Room </span>
-          <span className="font-display tracking-widest">{roomCode}</span>
-        </p>
+        <div className="flex items-center gap-1.5">
+          <p className="rounded-full bg-night-soft px-3 py-1 text-sm text-white/80">
+            <span className="sr-only">Room code </span>
+            <span aria-hidden="true">Room </span>
+            <span className="font-display tracking-widest">{roomCode}</span>
+          </p>
+          <SoundToggle channel="music" />
+          <SoundToggle />
+        </div>
       </header>
 
       <section
@@ -43,7 +48,6 @@ export function LobbyWaiting({ name, roomCode, avatar, onAvatarChange, onStart, 
           <h2 id={headingId} ref={heading} tabIndex={-1} className="font-display text-2xl outline-none">
             Hi {name}! Draw your face
           </h2>
-          <p className="text-white/70">Doodle over this one, or shuffle for another.</p>
         </div>
         <AvatarEditor value={avatar} onChange={onAvatarChange} />
       </section>

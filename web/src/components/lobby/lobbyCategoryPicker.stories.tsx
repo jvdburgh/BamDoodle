@@ -40,6 +40,13 @@ export const PickAndClear: Story = {
     await expect(canvas.getByRole("checkbox", { name: "Dieren" })).toBeChecked();
     const group = canvas.getByRole("group", { name: /Categories/ });
     await expect(group).toHaveAccessibleName(`Categories (2 of ${dutch.length} selected)`);
+    // Picked or not shows in the drawn frame, on the same chip background.
+    const frameOpacity = (name: string) =>
+      Number(
+        getComputedStyle(canvas.getByRole("checkbox", { name }).closest("label")!.querySelector(".sketchy")!).opacity,
+      );
+    await expect(frameOpacity("Dieren")).toBe(1);
+    await expect(frameOpacity("Efteling")).toBe(0);
     await expect(canvas.getByRole("checkbox", { name: "Na middernacht (18+)" })).not.toBeChecked();
 
     await userEvent.click(canvas.getByText("Efteling"));

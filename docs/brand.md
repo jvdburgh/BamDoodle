@@ -87,8 +87,10 @@ Modern, a bit mysterious, colourful. It should feel like a hand-made little game
   screen, and lands on the bamboozler at the reveal. A spotlight gets a bold, wobbly frame on the sheet and the card.
 - The start page's Join and Create buttons wear a sketchy outline in the hat's colours that slowly travels round,
   with doodled icons (a door, a pencil with a plus) that wiggle on hover. The music and sound toggles sit at the top
-  right of every screen, the start page included. Under the buttons, "How to play": three illustrated steps, the
-  points and a few questions, which is also what search engines read (with FAQ structured data in `index.html`).
+  right of every screen, the start page included. Under the buttons on a phone and beside them on a laptop, "How to
+  play": three illustrated steps, the points and a few questions, which is also what search engines read (with FAQ structured data in `index.html`).
+- A picked choice in the setup (a mode, a number, a category) keeps the same navy background and gets the hand-drawn
+  frame in sun, drawn in as you pick it; categories also show a doodled ✓ or +.
 - Small, quick motion makes it feel alive: block buttons tilt and lift on hover and squish when pressed, player cards
   bounce in, "voted" and "suspected by" badges pop, hovering the start page's logo turns its hat's colours one round and back (the logo is inlined from
   `/logo.svg` for that too). Reduced motion turns it off.

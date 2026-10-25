@@ -3,6 +3,8 @@ type BrandSketchyFrameProps = {
   bold?: boolean;
   /** The hat's colours, travelling slowly round: for the start page's main buttons. Ignores `text-*`. */
   rainbow?: boolean;
+  /** Shown only while the surrounding `group`'s input is checked, drawn in as it gets checked: a picked choice. */
+  whenChecked?: boolean;
   /** Colour via `text-*` (the border uses `currentColor`); add `rounded-*` to match the parent. */
   className?: string;
 };
@@ -11,7 +13,12 @@ type BrandSketchyFrameProps = {
  * A hand-drawn-looking outline laid over its positioned parent. Only the border is filtered, never the content, so
  * text stays crisp. Needs BrandSketchFilter on the page.
  */
-export function BrandSketchyFrame({ bold = false, rainbow = false, className = "" }: BrandSketchyFrameProps) {
+export function BrandSketchyFrame({
+  bold = false,
+  rainbow = false,
+  whenChecked = false,
+  className = "",
+}: BrandSketchyFrameProps) {
   if (rainbow) {
     // The wobble goes on the outer span: filtered after the inner one's mask, so the ring itself wobbles.
     return (
@@ -26,7 +33,7 @@ export function BrandSketchyFrame({ bold = false, rainbow = false, className = "
   return (
     <span
       aria-hidden="true"
-      className={`sketchy pointer-events-none absolute rounded-[inherit] border-current ${bold ? "inset-1 border-4" : "-inset-px border-2"} ${className}`}
+      className={`sketchy pointer-events-none absolute rounded-[inherit] border-current ${bold ? "inset-1 border-4" : "-inset-px border-2"} ${whenChecked ? "opacity-0 group-has-checked:opacity-100 motion-safe:group-has-checked:animate-draw-in" : ""} ${className}`}
     />
   );
 }

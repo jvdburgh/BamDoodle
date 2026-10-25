@@ -49,9 +49,9 @@ can change the number of rounds between rounds; when that's already been reached
    and "The game" on the left, the words on the right) and one on a phone, with a small sketch beside each
    choice and as little text as possible. Then the host's nickname (after the setup, so it's clearly
    theirs and not the room's), and only then is the room created, with those settings. The host can open the
-   settings again between rounds; every change there reaches the room at once. Then everyone draws or tweaks their avatar
-   (a random doodle face to start from, shuffle for another; a small round pad with one pen and the colours that read
-   on navy; undo and clear) and goes to the room. Everyone in the room sees each other's faces, also a face finished
+   settings again between rounds; every change there reaches the room at once. Then everyone draws their avatar
+   (an empty round pad with one pen and the colours that read on navy; Randomize for a doodle face to start from,
+   Clear to start over; left empty, they get a random doodle face) and goes to the room. Everyone in the room sees each other's faces, also a face finished
    just after a round started. Until a player goes to the room their card says "drawing their face", and the host
    sees "Mo is still drawing their face" next to Start round (they can still start). The others wait on the join card
    until the host starts; the host's card also links to the host screen ("Show on a TV", `/watch/BKZW`).
@@ -76,8 +76,8 @@ can change the number of rounds between rounds; when that's already been reached
 | **One stroke each** | one stroke (press, draw, release), with a 15 second limit | turns per player: 1 to 5 (default 3) |
 
 In the app these are named "One stroke each" and "Timed turns" ("Each player draws: once / 2 / 3 … times"); in code
-and on the wire they're `oneStroke` and `timed`. The categories are picked as small chips (a picked one is filled
-with a ✓, and the heading counts them: "Categories (12 of 30 selected)"), every
+and on the wire they're `oneStroke` and `timed`. The categories are picked as small chips (a picked one gets the hand-drawn sun frame
+and a ✓, an unpicked one a +, and the heading counts them: "Categories (12 of 30 selected)"), every
 non-18+ category of the room's language ticked by default, 18+ ones marked and only in play when ticked.
 
 The server enforces the turn: strokes from someone whose turn it isn't, or after the time limit, are dropped.

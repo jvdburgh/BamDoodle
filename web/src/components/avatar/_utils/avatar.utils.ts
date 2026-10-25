@@ -1,4 +1,4 @@
-import type { AvatarEdit, AvatarHistory, AvatarStroke } from "@/components/avatar/_types/avatar.types";
+import type { AvatarEdit, AvatarStroke } from "@/components/avatar/_types/avatar.types";
 import { ScribbleUtils } from "@/components/brand/_utils/scribble.utils";
 import type { StrokePoint } from "@/components/canvas/_types/stroke.types";
 import { CanvasUtils } from "@/components/canvas/_utils/canvas.utils";
@@ -100,19 +100,15 @@ function isFull(strokes: AvatarStroke[], next: AvatarStroke): boolean {
   return strokes.length >= limits.strokes || pointCount(strokes) + next.points.length > limits.points;
 }
 
-/** Every edit keeps the avatar before it, so undo also brings back a cleared or shuffled face. */
-function edit(history: AvatarHistory, action: AvatarEdit): AvatarHistory {
-  const { past, present } = history;
+/** The avatar after an edit; the same array when nothing changes (a stroke past the limits, clearing nothing). */
+function edit(strokes: AvatarStroke[], action: AvatarEdit): AvatarStroke[] {
   switch (action.kind) {
     case "draw":
-      if (isFull(present, action.stroke)) return history;
-      return { past: [...past, present], present: [...present, action.stroke] };
+      return isFull(strokes, action.stroke) ? strokes : [...strokes, action.stroke];
     case "clear":
-      return present.length === 0 ? history : { past: [...past, present], present: [] };
-    case "shuffle":
-      return { past: [...past, present], present: face(action.seed) };
-    case "undo":
-      return past.length === 0 ? history : { past: past.slice(0, -1), present: past.at(-1) ?? [] };
+      return strokes.length === 0 ? strokes : [];
+    case "randomize":
+      return face(action.seed);
   }
 }
 

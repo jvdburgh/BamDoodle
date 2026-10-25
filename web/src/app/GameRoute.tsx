@@ -247,11 +247,7 @@ function GameRoom({ state, connection, createdHere }: GameRoomProps) {
   }
 
   if (drawingFace && you) {
-    const face =
-      avatar ??
-      (you.avatar.length > 0
-        ? AvatarUtils.fromWire(you.avatar)
-        : AvatarUtils.face(RoomViewUtils.seed(room.code, you.id)));
+    const face = avatar ?? AvatarUtils.fromWire(you.avatar);
     return (
       <LobbyWaiting
         name={you.name}

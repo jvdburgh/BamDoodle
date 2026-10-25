@@ -114,92 +114,95 @@ export function LobbyStart({
         <SoundToggle channel="music" />
         <SoundToggle />
       </div>
-      <main className="mx-auto flex min-h-[calc(100svh-4rem)] w-full max-w-md flex-col items-center justify-center gap-8 px-5 pb-10">
-        <div className="flex flex-col items-center gap-2 text-center">
-          <BrandLogo swirlOnHover className="size-28" />
-          <h2 className="font-display text-5xl">BamDoodle</h2>
-          <BrandTagline />
-        </div>
-
-        {step === "choose" ? (
-          <div className="grid w-full gap-3">
-            <button
-              ref={joinButton}
-              type="button"
-              onClick={() => go("join")}
-              className={`${BrandStyles.primaryButton} group relative w-full gap-3`}
-            >
-              <BrandSketchyFrame rainbow />
-              <BrandScribble shape="door" className="size-7 motion-safe:group-hover:animate-wiggle" />
-              Join a room
-            </button>
-            <button
-              ref={createButton}
-              type="button"
-              onClick={onCreate}
-              disabled={busy}
-              className={`${BrandStyles.quietButton} group relative w-full gap-3`}
-            >
-              <BrandSketchyFrame rainbow className="opacity-60" />
-              <BrandScribble shape="pencilPlus" className="size-7 text-sun motion-safe:group-hover:animate-wiggle" />
-              {busy ? "Just a sec…" : "Create a room"}
-            </button>
-            {problem && (
-              <p role="alert" className="text-center text-sm text-berry">
-                {problem}
-              </p>
-            )}
+      {/* On a laptop how to play sits beside the buttons, which stay in view while it scrolls. */}
+      <div className="mx-auto grid w-full max-w-6xl flex-1 lg:grid-cols-[minmax(0,28rem)_minmax(0,1fr)] lg:gap-16 lg:px-8">
+        <main className="mx-auto flex min-h-[calc(100svh-4rem)] w-full max-w-md flex-col items-center justify-center gap-8 px-5 pb-10 lg:sticky lg:top-0 lg:self-start">
+          <div className="flex flex-col items-center gap-2 text-center">
+            <BrandLogo swirlOnHover className="size-28" />
+            <h2 className="font-display text-5xl">BamDoodle</h2>
+            <BrandTagline />
           </div>
-        ) : (
-          <form
-            onSubmit={submit}
-            className="relative grid w-full gap-5 rounded-[18px_24px_20px_16px] bg-night-soft/50 p-5"
-          >
-            <BrandSketchyFrame className="text-white/25" />
-            <h3 className="font-display text-2xl">{step === "join" ? "Join a room" : "And you are?"}</h3>
 
-            {step === "join" && (
-              <>
-                <div className="grid gap-1.5">
-                  <label htmlFor={codeId} className="text-sm text-white/70">
-                    Room code
-                  </label>
-                  <input
-                    ref={defaultCode ? undefined : first}
-                    id={codeId}
-                    value={code}
-                    onChange={(event) => setCode(RoomCodeUtils.clean(event.target.value))}
-                    autoComplete="off"
-                    autoCapitalize="characters"
-                    spellCheck={false}
-                    placeholder="BKZW"
-                    className={`${field} font-display text-3xl tracking-[0.3em] uppercase`}
-                  />
-                </div>
-                {nameField}
-              </>
-            )}
-
-            {step === "create" && nameField}
-
-            {problem && (
-              <p role="alert" className="text-sm text-berry">
-                {problem}
-              </p>
-            )}
-
-            <div className="flex items-center justify-between gap-3">
-              <button type="button" onClick={onBack ?? (() => go("choose"))} className={BrandStyles.ghostButton}>
-                Back
+          {step === "choose" ? (
+            <div className="grid w-full gap-3">
+              <button
+                ref={joinButton}
+                type="button"
+                onClick={() => go("join")}
+                className={`${BrandStyles.primaryButton} group relative w-full gap-3`}
+              >
+                <BrandSketchyFrame rainbow />
+                <BrandScribble shape="door" className="size-7 motion-safe:group-hover:animate-wiggle" />
+                Join a room
               </button>
-              <button type="submit" disabled={!canSubmit} className={BrandStyles.primaryButton}>
-                {busy ? "Just a sec…" : step === "join" ? "Join" : "Create room"}
+              <button
+                ref={createButton}
+                type="button"
+                onClick={onCreate}
+                disabled={busy}
+                className={`${BrandStyles.quietButton} group relative w-full gap-3`}
+              >
+                <BrandSketchyFrame rainbow className="opacity-60" />
+                <BrandScribble shape="pencilPlus" className="size-7 text-sun motion-safe:group-hover:animate-wiggle" />
+                {busy ? "Just a sec…" : "Create a room"}
               </button>
+              {problem && (
+                <p role="alert" className="text-center text-sm text-berry">
+                  {problem}
+                </p>
+              )}
             </div>
-          </form>
-        )}
-      </main>
-      {step === "choose" && <LobbyHowToPlay />}
+          ) : (
+            <form
+              onSubmit={submit}
+              className="relative grid w-full gap-5 rounded-[18px_24px_20px_16px] bg-night-soft/50 p-5"
+            >
+              <BrandSketchyFrame className="text-white/25" />
+              <h3 className="font-display text-2xl">{step === "join" ? "Join a room" : "And you are?"}</h3>
+
+              {step === "join" && (
+                <>
+                  <div className="grid gap-1.5">
+                    <label htmlFor={codeId} className="text-sm text-white/70">
+                      Room code
+                    </label>
+                    <input
+                      ref={defaultCode ? undefined : first}
+                      id={codeId}
+                      value={code}
+                      onChange={(event) => setCode(RoomCodeUtils.clean(event.target.value))}
+                      autoComplete="off"
+                      autoCapitalize="characters"
+                      spellCheck={false}
+                      placeholder="BKZW"
+                      className={`${field} font-display text-3xl tracking-[0.3em] uppercase`}
+                    />
+                  </div>
+                  {nameField}
+                </>
+              )}
+
+              {step === "create" && nameField}
+
+              {problem && (
+                <p role="alert" className="text-sm text-berry">
+                  {problem}
+                </p>
+              )}
+
+              <div className="flex items-center justify-between gap-3">
+                <button type="button" onClick={onBack ?? (() => go("choose"))} className={BrandStyles.ghostButton}>
+                  Back
+                </button>
+                <button type="submit" disabled={!canSubmit} className={BrandStyles.primaryButton}>
+                  {busy ? "Just a sec…" : step === "join" ? "Join" : "Create room"}
+                </button>
+              </div>
+            </form>
+          )}
+        </main>
+        {step === "choose" && <LobbyHowToPlay />}
+      </div>
       <BrandFooter />
     </div>
   );

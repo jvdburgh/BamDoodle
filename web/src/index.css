@@ -183,7 +183,7 @@
   /* The hat's colours as an outline (BrandSketchyFrame rainbow), slowly travelling round. Only the ring is shown. */
   .frame-rainbow {
     background: conic-gradient(
-      from var(--frame-turn),
+      from var(--frame-turn, 0deg),
       var(--color-berry),
       var(--color-sun),
       var(--color-lime),

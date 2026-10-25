@@ -1,4 +1,6 @@
 import { useId } from "react";
+import { BrandScribble } from "@/components/brand/BrandScribble.component";
+import { BrandSketchyFrame } from "@/components/brand/BrandSketchyFrame.component";
 import type { WordCategory } from "@/protocol/generated/WordCategory";
 
 type LobbyCategoryPickerProps = {
@@ -8,7 +10,7 @@ type LobbyCategoryPickerProps = {
   onChange: (names: string[]) => void;
 };
 
-/** Which word categories are in play, as chips: picked ones filled with a ✓. 18+ ones are marked and never pre-ticked. */
+/** Which word categories are in play, as chips: picked ones framed with a ✓. 18+ ones are marked and never pre-ticked. */
 export function LobbyCategoryPicker({ categories, selected, onChange }: LobbyCategoryPickerProps) {
   const hintId = useId();
   const legendId = useId();
@@ -48,8 +50,9 @@ export function LobbyCategoryPicker({ categories, selected, onChange }: LobbyCat
         {categories.map((category) => (
           <label
             key={category.name}
-            className="group flex min-h-8 cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-0.5 text-sm text-white/70 ring-2 ring-white/20 transition-colors hover:text-white hover:ring-white/40 has-checked:bg-sun has-checked:text-night has-checked:ring-sun has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-white"
+            className="group relative flex min-h-9 cursor-pointer items-center gap-1.5 rounded-full bg-night-deep py-1 pr-3 pl-2 text-sm text-white/70 hover:text-white has-checked:text-white has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-white"
           >
+            <BrandSketchyFrame whenChecked className="text-sun" />
             <input
               type="checkbox"
               checked={chosen.has(category.name)}
@@ -57,9 +60,11 @@ export function LobbyCategoryPicker({ categories, selected, onChange }: LobbyCat
               aria-label={category.adult ? `${category.name} (18+)` : category.name}
               className="sr-only"
             />
-            <span aria-hidden="true" className="w-3 text-center font-bold leading-none">
-              {chosen.has(category.name) ? "✓" : "+"}
-            </span>
+            <BrandScribble
+              shape={chosen.has(category.name) ? "check" : "plus"}
+              seed={category.name.length}
+              className={`size-4 shrink-0 ${chosen.has(category.name) ? "text-sun" : "text-white/50"}`}
+            />
             <span className="font-display leading-none">{category.name}</span>
             {category.adult && (
               <span className="rounded-full bg-berry px-1.5 text-xs font-semibold text-night">18+</span>

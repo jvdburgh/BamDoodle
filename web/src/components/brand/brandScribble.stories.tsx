@@ -53,3 +53,11 @@ export const Pencil: Story = {
 export const PencilPlus: Story = {
   args: { shape: "pencilPlus", className: "size-16 text-white" },
 };
+
+export const Check: Story = {
+  args: { shape: "check", className: "size-10 text-sun" },
+};
+
+export const Plus: Story = {
+  args: { shape: "plus", className: "size-10 text-white" },
+};

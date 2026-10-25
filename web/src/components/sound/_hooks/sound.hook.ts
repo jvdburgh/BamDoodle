@@ -1,4 +1,4 @@
-import { useEffect, useRef, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { SoundCuesUtils, type SoundMoment } from "@/components/sound/_utils/soundCues.utils";
 import { SoundPlayer } from "@/components/sound/_utils/soundPlayer.utils";
 
@@ -23,5 +23,16 @@ export function useMusicOn() {
 
 /** This screen has music: full in the lobby and between rounds, `ducked` while someone draws or votes. */
 export function useMusic(ducked: boolean, byDefault: boolean) {
-  useEffect(() => SoundPlayer.claimMusic({ ducked, byDefault }), [ducked, byDefault]);
+  const claim = useRef<ReturnType<typeof SoundPlayer.claimMusic> | null>(null);
+  const [first] = useState({ ducked, byDefault });
+  // Claimed once per mount and updated in place, so a screen keeps its place under the ones opened after it.
+  useEffect(() => {
+    const own = SoundPlayer.claimMusic(first);
+    claim.current = own;
+    return () => {
+      own.release();
+      claim.current = null;
+    };
+  }, [first]);
+  useEffect(() => claim.current?.update({ ducked, byDefault }), [ducked, byDefault]);
 }

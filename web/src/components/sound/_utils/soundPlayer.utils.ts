@@ -235,18 +235,28 @@ type MusicScreen = { ducked: boolean; byDefault: boolean };
 /** Screens with music, the latest last: the start page, then the room inside it. */
 const musicScreens: MusicScreen[] = [];
 
+function applyMusicScreen() {
+  const top = musicScreens.at(-1);
+  setMusic(top ? { playing: true, ...top } : { playing: false, ducked: false, byDefault: false });
+}
+
 /**
- * This screen has music until the returned function is called. The latest screen sets it; when it goes, the one
- * before it takes over without restarting the loop (the room hands back to the start page).
+ * This screen has music until it's released. The screen opened last sets it, also when the one under it changes;
+ * when it goes, the one before it takes over without restarting the loop (the room hands back to the start page).
  */
-function claimMusic(screen: MusicScreen): () => void {
+function claimMusic(screen: MusicScreen) {
   const claim = { ...screen };
   musicScreens.push(claim);
-  setMusic({ playing: true, ...claim });
-  return () => {
-    musicScreens.splice(musicScreens.indexOf(claim), 1);
-    const previous = musicScreens.at(-1);
-    setMusic(previous ? { playing: true, ...previous } : { playing: false, ducked: false, byDefault: false });
+  applyMusicScreen();
+  return {
+    update(next: MusicScreen) {
+      Object.assign(claim, next);
+      if (musicScreens.at(-1) === claim) applyMusicScreen();
+    },
+    release() {
+      musicScreens.splice(musicScreens.indexOf(claim), 1);
+      applyMusicScreen();
+    },
   };
 }
 

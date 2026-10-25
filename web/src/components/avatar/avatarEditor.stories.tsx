@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
-import { expect, fn, waitFor } from "storybook/test";
+import { expect, fn } from "storybook/test";
 import { AvatarEditor } from "./AvatarEditor.component";
 import type { AvatarStroke } from "./_types/avatar.types";
 import { AvatarUtils } from "./_utils/avatar.utils";
@@ -70,46 +70,25 @@ export const PickAColour: Story = {
   },
 };
 
-export const UndoAndClear: Story = {
+export const RandomizeAndClear: Story = {
+  args: { value: [] },
   play: async ({ args, canvas, userEvent }) => {
-    const undo = canvas.getByRole("button", { name: "Undo" });
+    await expect(canvas.queryByRole("button", { name: "Undo" })).toBeNull();
+    await expect(canvas.getByText("Draw your face, or leave it empty for a random one.")).toBeVisible();
     const clear = canvas.getByRole("button", { name: "Clear" });
-    await expect(undo).toHaveAttribute("aria-disabled", "true");
+    await expect(clear).toHaveAttribute("aria-disabled", "true");
 
-    drawLine(canvas.getByRole("img", { name: "Avatar drawing pad" }));
-    await waitFor(() => expect(undo).toHaveAttribute("aria-disabled", "false"));
-    await userEvent.click(undo);
-    await expect(lastChange(args.onChange)).toEqual(start);
+    const randomize = canvas.getByRole("button", { name: "Randomize" });
+    randomize.focus();
+    await userEvent.keyboard("{Enter}");
+    const random = lastChange(args.onChange);
+    await expect(random.length).toBeGreaterThan(0);
+    await expect(random.every((stroke) => stroke.color === AvatarUtils.white)).toBe(true);
 
     await userEvent.click(clear);
     await expect(lastChange(args.onChange)).toEqual([]);
-    await expect(clear).toHaveAttribute("aria-disabled", "true");
     await userEvent.click(clear);
-    await expect(args.onChange).toHaveBeenCalledTimes(3);
-
-    await userEvent.click(undo);
-    await expect(lastChange(args.onChange)).toEqual(start);
-  },
-};
-
-export const ShuffleWithTheKeyboard: Story = {
-  play: async ({ args, canvas, userEvent }) => {
-    const shuffle = canvas.getByRole("button", { name: "Shuffle" });
-    shuffle.focus();
-    await userEvent.keyboard("{Enter}");
-    const shuffled = lastChange(args.onChange);
-    await expect(shuffled).not.toEqual(start);
-    await expect(shuffled.every((stroke) => stroke.color === AvatarUtils.white)).toBe(true);
-
-    await userEvent.click(canvas.getByRole("button", { name: "Undo" }));
-    await expect(lastChange(args.onChange)).toEqual(start);
-  },
-};
-
-export const BlankStart: Story = {
-  args: { value: [] },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("button", { name: "Clear" })).toHaveAttribute("aria-disabled", "true");
+    await expect(args.onChange).toHaveBeenCalledTimes(2);
   },
 };
 
@@ -119,7 +98,7 @@ export const FullFace: Story = {
   },
   play: async ({ args, canvas }) => {
     drawLine(canvas.getByRole("img", { name: "Avatar drawing pad" }));
-    await expect(await canvas.findByText("Your face is full: undo or clear to draw more.")).toBeVisible();
+    await expect(await canvas.findByText("Your face is full: clear it to draw more.")).toBeVisible();
     await expect(args.onChange).not.toHaveBeenCalled();
   },
 };

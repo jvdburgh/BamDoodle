@@ -17,9 +17,8 @@ type AvatarEditorProps = {
 
 const control = `${BrandStyles.quietButton} px-3 aria-disabled:cursor-default aria-disabled:opacity-40`;
 
-/** Draw on a round pad, starting from a doodle face: shuffle for another, undo any step, or clear and start blank. */
+/** Draw on a round pad, starting empty: randomize for a doodle face to start from, or clear and start over. */
 export function AvatarEditor({ value, onChange }: AvatarEditorProps) {
-  const [past, setPast] = useState<AvatarStroke[][]>([]);
   const [colour, setColour] = useState(AvatarUtils.white);
   const [full, setFull] = useState(false);
   const liveRef = useRef<SVGPathElement>(null);
@@ -34,12 +33,9 @@ export function AvatarEditor({ value, onChange }: AvatarEditorProps) {
   });
 
   const apply = (action: AvatarEdit) => {
-    const history = { past, present: value };
-    const next = AvatarUtils.edit(history, action);
-    setFull(next === history && action.kind === "draw");
-    if (next === history) return;
-    setPast(next.past);
-    onChange(next.present);
+    const next = AvatarUtils.edit(value, action);
+    setFull(next === value && action.kind === "draw");
+    if (next !== value) onChange(next);
   };
 
   const { handlers } = usePointerStroke({
@@ -86,21 +82,13 @@ export function AvatarEditor({ value, onChange }: AvatarEditorProps) {
         <CanvasPalette colours={AvatarUtils.colours} value={colour} onChange={setColour} />
       </div>
 
-      <div className="grid w-full max-w-64 grid-cols-3 gap-2">
+      <div className="grid w-full max-w-64 grid-cols-2 gap-2">
         <button
           type="button"
-          onClick={() => apply({ kind: "shuffle", seed: Math.floor(Math.random() * 2 ** 31) })}
+          onClick={() => apply({ kind: "randomize", seed: Math.floor(Math.random() * 2 ** 31) })}
           className={control}
         >
-          Shuffle
-        </button>
-        <button
-          type="button"
-          aria-disabled={past.length === 0}
-          onClick={() => apply({ kind: "undo" })}
-          className={control}
-        >
-          Undo
+          Randomize
         </button>
         <button
           type="button"
@@ -112,7 +100,11 @@ export function AvatarEditor({ value, onChange }: AvatarEditorProps) {
         </button>
       </div>
       <p aria-live="polite" className="-mt-2 min-h-5 text-center text-sm text-white/70">
-        {full ? "Your face is full: undo or clear to draw more." : ""}
+        {full
+          ? "Your face is full: clear it to draw more."
+          : value.length === 0
+            ? "Draw your face, or leave it empty for a random one."
+            : ""}
       </p>
     </div>
   );

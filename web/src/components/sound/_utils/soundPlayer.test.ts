@@ -214,19 +214,25 @@ describe("SoundPlayer music", () => {
   it("plays on from the start page into the room: the screen that closes hands the music back, no restart", async () => {
     const player = await load();
     tap();
-    const releaseStart = player.claimMusic({ ducked: false, byDefault: true });
+    const start = player.claimMusic({ ducked: false, byDefault: true });
     await vi.advanceTimersByTimeAsync(10);
     const full = musicLevel()!;
-    const releaseRoom = player.claimMusic({ ducked: true, byDefault: true });
+    const room = player.claimMusic({ ducked: true, byDefault: true });
     expect(musicLevel()).toBeCloseTo(full * 0.35);
+    // The start page changing its mind underneath doesn't take the music back from the room.
+    start.update({ ducked: false, byDefault: true });
+    expect(musicLevel()).toBeCloseTo(full * 0.35);
+    room.update({ ducked: false, byDefault: true });
+    expect(musicLevel()).toBe(full);
+    room.update({ ducked: true, byDefault: true });
 
-    releaseRoom();
+    room.release();
     await vi.advanceTimersByTimeAsync(5000);
     expect(musicLevel()).toBe(full);
     expect(audio.musicSources()).toHaveLength(1);
     expect(audio.musicSources()[0]?.stop).not.toHaveBeenCalled();
 
-    releaseStart();
+    start.release();
     await vi.advanceTimersByTimeAsync(5000);
     expect(audio.musicSources()[0]?.stop).toHaveBeenCalled();
   });

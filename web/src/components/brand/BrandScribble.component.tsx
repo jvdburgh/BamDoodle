@@ -12,7 +12,9 @@ export type BrandScribbleShape =
   | "noteOff"
   | "door"
   | "pencil"
-  | "pencilPlus";
+  | "pencilPlus"
+  | "check"
+  | "plus";
 
 const speakerBody = [
   [8, 19, 0.5],
@@ -92,16 +94,21 @@ const shapes: Record<BrandScribbleShape, { viewBox: string; paths: (seed: number
     viewBox: "0 0 48 48",
     paths: (seed, weight) => [
       ...[
-        ScribbleUtils.line(seed, 22, 42, 22, 7, 0.4),
-        ScribbleUtils.line(seed + 1, 22, 7, 42, 7, -0.4),
-        ScribbleUtils.line(seed + 2, 42, 7, 42, 42, 0.4),
-        ScribbleUtils.line(seed + 3, 18, 42, 46, 42),
-        ScribbleUtils.line(seed + 4, 3, 25, 31, 25, -1),
-        ScribbleUtils.line(seed + 5, 24, 18, 31, 25),
-        ScribbleUtils.line(seed + 6, 24, 32, 31, 25),
-      ].map((points) => CanvasUtils.freehandPath(points, 3.5 * weight)),
+        // The frame, and the door swung open towards you.
+        ScribbleUtils.line(seed, 26, 43, 26, 6, 0.5),
+        ScribbleUtils.line(seed + 1, 26, 6, 44, 6, -0.5),
+        ScribbleUtils.line(seed + 2, 44, 6, 44, 43, 0.5),
+        ScribbleUtils.line(seed + 3, 26, 6, 35, 11, 0.3),
+        ScribbleUtils.line(seed + 4, 35, 11, 35, 46, -0.6),
+        ScribbleUtils.line(seed + 5, 35, 46, 26, 43, 0.3),
+        // A loopy arrow skipping in.
+        ScribbleUtils.line(seed + 6, 2, 30, 12, 22, -5),
+        ScribbleUtils.line(seed + 7, 12, 22, 22, 26, -4),
+        ScribbleUtils.line(seed + 8, 16, 21, 22, 26, 0.3),
+        ScribbleUtils.line(seed + 9, 17, 31, 22, 26, -0.3),
+      ].map((points) => CanvasUtils.freehandPath(points, 3.4 * weight)),
       CanvasUtils.freehandPath(
-        ScribbleUtils.loop(seed + 7, { cx: 37, cy: 30, rx: 1.4, ry: 1.4, turns: 1 }),
+        ScribbleUtils.loop(seed + 10, { cx: 39, cy: 28, rx: 1.3, ry: 1.3, turns: 1 }),
         3 * weight,
       ),
     ],
@@ -111,8 +118,25 @@ const shapes: Record<BrandScribbleShape, { viewBox: string; paths: (seed: number
     viewBox: "0 0 48 48",
     paths: (seed, weight) => [
       ...pencil(seed, weight),
-      CanvasUtils.freehandPath(ScribbleUtils.line(seed + 6, 38, 28, 38, 46, 0.4), 3.8 * weight),
-      CanvasUtils.freehandPath(ScribbleUtils.line(seed + 7, 29, 37, 47, 37, -0.4), 3.8 * weight),
+      // The squiggle it just drew, and a plus popping out.
+      CanvasUtils.freehandPath(ScribbleUtils.line(seed + 6, 3, 44, 11, 44, -2.5), 2.6 * weight),
+      CanvasUtils.freehandPath(ScribbleUtils.line(seed + 7, 11, 44, 19, 44, 2.5), 2.6 * weight),
+      CanvasUtils.freehandPath(ScribbleUtils.line(seed + 8, 38, 26, 37, 44, 0.6), 3.8 * weight),
+      CanvasUtils.freehandPath(ScribbleUtils.line(seed + 9, 29, 35, 46, 34, -0.6), 3.8 * weight),
+    ],
+  },
+  check: {
+    viewBox: "0 0 48 48",
+    paths: (seed, weight) => [
+      CanvasUtils.freehandPath(ScribbleUtils.line(seed, 7, 25, 18, 38, -1), 5 * weight),
+      CanvasUtils.freehandPath(ScribbleUtils.line(seed + 1, 18, 38, 43, 8, 3), 5 * weight),
+    ],
+  },
+  plus: {
+    viewBox: "0 0 48 48",
+    paths: (seed, weight) => [
+      CanvasUtils.freehandPath(ScribbleUtils.line(seed, 25, 8, 23, 41, 1), 4.5 * weight),
+      CanvasUtils.freehandPath(ScribbleUtils.line(seed + 1, 8, 23, 41, 25, -1), 4.5 * weight),
     ],
   },
   magnifier: {

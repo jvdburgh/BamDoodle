@@ -24,3 +24,7 @@ Check these first; each was a real finding (2026-10-18, lobby avatar editor).
 
 **Why:** these repeat in UI prototype work while the server side doesn't exist yet.
 **How to apply:** lead the review with these; grep for pointer handlers outside `canvas/` and `color=` on AvatarDoodle.
+
+Seen 2026-10-25 (start page music, e191c31):
+- Docs claiming "on every screen" (toggles) while one screen lacks it: grep the component for every screen the route shows (LobbyWaiting).
+- Stack-style claims (SoundPlayer.claimMusic) pushed from useEffect: parent effects run after child effects, so a parent re-run puts the parent on top.

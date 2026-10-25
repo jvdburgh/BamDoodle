@@ -233,8 +233,9 @@ function LobbyChoice<T extends string | number>({
         {options.map((option) => (
           <label
             key={option.value}
-            className="relative cursor-pointer rounded-[12px_16px_14px_10px] bg-night-deep p-3 ring-2 ring-transparent has-checked:ring-sun has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-white"
+            className="group relative cursor-pointer rounded-[12px_16px_14px_10px] bg-night-deep p-3 has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-white"
           >
+            <BrandSketchyFrame whenChecked className="text-sun" />
             <input
               ref={value === option.value ? firstRef : undefined}
               type="radio"
@@ -279,8 +280,9 @@ function LobbyPills<T extends string | number>({
         {options.map((option) => (
           <label
             key={option.value}
-            className="grid min-h-11 min-w-11 cursor-pointer place-items-center rounded-full bg-night-deep px-4 font-display text-lg ring-2 ring-transparent has-checked:text-sun has-checked:ring-sun has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-white"
+            className="group relative grid min-h-11 min-w-11 cursor-pointer place-items-center rounded-full bg-night-deep px-4 font-display text-lg has-checked:text-sun has-focus-visible:outline-3 has-focus-visible:outline-offset-2 has-focus-visible:outline-white"
           >
+            <BrandSketchyFrame whenChecked className="text-sun" />
             <input
               type="radio"
               name={name}
