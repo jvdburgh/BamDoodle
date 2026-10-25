@@ -114,7 +114,8 @@ Everyone can use every colour: there is nothing to unlock, ever. To still see wh
 **Suspecting and voting on screen:** on every player card (avatar, name, mini-map of their strokes) a "Suspect"
 button under the name, or a tap on the face itself (hovering it shows the logo's fedora faintly), drops the hat onto
 their head; the button then says "Suspected ✓" and another tap takes it off. Marking or changing it is public table
-talk ("Noor thinks Jip is sketchy") and cards say who suspects that player. After the last turn the same button says
+talk ("Noor thinks Jip is sketchy", a note over the canvas with Noor's face and Jip's in the hat; "Mo has voted" with
+Mo's) and cards say who suspects that player. After the last turn the same button says
 "Vote" and the face is the vote too: a tap votes for them (the hat drops on, "Your vote ✓"), a tap on another changes
 it. The final vote is a sheet over everything on every screen. Its top stays put while the rest scrolls: "Time's up!
 Who's sketchy?", the 30 s countdown, "3 of 6 voted", the secret again since the sheet covers the header (the category
