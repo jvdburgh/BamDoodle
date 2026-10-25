@@ -132,8 +132,8 @@ onto the bamboozler, each card says who that player voted for (right or wrong), 
 pops its points and total. The table talk ("Mo has voted") leaves the drawing as the vote ends. Under the canvas the
 headline: who the bamboozler was and what that means for the points ("1 of 3 spotted Sam (+1), so Sam slips through (+1)",
 "Everyone spotted Noor! +1 each", "Nobody spotted Sam! Sam +1"), and their guess (the guess's 20 seconds start at the
-reveal): "Your one guess at the word (Animals).", with what the matching forgives (capitals, accents, spaces, one
-typo in longer words). On a phone on its side the bamboozler's field comes first, beside the drawing. Then "End of
+reveal): "Your one guess at the word (Animals)." and "No worries, we're not too picky about spelling." (true to the
+matching under Current defaults). On a phone on its side the bamboozler's field comes first, beside the drawing. Then "End of
 round 1 of 3. The word was GIRAFFE", the guess ("Sam guessed it: "giraffe"! +1" or "Sam guessed "horse": not it, no
 point."), "This round" (everyone's points with why, popping in, and their totals) and under it the host's "Next round",
 or for everyone else who they're waiting for ("Waiting for Juno to start round 2…", or "Joris starts round 2 from the

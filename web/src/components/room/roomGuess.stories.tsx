@@ -23,9 +23,7 @@ export const YourGuess: Story = {
   args: { yours: true },
   play: async ({ args, canvas, userEvent }) => {
     await expect(canvas.getByText("Your one guess at the word (Animals).")).toBeVisible();
-    await expect(
-      canvas.getByText("Capitals, accents and spaces don’t matter, and one typo is fine in longer words."),
-    ).toBeVisible();
+    await expect(canvas.getByText("No worries, we’re not too picky about spelling.")).toBeVisible();
     const field = canvas.getByLabelText("Your guess");
     await waitFor(() => expect(field).toHaveFocus());
     await userEvent.type(field, "giraffe{Enter}");

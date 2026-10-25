@@ -13,8 +13,8 @@ type RoomGuessProps = {
 };
 
 /**
- * The bamboozler's one chance at the word, even when everyone caught them. What it says about spelling is what the
- * server forgives (`server/src/room/guess.rs`): case, accents, spaces, and one typo in words of five letters or more.
+ * The bamboozler's one chance at the word, even when everyone caught them. "Not too picky about spelling" holds as long
+ * as the server forgives case, accents, spaces and one typo in words of five letters or more (`server/src/room/guess.rs`).
  */
 export function RoomGuess({ bamboozlerName, category, yours, msLeft, onGuess }: RoomGuessProps) {
   const [text, setText] = useState("");
@@ -63,7 +63,7 @@ export function RoomGuess({ bamboozlerName, category, yours, msLeft, onGuess }: 
             </button>
           </div>
           <p id={hintId} className="text-sm text-white/70">
-            Capitals, accents and spaces don’t matter, and one typo is fine in longer words.
+            No worries, we’re not too picky about spelling.
           </p>
         </form>
       )}
