@@ -162,7 +162,13 @@ export function RoomHostView({ state, revealCode = false, home = "/", controls }
 
       {showPodium ? (
         <div ref={podiumRef} tabIndex={-1} className="min-h-0 flex-1 overflow-y-auto outline-none">
-          <RoomPodium players={players} totals={RoomViewUtils.totals(room.players)} onNewGame={controls?.onStart} big />
+          <RoomPodium
+            players={players}
+            totals={RoomViewUtils.totals(room.players)}
+            history={state.history}
+            onNewGame={controls?.onStart}
+            big
+          />
         </div>
       ) : phase === "lobby" ? (
         // How to get in comes first, big, the way a quiz night shows it; then who's in.
@@ -263,6 +269,7 @@ export function RoomHostView({ state, revealCode = false, home = "/", controls }
                   <div className={band}>
                     <RoomReveal
                       players={players}
+                      playerIds={round?.turnOrder}
                       bamboozlerId={reveal.bamboozlerId}
                       votes={RoomViewUtils.votes(reveal.votes)}
                       big

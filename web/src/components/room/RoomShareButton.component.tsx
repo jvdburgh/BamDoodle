@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { BrandStyles } from "@/components/brand/_utils/brandStyles.utils";
+import { RoomCodeUtils } from "@/protocol/roomCode.utils";
 
 type RoomShareButtonProps = {
   roomCode: string;
@@ -22,7 +23,7 @@ export function RoomShareButton({ roomCode }: RoomShareButtonProps) {
   }, [status]);
 
   const share = async () => {
-    const path = `/${roomCode}`;
+    const path = RoomCodeUtils.path(roomCode);
     if (navigator.share) {
       try {
         await navigator.share({

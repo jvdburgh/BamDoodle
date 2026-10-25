@@ -285,7 +285,7 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
                 This room
               </h2>
               <p className="text-white/80">
-                Room code <span className="font-display text-2xl tracking-[0.15em] text-white">{room.code}</span>
+                Room <span className="font-display text-2xl tracking-[0.15em] text-white">{room.code}</span>
               </p>
               <ul className="grid gap-1 text-white/80">
                 {RoomViewUtils.rulesOf(room.settings).map((line) => (
@@ -301,7 +301,6 @@ export function RoomPlayerView({ state, send, revealCode = false, onSettings, ho
 
         {showPodium ? (
           <div ref={podiumRef} tabIndex={-1} className="outline-none">
-            <div className="flex justify-end @5xl/room:hidden">{infoButton}</div>
             <RoomPodium
               players={players}
               totals={RoomViewUtils.totals(room.players)}

@@ -26,6 +26,9 @@ Read [docs/words.md](../../../docs/words.md) first: it has the allowed sources a
   batch came from.
 - Credit sources in `words/NOTICE`. Our curated lists are CC BY-SA 4.0.
 - Keep files sorted alphabetically per category; no duplicates across categories in the same pack.
+- Every pack file names its group in its header (`group = "everyday"`, one of the `WordGroup` values in
+  `server/src/protocol.rs`), which the setup shows the categories under. A category that ends up in two groups across
+  files stops the server from loading the lists.
 - Dutch: check spelling against OpenTaal.
 - A category that is 18+ in one file and everyday in another stops the server from loading the lists.
 - Themed categories of real things (Efteling attractions, logos) list them all, by their real names, even when not

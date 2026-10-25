@@ -10,7 +10,4 @@ function route(pathname: string): Route {
   return { kind: "play", code: code(first) };
 }
 
-/** A room's own address, the one to share: `/BKZW`. */
-const roomPath = (code: string) => `/${code}`;
-
-export const RouteUtils = { route, roomPath };
+export const RouteUtils = { route, roomPath: RoomCodeUtils.path };

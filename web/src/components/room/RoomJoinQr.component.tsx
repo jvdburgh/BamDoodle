@@ -1,6 +1,6 @@
 import qrcode from "qrcode-generator";
 import { useMemo } from "react";
-import { RouteUtils } from "@/app/route.utils";
+import { RoomCodeUtils } from "@/protocol/roomCode.utils";
 
 type RoomJoinQrProps = {
   roomCode: string;
@@ -12,7 +12,7 @@ const QUIET_ZONE = 2;
 
 /** The room's own address as a QR code, drawn here (no network), dark modules in the current text colour on paper. */
 export function RoomJoinQr({ roomCode, className = "" }: RoomJoinQrProps) {
-  const url = `${window.location.origin}${RouteUtils.roomPath(roomCode)}`;
+  const url = `${window.location.origin}${RoomCodeUtils.path(roomCode)}`;
   const { size, path } = useMemo(() => {
     const code = qrcode(0, "M");
     code.addData(url);

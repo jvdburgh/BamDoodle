@@ -8,7 +8,6 @@ import { BrandStyles } from "@/components/brand/_utils/brandStyles.utils";
 import { LobbyHeader } from "@/components/lobby/LobbyHeader.component";
 import { LobbyHowToPlay } from "@/components/lobby/LobbyHowToPlay.component";
 import { SoundToggle } from "@/components/sound/SoundToggle.component";
-import { RoomViewUtils } from "@/components/room/_utils/roomView.utils";
 import { RoomCodeUtils } from "@/protocol/roomCode.utils";
 
 /** "create" plays in a new room; "host" makes one hosted on this screen, which doesn't play. */
@@ -195,10 +194,6 @@ export function LobbyStart({
                 <BrandScribble shape="pencilPlus" className="size-7 text-sun motion-safe:group-hover:animate-wiggle" />
                 {busy ? "Just a sec…" : "Create a room"}
               </button>
-              <p className="text-center text-white/70">For {RoomViewUtils.playerCount}, on any device.</p>
-              <p className="hidden text-center text-sm text-white/60 md:block sideways:hidden!">
-                On a TV or laptop? Create a room and host it on this screen.
-              </p>
               {problem && (
                 <p role="alert" className="text-center text-sm text-berry">
                   {problem}

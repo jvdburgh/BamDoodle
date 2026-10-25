@@ -35,8 +35,8 @@ const startLink = (startPage: string, start: "create" | "join") =>
   `${startPage}${startPage.includes("?") ? "&" : "?"}start=${start}`;
 
 /**
- * The end of the game: a podium rising, confetti for the winner and everyone's final score (the fanfare is a room
- * cue), then what's next (play again here, or another room) and our one ask: support Ukrainian citizens.
+ * The end of the game: a podium rising, confetti for the winner and everyone's final score (the win or good-game sting
+ * is a room cue), then what's next (play again here, or another room) and our one ask: support Ukrainian citizens.
  */
 export function RoomPodium({
   players,

@@ -10,4 +10,7 @@ const parse = (text: string) => (CODE.test(text.toUpperCase()) ? text.toUpperCas
 /** What a typed code keeps: its code letters, upper-cased, at most four. */
 const clean = (text: string) => text.toUpperCase().replace(NOT_IN_CODE, "").slice(0, LENGTH);
 
-export const RoomCodeUtils = { LETTERS, LENGTH, parse, clean };
+/** A room's own address, the one to share and to scan: `/BKZW`. */
+const path = (code: string) => `/${code}`;
+
+export const RoomCodeUtils = { LETTERS, LENGTH, parse, clean, path };

@@ -225,7 +225,7 @@ export const HowToPlay: Story = {
     await userEvent.click(canvas.getByRole("button", { name: "How to play" }));
     const sheet = within(canvas.getByRole("dialog", { name: "How to play" }));
     await expect(sheet.getByRole("heading", { name: "This room" })).toBeVisible();
-    await expect(sheet.getByText(/^Room code/)).toHaveTextContent("Room code BKZW");
+    await expect(sheet.getByText("BKZW").closest("p")).toHaveTextContent("Room BKZW");
     await expect(sheet.getByText(/rounds, each with a new secret word/)).toBeVisible();
     await expect(sheet.getByRole("heading", { name: "Spot the bamboozler" })).toBeVisible();
     await userEvent.click(sheet.getByRole("button", { name: "Close" }));
